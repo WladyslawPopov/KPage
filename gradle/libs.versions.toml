@@ -19,8 +19,8 @@ runner = "1.7.0"
 core = "1.7.0"
 koin = "4.1.1"
 ktor = "3.3.3"
-kotlinx-datetime = "0.6.0"
-kotlinx-serialization = "1.7.3"
+kotlinx-datetime = "0.7.1"
+kotlinx-serialization = "1.9.0"
 
 sqliteDriver = "2.2.1"
 
