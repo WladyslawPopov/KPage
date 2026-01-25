@@ -1,12 +1,15 @@
 plugins {
-    alias(libs.plugins.androidApplication) apply false
-    alias(libs.plugins.androidLibrary) apply false
-    alias(libs.plugins.composeHotReload) apply false
-    alias(libs.plugins.composeMultiplatform) apply false
-    alias(libs.plugins.composeCompiler) apply false
-    alias(libs.plugins.kotlinMultiplatform) apply false
-    alias(libs.plugins.androidKotlinMultiplatformLibrary) apply false
-    alias(libs.plugins.androidLint) apply false
-    alias(libs.plugins.sqldelight) apply false
-    alias(libs.plugins.kotlinSerialization) apply false
+    id("com.android.kotlin.multiplatform.library") version "9.0.0" apply false
+    id("org.jetbrains.kotlin.multiplatform") version "2.3.0" apply false
+    id("org.jetbrains.compose") version "1.10.0" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.0" apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.0" apply false
+    id("app.cash.sqldelight") version "2.2.1" apply false
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
 }

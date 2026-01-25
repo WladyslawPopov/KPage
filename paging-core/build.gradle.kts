@@ -1,12 +1,30 @@
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidKotlinMultiplatformLibrary)
-    alias(libs.plugins.androidLint)
-    alias(libs.plugins.kotlinSerialization)
-    alias(libs.plugins.sqldelight)
+    id("org.jetbrains.kotlin.multiplatform")
+    id("com.android.kotlin.multiplatform.library")
+    id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("app.cash.sqldelight")
+    id("maven-publish")
 }
+
+object Versions {
+    const val libraryVersion = "1.0.0"
+    const val packageName = "io.github.wladyslawpopov.kpager.core"
+
+    const val compileSdk = 36
+    const val minSdk = 24
+
+    const val sqlDelight = "2.0.2"
+    const val serialization = "1.7.3"
+    const val datetime = "0.6.1"
+    const val koin = "4.0.0"
+}
+
+group = Versions.packageName
+version = Versions.libraryVersion
 
 sqldelight {
     databases {
@@ -16,18 +34,18 @@ sqldelight {
     }
 }
 
+
+
 kotlin {
     androidLibrary {
-        namespace = "io.github.wladyslawpopov.kpager.core"
-        compileSdk = 36
-        minSdk = 24
-
-        withHostTestBuilder {}
-        withDeviceTestBuilder {
-            sourceSetTreeName = "test"
-        }.configure {
-            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_1_8)
         }
+    }
+
+    android {
+        namespace = Versions.packageName
+        compileSdk = Versions.compileSdk
     }
 
     val xcfName = "paging-coreKit"
@@ -37,63 +55,48 @@ kotlin {
 
     jvm()
 
-    js {
-        browser()
-    }
-
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
-
     sourceSets {
         commonMain {
             dependencies {
-                implementation(libs.kotlin.stdlib)
-                implementation(libs.kotlinx.serialization.json)
-                implementation(libs.kotlinx.datetime)
-                implementation(libs.driver.coroutine)
+                implementation("org.jetbrains.compose.ui:ui:1.10.0")
+                implementation("org.jetbrains.compose.foundation:foundation:1.10.0")
+                implementation("org.jetbrains.compose.runtime:runtime:1.10.0")
+                implementation("org.jetbrains.compose.material3:material3:1.9.0")
+
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serialization}")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:${Versions.datetime}")
+                implementation("app.cash.sqldelight:coroutines-extensions:${Versions.sqlDelight}")
+
+                api("io.insert-koin:koin-core:${Versions.koin}")
             }
         }
 
         commonTest {
             dependencies {
-                implementation(libs.kotlin.test)
+                implementation(kotlin("test"))
             }
         }
 
         androidMain {
             dependencies {
-                implementation(libs.android.driver)
+                implementation("app.cash.sqldelight:android-driver:${Versions.sqlDelight}")
             }
         }
 
-        getByName("androidDeviceTest") {
+        nativeMain {
             dependencies {
-                implementation(libs.androidx.runner)
-                implementation(libs.androidx.core)
-                implementation(libs.androidx.testExt.junit)
+                implementation("app.cash.sqldelight:native-driver:${Versions.sqlDelight}")
             }
         }
 
-        iosMain {
-            dependencies {
-                implementation(libs.native.driver)
-            }
+        jvmMain.dependencies {
+            implementation("app.cash.sqldelight:sqlite-driver:${Versions.sqlDelight}")
         }
+    }
+}
 
-        val jvmMain by getting {
-            dependencies {
-                implementation(libs.sqlite.driver)
-                implementation(libs.kotlinx.coroutinesSwing)
-            }
-        }
-
-        val wasmJsMain by getting {
-            dependencies {
-                implementation(libs.sqldelight.web)
-            }
-        }
+publishing {
+    repositories {
+        mavenLocal()
     }
 }

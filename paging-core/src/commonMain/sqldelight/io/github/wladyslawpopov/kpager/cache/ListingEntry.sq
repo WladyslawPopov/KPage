@@ -1,0 +1,39 @@
+CREATE TABLE ListingEntry (
+  queryKey   TEXT    NOT NULL,
+  itemId     INTEGER NOT NULL REFERENCES ItemRaw(id) ON DELETE CASCADE,
+  itemOrder  INTEGER NOT NULL,
+  pageNumber INTEGER NOT NULL,
+  PRIMARY KEY(queryKey, itemId)
+);
+
+CREATE INDEX idx_listing_query_order ON ListingEntry(queryKey, itemOrder);
+
+getItemsWithOrderForQuery:
+SELECT
+    ListingEntry.pageNumber,
+    ListingEntry.itemOrder, 
+    ItemRaw.id, 
+    COALESCE(ItemRaw.json, '{}') AS json,
+    COALESCE(ItemRaw.updatedAt, 0) AS updatedAt
+FROM ListingEntry
+JOIN ItemRaw ON ItemRaw.id = ListingEntry.itemId
+WHERE ListingEntry.queryKey = ?
+ORDER BY ListingEntry.pageNumber ASC, ListingEntry.itemOrder ASC;
+
+updateEntryIfExists:
+UPDATE ListingEntry
+SET itemOrder = ?, pageNumber = ?
+WHERE queryKey = ? AND itemId = ?;
+
+insertEntryIfAbsent:
+INSERT OR IGNORE INTO ListingEntry(queryKey, itemId, itemOrder, pageNumber)
+VALUES (?, ?, ?, ?);
+
+getExistingPageNumbers:
+SELECT DISTINCT pageNumber FROM ListingEntry WHERE queryKey = ? ORDER BY pageNumber ASC;
+
+deleteEntriesByPageNumber:
+DELETE FROM ListingEntry WHERE queryKey = ? AND pageNumber = ?;
+
+deleteAllEntriesByQuery:
+DELETE FROM ListingEntry WHERE queryKey = ?;

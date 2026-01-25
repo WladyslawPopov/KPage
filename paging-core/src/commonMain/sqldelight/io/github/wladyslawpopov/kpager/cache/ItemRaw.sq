@@ -1,0 +1,18 @@
+CREATE TABLE ItemRaw (
+  id        INTEGER NOT NULL PRIMARY KEY,
+  json      TEXT    NOT NULL,
+  updatedAt INTEGER NOT NULL
+);
+
+updateItemIfExists:
+UPDATE ItemRaw
+SET json = ?, updatedAt = ?
+WHERE id = ?
+AND (ItemRaw.json != ? OR ItemRaw.updatedAt < ?);
+
+insertItemIfAbsent:
+INSERT OR IGNORE INTO ItemRaw(id, json, updatedAt)
+VALUES (?, ?, ?);
+
+selectById:
+SELECT * FROM ItemRaw WHERE id = ?;

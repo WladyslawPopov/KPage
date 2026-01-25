@@ -1,0 +1,25 @@
+CREATE TABLE PageMetadata (
+    queryKey   TEXT    NOT NULL,
+    pageNumber INTEGER NOT NULL,
+    nextPageKey TEXT,
+    totalCount INTEGER NOT NULL,
+    PRIMARY KEY(queryKey, pageNumber)
+);
+
+getLatestPageMetadata:
+SELECT * FROM PageMetadata WHERE queryKey = ? ORDER BY pageNumber DESC LIMIT 1;
+
+insertPageMetadataIfAbsent:
+INSERT OR IGNORE INTO PageMetadata(queryKey, pageNumber, nextPageKey, totalCount)
+VALUES (?, ?, ?, ?);
+
+updatePageMetadataIfExists:
+UPDATE PageMetadata
+SET nextPageKey = ?, totalCount = ?
+WHERE queryKey = ? AND pageNumber = ?;
+
+deletePageMetadataByNumber:
+DELETE FROM PageMetadata WHERE queryKey = ? AND pageNumber = ?;
+
+deleteAllPageMetadataByQuery:
+DELETE FROM PageMetadata WHERE queryKey = ?;
