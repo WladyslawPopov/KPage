@@ -126,6 +126,19 @@ class StablePaginator<T : Any>(
         loadPagesAround(pageToLoad)
     }
 
+    override suspend fun getItemById(id: Long): T? {
+        return withContext(dbDispatcher()){
+            val currentRaw = itemQueries.selectById(id).executeAsOneOrNull()
+
+            return@withContext if (currentRaw != null) {
+                jsonSerializer.decodeFromString(serializer, currentRaw.json)
+            }
+            else {
+                null
+            }
+        }
+    }
+
     override fun reset(index: Int) {
         paginatorScope.launch {
             pagesCurrentlyLoading.clear()
@@ -258,5 +271,39 @@ class StablePaginator<T : Any>(
         val payload = getPage(pageNumber)
         _totalCount.value = payload.totalCount
         return payload
+    }
+
+
+
+    override suspend fun updateItem(id: Long, updatedItem: T) {
+        withContext(dbDispatcher()) {
+            try {
+                db.transaction {
+                    val itemQueries = db.itemRawQueries
+
+                    val currentRaw = itemQueries.selectById(id).executeAsOneOrNull()
+
+                    if (currentRaw != null) {
+                        val newJson =
+                            jsonSerializer.encodeToString(serializer, updatedItem)
+
+                        val now = nowAsEpochSeconds()
+                        val oldTimestamp = currentRaw.updatedAt
+
+                        val newTimestamp = if (now <= oldTimestamp) oldTimestamp + 1 else now
+
+                        itemQueries.updateItemIfExists(
+                            newJson,
+                            newTimestamp,
+                            id,
+                            newJson,
+                            newTimestamp
+                        )
+                    }
+                }
+            } catch (_: Exception) {
+            }
+        }
+
     }
 }

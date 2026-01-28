@@ -7,6 +7,9 @@ interface Paginator<T : Any> {
     val loadState: StateFlow<LoadState>
     val totalCount: StateFlow<Int>
     fun onPrefetch(pageToLoad: Int)
+
+    suspend fun getItemById(id: Long): T?
+    suspend fun updateItem(id: Long, updatedItem: T)
     fun reset(index: Int)
     fun close()
 }

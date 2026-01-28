@@ -35,7 +35,6 @@ sqldelight {
 }
 
 
-
 kotlin {
     androidLibrary {
         compilerOptions {
