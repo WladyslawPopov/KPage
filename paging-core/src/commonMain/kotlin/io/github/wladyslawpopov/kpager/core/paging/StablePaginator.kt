@@ -43,7 +43,8 @@ class StablePaginator<T : Any>(
     private val idExtractor: (T) -> Long
 ) : Paginator<T> {
 
-    val db : PagingDatabase by lazy { PagingDatabase(getDriver()) }
+    val driver = getDriver()
+    val db : PagingDatabase by lazy { PagingDatabase(driver) }
 
     private val _loadState = MutableStateFlow<LoadState>(LoadState.IDLE)
     override val loadState = _loadState.asStateFlow()
@@ -106,6 +107,8 @@ class StablePaginator<T : Any>(
                     resultMap[globalIndex] = pair.second
                 }
 
+                //println("PAGINATOR result: \n$queryKey,\n $parsedItems")
+
                 resultMap
             }
             .flowOn(Dispatchers.Default)
@@ -155,6 +158,7 @@ class StablePaginator<T : Any>(
     override fun close() {
         refreshJob?.cancel()
         paginatorScope.cancel()
+        driver.close()
     }
 
     private fun loadPagesAround(targetPage: Int, forceUpdate: Boolean = false) {
@@ -272,8 +276,6 @@ class StablePaginator<T : Any>(
         _totalCount.value = payload.totalCount
         return payload
     }
-
-
 
     override suspend fun updateItem(id: Long, updatedItem: T) {
         withContext(dbDispatcher()) {
