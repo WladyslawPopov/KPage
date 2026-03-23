@@ -11,7 +11,7 @@ class PagingRepository() {
         getPage: suspend (Int) -> PagerPayload<T>,
         serializer: KSerializer<T>,
         config: PaginatorConfig = PaginatorConfig(),
-        idExtractor: (T) -> Long
+        idExtractor: (T) -> String
     ): PagingResult<T> {
 
         val paginator = StablePaginator(

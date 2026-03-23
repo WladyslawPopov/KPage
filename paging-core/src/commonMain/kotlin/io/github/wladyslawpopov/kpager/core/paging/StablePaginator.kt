@@ -40,7 +40,7 @@ class StablePaginator<T : Any>(
     private val queryKey: String,
     private val config: PaginatorConfig = PaginatorConfig(),
     val getPage: suspend (Int) -> PagerPayload<T>,
-    private val idExtractor: (T) -> Long
+    private val idExtractor: (T) -> String
 ) : Paginator<T> {
 
     val driver = getDriver()
@@ -129,7 +129,7 @@ class StablePaginator<T : Any>(
         loadPagesAround(pageToLoad)
     }
 
-    override suspend fun getItemById(id: Long): T? {
+    override suspend fun getItemById(id: String): T? {
         return withContext(dbDispatcher()){
             val currentRaw = itemQueries.selectById(id).executeAsOneOrNull()
 
@@ -277,7 +277,7 @@ class StablePaginator<T : Any>(
         return payload
     }
 
-    override suspend fun updateItem(id: Long, updatedItem: T) {
+    override suspend fun updateItem(id: String, updatedItem: T) {
         withContext(dbDispatcher()) {
             try {
                 db.transaction {
@@ -306,6 +306,5 @@ class StablePaginator<T : Any>(
             } catch (_: Exception) {
             }
         }
-
     }
 }

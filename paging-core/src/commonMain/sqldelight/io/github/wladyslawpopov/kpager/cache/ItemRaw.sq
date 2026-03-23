@@ -1,5 +1,5 @@
 CREATE TABLE ItemRaw (
-  id        INTEGER NOT NULL PRIMARY KEY,
+  id        TEXT NOT NULL PRIMARY KEY,
   json      TEXT    NOT NULL,
   updatedAt INTEGER NOT NULL
 );

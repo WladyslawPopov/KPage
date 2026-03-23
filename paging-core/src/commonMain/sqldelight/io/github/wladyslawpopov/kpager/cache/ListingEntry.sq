@@ -1,6 +1,6 @@
 CREATE TABLE ListingEntry (
   queryKey   TEXT    NOT NULL,
-  itemId     INTEGER NOT NULL REFERENCES ItemRaw(id) ON DELETE CASCADE,
+  itemId     TEXT NOT NULL REFERENCES ItemRaw(id) ON DELETE CASCADE,
   itemOrder  INTEGER NOT NULL,
   pageNumber INTEGER NOT NULL,
   PRIMARY KEY(queryKey, itemId)
