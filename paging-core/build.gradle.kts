@@ -10,25 +10,12 @@ plugins {
     id("maven-publish")
 }
 
-object Versions {
-    const val libraryVersion = "1.0.0"
-    const val packageName = "io.github.wladyslawpopov.kpager.core"
-
-    const val compileSdk = 36
-    const val minSdk = 24
-
-    const val sqlDelight = "2.0.2"
-    const val serialization = "1.7.3"
-    const val datetime = "0.6.1"
-    const val koin = "4.0.0"
-}
-
-group = Versions.packageName
-version = Versions.libraryVersion
+group = "io.github.wladyslawpopov.kpager.core"
+version =  "1.0.0"
 
 sqldelight {
     databases {
-        create("PagingDatabase") {
+        create("PagingDataBase") {
             packageName.set("io.github.wladyslawpopov.kpager.cache")
         }
     }
@@ -43,8 +30,8 @@ kotlin {
     }
 
     android {
-        namespace = Versions.packageName
-        compileSdk = Versions.compileSdk
+        namespace = "io.github.wladyslawpopov.kpager.core"
+        compileSdk = 36
     }
 
     val xcfName = "paging-coreKit"
@@ -57,16 +44,16 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("org.jetbrains.compose.ui:ui:1.10.0")
-                implementation("org.jetbrains.compose.foundation:foundation:1.10.0")
-                implementation("org.jetbrains.compose.runtime:runtime:1.10.0")
+                implementation("org.jetbrains.compose.ui:ui:1.10.3")
+                implementation("org.jetbrains.compose.foundation:foundation:1.10.3")
+                implementation("org.jetbrains.compose.runtime:runtime:1.10.3")
                 implementation("org.jetbrains.compose.material3:material3:1.9.0")
 
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${Versions.serialization}")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:${Versions.datetime}")
-                implementation("app.cash.sqldelight:coroutines-extensions:${Versions.sqlDelight}")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+                implementation("app.cash.sqldelight:coroutines-extensions:2.3.2")
 
-                api("io.insert-koin:koin-core:${Versions.koin}")
+                implementation("io.insert-koin:koin-core:4.2.0")
             }
         }
 
@@ -78,18 +65,18 @@ kotlin {
 
         androidMain {
             dependencies {
-                implementation("app.cash.sqldelight:android-driver:${Versions.sqlDelight}")
+                implementation("app.cash.sqldelight:android-driver:2.3.2")
             }
         }
 
         nativeMain {
             dependencies {
-                implementation("app.cash.sqldelight:native-driver:${Versions.sqlDelight}")
+                implementation("app.cash.sqldelight:native-driver:2.3.2")
             }
         }
 
         jvmMain.dependencies {
-            implementation("app.cash.sqldelight:sqlite-driver:${Versions.sqlDelight}")
+            implementation("app.cash.sqldelight:sqlite-driver:2.3.2")
         }
     }
 }

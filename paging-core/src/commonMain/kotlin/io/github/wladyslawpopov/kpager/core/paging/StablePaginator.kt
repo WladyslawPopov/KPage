@@ -2,7 +2,7 @@ package io.github.wladyslawpopov.kpager.core.paging
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import io.github.wladyslawpopov.kpager.cache.PagingDatabase
+import io.github.wladyslawpopov.kpager.cache.PagingDataBase
 import io.github.wladyslawpopov.kpager.core.paging.common.dbDispatcher
 import io.github.wladyslawpopov.kpager.core.paging.common.getDriver
 import kotlinx.coroutines.CoroutineScope
@@ -44,7 +44,7 @@ class StablePaginator<T : Any>(
 ) : Paginator<T> {
 
     val driver = getDriver()
-    val db : PagingDatabase by lazy { PagingDatabase(driver) }
+    val db : PagingDataBase by lazy { PagingDataBase(driver) }
 
     private val _loadState = MutableStateFlow<LoadState>(LoadState.IDLE)
     override val loadState = _loadState.asStateFlow()

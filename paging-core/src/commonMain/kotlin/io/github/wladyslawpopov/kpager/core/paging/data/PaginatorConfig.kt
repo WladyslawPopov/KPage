@@ -1,7 +1,7 @@
 package io.github.wladyslawpopov.kpager.core.paging.data
 
 const val PAGE_SIZE = 60
-const val DATABASE_NAME = "PagingDatabase"
+const val DATABASE_NAME = "PagingDataBase"
 
 
 data class PaginatorConfig(
