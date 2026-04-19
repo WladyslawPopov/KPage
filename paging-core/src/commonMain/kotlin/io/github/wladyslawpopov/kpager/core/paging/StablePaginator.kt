@@ -2,9 +2,9 @@ package io.github.wladyslawpopov.kpager.core.paging
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.db.SqlDriver
 import io.github.wladyslawpopov.kpager.cache.PagingDataBase
 import io.github.wladyslawpopov.kpager.core.paging.common.dbDispatcher
-import io.github.wladyslawpopov.kpager.core.paging.common.getDriver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -40,11 +40,11 @@ class StablePaginator<T : Any>(
     private val queryKey: String,
     private val config: PaginatorConfig = PaginatorConfig(),
     val getPage: suspend (Int) -> PagerPayload<T>,
-    private val idExtractor: (T) -> String
+    private val idExtractor: (T) -> String,
+    private val driver: SqlDriver
 ) : Paginator<T> {
 
-    val driver = getDriver()
-    val db : PagingDataBase by lazy { PagingDataBase(driver) }
+    private val db : PagingDataBase = PagingDataBase(driver)
 
     private val _loadState = MutableStateFlow<LoadState>(LoadState.IDLE)
     override val loadState = _loadState.asStateFlow()
@@ -53,6 +53,8 @@ class StablePaginator<T : Any>(
     override val totalCount = _totalCount.asStateFlow()
 
     private val mutex = Mutex()
+    private val dbMutex = Mutex()
+
     private val pagesCurrentlyLoading = mutableSetOf<Int>()
 
     private val job = SupervisorJob()
@@ -201,21 +203,20 @@ class StablePaginator<T : Any>(
             val items = payload.objects
             val total = payload.totalCount
             val hasMore = payload.isMore || (total > (pageNumber * config.pageSize) + items.size)
-
-            withContext(dbDispatcher()) {
-                db.transaction {
-                    processItemsRaw(items)
-                    entryQueries.deleteEntriesByPageNumber(queryKey, pageNumber.toLong())
-                    processListingEntries(pageNumber.toLong(), items, config.pageSize)
-                    processPageMetadata(pageNumber.toLong(), total.toLong(), hasMore)
-                    pruneOldPages(pageNumber)
+            dbMutex.withLock {
+                withContext(dbDispatcher()) {
+                    db.transaction {
+                        processItemsRaw(items)
+                        entryQueries.deleteEntriesByPageNumber(queryKey, pageNumber.toLong())
+                        processListingEntries(pageNumber.toLong(), items, config.pageSize)
+                        processPageMetadata(pageNumber.toLong(), total.toLong(), hasMore)
+                        pruneOldPages(pageNumber)
+                    }
                 }
             }
         } catch (e: Exception) {
             if (e is CancellationException) throw e
-            if (itemsMap.value.isEmpty()) {
-                setLoadState(LoadState.ERROR(e.message ?: "Unknown error"))
-            }
+            setLoadState(LoadState.ERROR(e.message ?: "Unknown error"))
         } finally {
             mutex.withLock {
                 pagesCurrentlyLoading.remove(pageNumber)
@@ -280,27 +281,29 @@ class StablePaginator<T : Any>(
     override suspend fun updateItem(id: String, updatedItem: T) {
         withContext(dbDispatcher()) {
             try {
-                db.transaction {
-                    val itemQueries = db.itemRawQueries
+                dbMutex.withLock {
+                    db.transaction {
+                        val itemQueries = db.itemRawQueries
 
-                    val currentRaw = itemQueries.selectById(id).executeAsOneOrNull()
+                        val currentRaw = itemQueries.selectById(id).executeAsOneOrNull()
 
-                    if (currentRaw != null) {
-                        val newJson =
-                            jsonSerializer.encodeToString(serializer, updatedItem)
+                        if (currentRaw != null) {
+                            val newJson =
+                                jsonSerializer.encodeToString(serializer, updatedItem)
 
-                        val now = nowAsEpochSeconds()
-                        val oldTimestamp = currentRaw.updatedAt
+                            val now = nowAsEpochSeconds()
+                            val oldTimestamp = currentRaw.updatedAt
 
-                        val newTimestamp = if (now <= oldTimestamp) oldTimestamp + 1 else now
+                            val newTimestamp = if (now <= oldTimestamp) oldTimestamp + 1 else now
 
-                        itemQueries.updateItemIfExists(
-                            newJson,
-                            newTimestamp,
-                            id,
-                            newJson,
-                            newTimestamp
-                        )
+                            itemQueries.updateItemIfExists(
+                                newJson,
+                                newTimestamp,
+                                id,
+                                newJson,
+                                newTimestamp
+                            )
+                        }
                     }
                 }
             } catch (_: Exception) {

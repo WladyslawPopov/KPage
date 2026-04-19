@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("com.android.kotlin.multiplatform.library")
@@ -11,7 +9,7 @@ plugins {
 }
 
 group = "io.github.wladyslawpopov.kpager.core"
-version =  "1.0.0"
+version =  "1.0.1"
 
 sqldelight {
     databases {
@@ -23,12 +21,6 @@ sqldelight {
 
 
 kotlin {
-    androidLibrary {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_1_8)
-        }
-    }
-
     android {
         namespace = "io.github.wladyslawpopov.kpager.core"
         compileSdk = 36
@@ -49,11 +41,11 @@ kotlin {
                 implementation("org.jetbrains.compose.runtime:runtime:1.10.3")
                 implementation("org.jetbrains.compose.material3:material3:1.9.0")
 
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
                 implementation("app.cash.sqldelight:coroutines-extensions:2.3.2")
 
-                implementation("io.insert-koin:koin-core:4.2.0")
+                implementation("io.insert-koin:koin-core:4.2.1")
             }
         }
 
@@ -78,7 +70,21 @@ kotlin {
         jvmMain.dependencies {
             implementation("app.cash.sqldelight:sqlite-driver:2.3.2")
         }
+
+        jvmTest.dependencies {
+            implementation(kotlin("test"))
+            implementation(kotlin("test-junit"))// JUnit 4
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+            implementation("app.cash.turbine:turbine:1.2.1")
+            implementation("org.jetbrains.compose.ui:ui-test-junit4:1.10.3")
+            implementation(compose.desktop.currentOs)
+        }
     }
+}
+
+tasks.withType<Test> {
+    useJUnit()
+    // useJUnitPlatform() //JUnit 5
 }
 
 publishing {
