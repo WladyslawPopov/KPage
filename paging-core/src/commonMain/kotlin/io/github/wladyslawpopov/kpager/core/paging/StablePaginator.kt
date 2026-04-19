@@ -2,7 +2,6 @@ package io.github.wladyslawpopov.kpager.core.paging
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import app.cash.sqldelight.db.SqlDriver
 import io.github.wladyslawpopov.kpager.cache.PagingDataBase
 import io.github.wladyslawpopov.kpager.core.paging.common.dbDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -41,10 +40,8 @@ class StablePaginator<T : Any>(
     private val config: PaginatorConfig = PaginatorConfig(),
     val getPage: suspend (Int) -> PagerPayload<T>,
     private val idExtractor: (T) -> String,
-    private val driver: SqlDriver
+    private val db: PagingDataBase
 ) : Paginator<T> {
-
-    private val db : PagingDataBase = PagingDataBase(driver)
 
     private val _loadState = MutableStateFlow<LoadState>(LoadState.IDLE)
     override val loadState = _loadState.asStateFlow()
@@ -160,7 +157,6 @@ class StablePaginator<T : Any>(
     override fun close() {
         refreshJob?.cancel()
         paginatorScope.cancel()
-        driver.close()
     }
 
     private fun loadPagesAround(targetPage: Int, forceUpdate: Boolean = false) {

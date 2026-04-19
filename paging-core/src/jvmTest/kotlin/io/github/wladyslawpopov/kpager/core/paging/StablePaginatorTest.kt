@@ -1,6 +1,5 @@
 package io.github.wladyslawpopov.kpager.core.paging
 
-import app.cash.sqldelight.db.SqlDriver
 import io.github.wladyslawpopov.kpager.cache.PagingDataBase
 import io.github.wladyslawpopov.kpager.core.paging.data.FakeApi
 import io.github.wladyslawpopov.kpager.core.paging.data.FakeItem
@@ -23,13 +22,11 @@ class StablePaginatorTest {
     private lateinit var fakeApi: FakeApi
     private lateinit var database: PagingDataBase
     private lateinit var paginator: StablePaginator<FakeItem>
-    private lateinit var driver: SqlDriver
 
     @Before
     fun setup() {
         fakeApi = FakeApi()
-        driver = TestPaginatorFactory.createInMemoryDriver()
-        database = PagingDataBase(driver)
+        database = TestPaginatorFactory.createInMemoryDriver()
     }
 
     @After
@@ -42,7 +39,7 @@ class StablePaginatorTest {
     @Test
     fun test_initial_load() = runTest {
         // Arrange
-        paginator = TestPaginatorFactory.createPaginator(fakeApi, driver)
+        paginator = TestPaginatorFactory.createPaginator(fakeApi, database)
 
         // Act
         assertEquals(LoadState.IDLE, paginator.loadState.value)
@@ -78,7 +75,7 @@ class StablePaginatorTest {
         TestPaginatorFactory.prePopulateDatabase(database, pages = 1, pageSize = fakeApi.pageSize)
         fakeApi.networkDelayMs = 200L // Artificial API delay
 
-        paginator = TestPaginatorFactory.createPaginator(fakeApi, driver)
+        paginator = TestPaginatorFactory.createPaginator(fakeApi, database)
 
         // Act & Assert 1: Retrieve old cache
         // Strictly wait until cache size equals page size
@@ -110,7 +107,7 @@ class StablePaginatorTest {
     fun test_endless_scroll_forward_and_db_pruning() = runTest {
         // Arrange
         fakeApi.totalPages = 10 // Increase total pages to allow deep scrolling
-        paginator = TestPaginatorFactory.createPaginator(fakeApi, driver)
+        paginator = TestPaginatorFactory.createPaginator(fakeApi, database)
         paginator.reset(0)
 
         // Wait for initial load (pages 0 and 1)
@@ -168,7 +165,7 @@ class StablePaginatorTest {
     @Test
     fun test_update_single_item_optimistic() = runTest {
         // Arrange
-        paginator = TestPaginatorFactory.createPaginator(fakeApi, driver)
+        paginator = TestPaginatorFactory.createPaginator(fakeApi, database)
         paginator.reset(0)
 
         // Wait for initial data
@@ -195,7 +192,7 @@ class StablePaginatorTest {
     fun test_end_of_list() = runTest {
         // Arrange: Return only one page (isMore = false)
         fakeApi.totalPages = 1
-        paginator = TestPaginatorFactory.createPaginator(fakeApi, driver)
+        paginator = TestPaginatorFactory.createPaginator(fakeApi, database)
 
         // Act
         paginator.reset(0)
@@ -209,7 +206,7 @@ class StablePaginatorTest {
     @Test
     fun test_network_error_with_cache() = runTest {
         // Arrange: Load the first pages successfully
-        paginator = TestPaginatorFactory.createPaginator(fakeApi, driver)
+        paginator = TestPaginatorFactory.createPaginator(fakeApi, database)
         paginator.reset(0)
 
         // Wait for initial data to be fully loaded (pages 0 and 1)
@@ -237,7 +234,7 @@ class StablePaginatorTest {
     fun test_deep_link_initialization() = runTest {
         // Arrange: API supports many pages
         fakeApi.totalPages = 20
-        paginator = TestPaginatorFactory.createPaginator(fakeApi, driver)
+        paginator = TestPaginatorFactory.createPaginator(fakeApi, database)
 
         // Act: User opens the app directly at index 100 (e.g., from a deep link or restored state)
         // In FakeApi, pageSize is 20. So Index 100 / 20 (pageSize) = Page 5.
@@ -256,7 +253,7 @@ class StablePaginatorTest {
     @Test
     fun test_concurrent_prefetch_spam_protection() = runTest {
         // Arrange
-        paginator = TestPaginatorFactory.createPaginator(fakeApi, driver)
+        paginator = TestPaginatorFactory.createPaginator(fakeApi, database)
         paginator.reset(0)
         paginator.itemsMap.filter { it.size == fakeApi.pageSize * 2 }.first()
 

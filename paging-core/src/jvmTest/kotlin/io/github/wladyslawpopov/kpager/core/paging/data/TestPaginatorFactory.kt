@@ -1,6 +1,5 @@
 package io.github.wladyslawpopov.kpager.core.paging.data
 
-import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import io.github.wladyslawpopov.kpager.cache.PagingDataBase
 import io.github.wladyslawpopov.kpager.core.paging.StablePaginator
@@ -8,19 +7,20 @@ import java.util.Properties
 
 object TestPaginatorFactory {
 
-    fun createInMemoryDriver(): SqlDriver {
+    fun createInMemoryDriver(): PagingDataBase {
         val properties = Properties().apply {
             setProperty("busy_timeout", "5000")
         }
         val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY, properties)
 
         PagingDataBase.Schema.create(driver)
-        return driver
+
+        return PagingDataBase(driver)
     }
 
     fun createPaginator(
         api: FakeApi,
-        driver: SqlDriver
+        db: PagingDataBase
     ): StablePaginator<FakeItem> {
         return StablePaginator(
             serializer = FakeItem.serializer(),
@@ -30,7 +30,7 @@ object TestPaginatorFactory {
             ),
             getPage = { page -> api.getPage(page) },
             idExtractor = { it.id },
-            driver = driver
+            db = db
         )
     }
 
