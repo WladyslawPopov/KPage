@@ -1,6 +1,7 @@
 package io.github.wladyslawpopov.kpager.core.paging.data
 
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 class FakeApi {
     var shouldFail = false
@@ -11,7 +12,7 @@ class FakeApi {
     suspend fun getPage(page: Int): PagerPayload<FakeItem> {
         if (shouldFail) throw IllegalStateException("ServerErrorException")
         
-        delay(networkDelayMs)
+        delay(networkDelayMs.milliseconds)
         
         val isMore = page < (totalPages - 1)
         val items = if (page < totalPages) {

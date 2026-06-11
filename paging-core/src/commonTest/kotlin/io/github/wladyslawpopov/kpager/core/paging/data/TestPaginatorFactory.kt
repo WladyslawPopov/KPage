@@ -1,20 +1,13 @@
 package io.github.wladyslawpopov.kpager.core.paging.data
 
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import io.github.wladyslawpopov.kpager.cache.PagingDataBase
 import io.github.wladyslawpopov.kpager.core.paging.StablePaginator
-import java.util.Properties
+import io.github.wladyslawpopov.kpager.core.paging.common.getDriver
 
 object TestPaginatorFactory {
 
     fun createInMemoryDriver(): PagingDataBase {
-        val properties = Properties().apply {
-            setProperty("busy_timeout", "5000")
-        }
-        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY, properties)
-
-        PagingDataBase.Schema.create(driver)
-
+        val driver = getDriver()
         return PagingDataBase(driver)
     }
 

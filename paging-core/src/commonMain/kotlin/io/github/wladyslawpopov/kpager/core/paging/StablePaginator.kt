@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -33,7 +32,19 @@ import kotlinx.serialization.json.Json
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
 
-
+/**
+ * A robust, Offline-First paginator for Kotlin Multiplatform.
+ * It uses SQLDelight to cache pages locally, ensuring data availability
+ * and smooth scrolling even on poor network connections.
+ *
+ * @param T The type of items being paginated.
+ * @param serializer The kotlinx.serialization serializer for type [T].
+ * @param queryKey A unique identifier for the current pagination query/list.
+ * @param config Configuration parameters like page size and prefetch distance.
+ * @param getPage A suspend function to fetch a page of data from the network.
+ * @param idExtractor A lambda to extract a unique string ID from an item.
+ * @param db The SQLDelight database instance for caching.
+ */
 class StablePaginator<T : Any>(
     private val serializer: KSerializer<T>,
     private val queryKey: String,
@@ -52,6 +63,7 @@ class StablePaginator<T : Any>(
     private val mutex = Mutex()
     private val dbMutex = Mutex()
 
+    // Tracks which pages are currently being fetched to prevent duplicate network requests
     private val pagesCurrentlyLoading = mutableSetOf<Int>()
 
     private val job = SupervisorJob()
@@ -62,51 +74,72 @@ class StablePaginator<T : Any>(
     private val entryQueries = db.listingEntryQueries
     private val metaQueries = db.pageMetadataQueries
 
-    val jsonSerializer = Json {
+    private val jsonSerializer = Json {
         ignoreUnknownKeys = true
         isLenient = true
         encodeDefaults = true
     }
 
+    // In-memory cache to store parsed objects and avoid redundant JSON deserialization
+    private var parsedCache = emptyMap<String, T>()
+
+    /**
+     * A reactive stream of the paginated items mapped by their global index.
+     * Automatically updates whenever the underlying database changes.
+     */
     override val itemsMap: StateFlow<Map<Int, T?>> =
         entryQueries.getItemsWithOrderForQuery(queryKey)
             .asFlow()
             .mapToList(dbDispatcher())
             .flowOn(dbDispatcher())
-            .catch { _ ->
-                emit(emptyList())
-            }
             .distinctUntilChanged()
             .map { dbItems ->
                 currentCoroutineContext().ensureActive()
 
-                if (dbItems.isEmpty()) return@map emptyMap()
+                if (dbItems.isEmpty()) {
+                    parsedCache = emptyMap()
+                    return@map emptyMap()
+                }
+
+                val currentCache = parsedCache
+                val newCache = mutableMapOf<String, T>()
 
                 val parsedItems = dbItems.mapNotNull { row ->
                     val item = if (row.json == "{}") null else {
                         try {
-                            jsonSerializer.decodeFromString(serializer, row.json)
+                            currentCache[row.json] ?: jsonSerializer.decodeFromString(serializer, row.json)
                         } catch (e: Exception) {
                             if (e is CancellationException) throw e
-                            null
+                            throw e
                         }
                     }
-                    if (item != null) row.pageNumber to item else null
+
+                    if (item != null) {
+                        newCache[row.json] = item
+                        row.pageNumber to item
+                    } else null
                 }
+
+                parsedCache = newCache
 
                 if (parsedItems.isEmpty()) return@map emptyMap()
 
                 val minPage = parsedItems.minOf { it.first }.toInt()
 
+                // Calculate the theoretical starting index for the earliest loaded page
                 val startOffset = minPage * config.pageSize
 
                 val resultMap = LinkedHashMap<Int, T?>(parsedItems.size)
+
+                // We recalculate the global index sequentially (startOffset + index)
+                // instead of relying purely on the raw database sequence.
+                // If an item was deleted from the database, the original sequence
+                // would have "holes" (missing indices). Re-indexing here ensures
+                // the UI list remains strictly continuous without empty gaps.
                 parsedItems.forEachIndexed { index, pair ->
                     val globalIndex = startOffset + index
                     resultMap[globalIndex] = pair.second
                 }
-
-                //println("PAGINATOR result: \n$queryKey,\n $parsedItems")
 
                 resultMap
             }
@@ -123,28 +156,40 @@ class StablePaginator<T : Any>(
         }
     }
 
+    /**
+     * Triggers the fetching of a specific page.
+     * Usually called by the UI when the user scrolls near the end of the loaded list.
+     */
     override fun onPrefetch(pageToLoad: Int) {
         if (_loadState.value is LoadState.INITIAL) return
         loadPagesAround(pageToLoad)
     }
 
+    /**
+     * Retrieves a single item directly from the local database by its ID.
+     */
     override suspend fun getItemById(id: String): T? {
         return withContext(dbDispatcher()){
             val currentRaw = itemQueries.selectById(id).executeAsOneOrNull()
 
             return@withContext if (currentRaw != null) {
                 jsonSerializer.decodeFromString(serializer, currentRaw.json)
-            }
-            else {
+            } else {
                 null
             }
         }
     }
 
+    /**
+     * Resets the paginator state and reloads data starting from the specified global index.
+     * Useful for pull-to-refresh or restoring scroll position.
+     */
     override fun reset(index: Int) {
         paginatorScope.launch {
-            pagesCurrentlyLoading.clear()
-            setLoadState(LoadState.INITIAL)
+            mutex.withLock {
+                pagesCurrentlyLoading.clear()
+                setLoadState(LoadState.INITIAL)
+            }
 
             val pageToLoad = index / config.pageSize
             val targetPage =
@@ -154,6 +199,9 @@ class StablePaginator<T : Any>(
         }
     }
 
+    /**
+     * Cancels all ongoing pagination coroutines. Should be called when the ViewModel/Component is destroyed.
+     */
     override fun close() {
         refreshJob?.cancel()
         paginatorScope.cancel()
@@ -253,6 +301,7 @@ class StablePaginator<T : Any>(
         metaQueries.insertPageMetadataIfAbsent(queryKey, pageNumber, nextPageKey, totalCount)
     }
 
+    // Deletes pages from the database that are outside the allowed maximum limit
     private fun pruneOldPages(currentPageNumber: Int) {
         val existingPages = entryQueries.getExistingPageNumbers(queryKey).executeAsList()
         val buffer = 2
@@ -260,7 +309,7 @@ class StablePaginator<T : Any>(
 
         val pagesToDelete = existingPages.sortedByDescending { pageNum ->
             abs(currentPageNumber - pageNum.toInt())
-        }.take(existingPages.size - config.maxPagesInDb)
+        }.take(existingPages.size - (config.maxPagesInDb + buffer))
 
         pagesToDelete.forEach { pageNumToDelete ->
             entryQueries.deleteEntriesByPageNumber(queryKey, pageNumToDelete)
@@ -274,35 +323,34 @@ class StablePaginator<T : Any>(
         return payload
     }
 
+    /**
+     * Optimistically updates an item in the local cache.
+     * The changes will immediately reflect in the [itemsMap] flow.
+     */
     override suspend fun updateItem(id: String, updatedItem: T) {
         withContext(dbDispatcher()) {
-            try {
-                dbMutex.withLock {
-                    db.transaction {
-                        val itemQueries = db.itemRawQueries
+            dbMutex.withLock {
+                db.transaction {
+                    val itemQueries = db.itemRawQueries
+                    val currentRaw = itemQueries.selectById(id).executeAsOneOrNull()
 
-                        val currentRaw = itemQueries.selectById(id).executeAsOneOrNull()
+                    if (currentRaw != null) {
+                        val newJson = jsonSerializer.encodeToString(serializer, updatedItem)
 
-                        if (currentRaw != null) {
-                            val newJson =
-                                jsonSerializer.encodeToString(serializer, updatedItem)
+                        val now = nowAsEpochSeconds()
+                        val oldTimestamp = currentRaw.updatedAt
 
-                            val now = nowAsEpochSeconds()
-                            val oldTimestamp = currentRaw.updatedAt
+                        val newTimestamp = if (now <= oldTimestamp) oldTimestamp + 1 else now
 
-                            val newTimestamp = if (now <= oldTimestamp) oldTimestamp + 1 else now
-
-                            itemQueries.updateItemIfExists(
-                                newJson,
-                                newTimestamp,
-                                id,
-                                newJson,
-                                newTimestamp
-                            )
-                        }
+                        itemQueries.updateItemIfExists(
+                            newJson,
+                            newTimestamp,
+                            id,
+                            newJson,
+                            newTimestamp
+                        )
                     }
                 }
-            } catch (_: Exception) {
             }
         }
     }

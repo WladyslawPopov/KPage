@@ -1,15 +1,12 @@
 plugins {
-    id("org.jetbrains.kotlin.multiplatform")
-    id("com.android.kotlin.multiplatform.library")
-    id("org.jetbrains.compose")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("org.jetbrains.kotlin.plugin.serialization")
-    id("app.cash.sqldelight")
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.composeMultiplatform)
+    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.serialization)
+    alias(libs.plugins.sqldelight)
     id("maven-publish")
 }
-
-group = "io.github.wladyslawpopov.kpager.core"
-version =  "1.0.1"
 
 sqldelight {
     databases {
@@ -19,8 +16,9 @@ sqldelight {
     }
 }
 
-
 kotlin {
+    jvmToolchain(17)
+
     android {
         namespace = "io.github.wladyslawpopov.kpager.core"
         compileSdk = 37
@@ -33,64 +31,47 @@ kotlin {
 
     jvm()
 
-    val composeVersion = "1.10.3"
-
     sourceSets {
         commonMain {
             dependencies {
-                implementation("org.jetbrains.compose.ui:ui:$composeVersion")
-                implementation("org.jetbrains.compose.foundation:foundation:$composeVersion")
-                implementation("org.jetbrains.compose.runtime:runtime:$composeVersion")
-                implementation("org.jetbrains.compose.material3:material3:1.9.0")
+                implementation(libs.ui)
+                implementation(libs.runtime)
+                implementation(libs.material3)
+                implementation(libs.components.resources)
 
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
-                implementation("app.cash.sqldelight:coroutines-extensions:2.3.2")
+                implementation(libs.kotlinx.serialization.json)
+                implementation(libs.kotlinx.datetime)
+                implementation(libs.sqldelight.coroutines)
 
-                implementation("io.insert-koin:koin-core:4.2.1")
+                implementation(libs.koin.core)
             }
         }
 
         commonTest {
             dependencies {
-                implementation(kotlin("test"))
+                implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.turbine)
+                implementation(libs.ui.test)
+                implementation(libs.koin.test)
             }
         }
 
         androidMain {
             dependencies {
-                implementation("app.cash.sqldelight:android-driver:2.3.2")
+                implementation(libs.sqldelight.android)
             }
         }
 
         nativeMain {
             dependencies {
-                implementation("app.cash.sqldelight:native-driver:2.3.2")
+                implementation(libs.sqldelight.native)
             }
         }
 
         jvmMain.dependencies {
-            implementation("app.cash.sqldelight:sqlite-driver:2.3.2")
-        }
-
-        jvmTest.dependencies {
-            implementation(kotlin("test"))
-            implementation(kotlin("test-junit"))// JUnit 4
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
-            implementation("app.cash.turbine:turbine:1.2.1")
-            implementation("org.jetbrains.compose.ui:ui-test:$composeVersion")
+            implementation(libs.sqldelight.jvm)
             implementation(compose.desktop.currentOs)
         }
-    }
-}
-
-tasks.withType<Test> {
-    useJUnit()
-    // useJUnitPlatform() //JUnit 5
-}
-
-publishing {
-    repositories {
-        mavenLocal()
     }
 }

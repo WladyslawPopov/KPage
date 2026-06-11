@@ -1,0 +1,72 @@
+[versions]
+agp = "9.2.1"
+kotlin = "2.4.0"
+compose-plugin = "1.10.3"
+
+# Libraries
+sqldelight = "2.3.2"
+serialization = "1.11.0"
+datetime = "0.8.0"
+coroutines = "1.11.0"
+koin = "4.2.1"
+
+android-compileSdk = "37"
+android-minSdk = "24"
+
+coreKtx = "1.19.0"
+junitVersion = "4.13.2"
+kotlinStdlib = "2.4.0"
+skiko_version = "0.144.5"
+kotlinTest = "2.4.0"
+runner = "1.7.0"
+core = "1.7.0"
+turbine = "1.2.1"
+compose-adaptive = "1.2.0"
+material3 = "1.9.0"
+
+
+[libraries]
+material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
+runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-plugin" }
+ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-plugin" }
+ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose-plugin" }
+components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-plugin" }
+
+skiko = { module = "org.jetbrains.skiko:skiko", version.ref = "skiko_version" }
+
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "serialization" }
+kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "datetime" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+
+sqldelight-coroutines = { group = "app.cash.sqldelight", name = "coroutines-extensions", version.ref = "sqldelight" }
+sqldelight-android = { group = "app.cash.sqldelight", name = "android-driver", version.ref = "sqldelight" }
+sqldelight-native = { group = "app.cash.sqldelight", name = "native-driver", version.ref = "sqldelight" }
+sqldelight-jvm = { group = "app.cash.sqldelight", name = "sqlite-driver", version.ref = "sqldelight" }
+
+compose-material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "compose-adaptive" }
+compose-material3-adaptive-layout = { module = "org.jetbrains.compose.material3.adaptive:adaptive-layout", version.ref = "compose-adaptive" }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junitVersion" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlinStdlib" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlinTest" }
+androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
+androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-coroutines = { module = "io.insert-koin:koin-core-coroutines", version.ref = "koin" }
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+koin-test-junit4 = { module = "io.insert-koin:koin-test-junit4", version.ref = "koin" }
+koin-composeVM = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
+
+
+
+[plugins]
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+androidLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }

@@ -1,8 +1,8 @@
-# K-Pager
+# KPager
 
-**K-Pager** is a production-ready, highly optimized, and caching pagination library for **Kotlin Multiplatform** and **Compose Multiplatform**.
+**KPager** is a production-ready, highly optimized, and caching pagination library for **Kotlin Multiplatform** and **Compose Multiplatform**.
 
-Unlike standard paging libraries, K-Pager is built with local-first and offline-first architectures in mind. It uses **SQLDelight** under the hood to automatically cache your pages, providing instant cold starts, optimistic UI updates, and seamless background network synchronization.
+Unlike standard paging libraries, KPager is built with local-first and offline-first architectures in mind. It uses **SQLDelight** under the hood to automatically cache your pages, providing instant cold starts, optimistic UI updates, and seamless background network synchronization.
 
 ## ✨ Features
 * **Multiplatform Support:** Works seamlessly on Android, iOS, and Desktop (JVM).
@@ -14,25 +14,54 @@ Unlike standard paging libraries, K-Pager is built with local-first and offline-
 
 ## 📦 Installation
 
-Add the dependency to your `build.gradle.kts` (in your `commonMain` source set):
+This library is hosted on [JitPack](https://jitpack.io).
+
+**Step 1.** Add the JitPack repository to your root `build.gradle.kts` or `settings.gradle.kts`:
+
+```kotlin
+repositories {
+    mavenCentral()
+    maven("[https://jitpack.io](https://jitpack.io)")
+}
+```
+
+**Step 2.** Add the dependency to your module's `build.gradle.kts` (in your `commonMain` source set):
 
 ```kotlin
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            // Replace with the actual version
-            implementation("io.github.wladyslawpopov.kpager:paging-core:1.0.0") 
+            implementation("com.github.WladyslawPopov:KPage:1.0.0") 
         }
     }
 }
 ```
 
-*(Note: Ensure you have SQLDelight drivers configured for your target platforms, as K-Pager requires an `SqlDriver` instance to work).*
+## 🛠 Setup & Initialization (Dependency Injection)
+
+KPager requires a SQLDelight database instance to handle offline caching. You must initialize this database using dependency injection.
+
+### Koin Integration
+If you are using [Koin](https://insert-koin.io/), you can provide the `PagingDataBase` like this:
+
+```kotlin
+import io.github.wladyslawpopov.kpager.cache.PagingDataBase
+import io.github.wladyslawpopov.kpager.core.paging.common.getDriver
+import org.koin.dsl.module
+
+val pagingDriverModule = module {
+    single {
+        val driver = getDriver()
+        PagingDataBase(driver)
+    }
+}
+```
+*Don't forget to include `pagingDriverModule` when starting your Koin application.*
 
 ## 🚀 Quick Start (Basic Usage)
 
 ### 1. Create the Paginator
-Create a `StablePaginator` in your ViewModel or Presenter. Pass your network call and a single `SqlDriver` instance.
+Create a `StablePaginator` in your ViewModel or Presenter. Pass your network call and the injected `PagingDataBase` instance.
 
 ```kotlin
 val paginator = StablePaginator(
@@ -44,7 +73,7 @@ val paginator = StablePaginator(
         apiService.getUsersPage(page) 
     },
     idExtractor = { item -> item.id },
-    driver = mySqlDriver // Inject your SQLDelight driver here
+    db = myPagingDatabase // Inject your Koin database instance here
 )
 
 // Trigger the first load
@@ -76,10 +105,10 @@ fun UsersScreen(viewModel: MyViewModel) {
 }
 ```
 
-## 🛠 Advanced Usage
+## 🧠 Advanced Usage
 
 ### Mixing Items (Separators, Ads, Promos)
-K-Pager makes it incredibly easy to map your domain items into UI models. You don't need complex `PagingData` transformations. Just map the Flow!
+KPager makes it incredibly easy to map your domain items into UI models. You don't need complex `PagingData` transformations. Just map the Flow!
 
 ```kotlin
 val uiItemsFlow = paginator.itemsMap.map { map ->

@@ -21,6 +21,25 @@ import io.github.wladyslawpopov.kpager.core.paging.data.PAGE_SIZE
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
+/**
+ * A highly customizable Composable grid layout designed to seamlessly work with [StablePaginator].
+ * It automatically detects when the user scrolls near the end of the list and triggers data prefetching.
+ *
+ * @param items The flattened list of currently loaded items. Null values represent loading placeholders.
+ * @param totalCount The total number of items available on the server.
+ * @param pageSize The number of items loaded per page.
+ * @param columns The number of grid columns (default is 1 for a standard vertical list).
+ * @param isReversingPaging Set to true if the list should start from the bottom (e.g., chat applications).
+ * @param showItemsCounter If true, displays the custom [counterBar] component.
+ * @param state The [LazyGridState] to control and observe scroll position.
+ * @param contentPadding Padding applied around the entire grid content.
+ * @param spanProvider An optional lambda to specify custom column spans for specific items.
+ * @param keyExtractor A lambda to provide stable unique keys for the grid items to prevent unwanted recompositions.
+ * @param onPrefetch Callback triggered when the layout determines the next page needs to be fetched.
+ * @param modifier Custom modifiers to apply to the root Box.
+ * @param counterBar A custom Composable to display the current scroll position/index.
+ * @param content The Composable block defining how each item should be rendered.
+ */
 @Composable
 fun <T : Any> PagingLayout(
     items: List<T?>,
@@ -40,6 +59,7 @@ fun <T : Any> PagingLayout(
 ) {
     val align = remember { if (isReversingPaging) Alignment.BottomStart else Alignment.TopStart }
 
+    // Calculates the current globally visible index for the counter UI
     val currentIndex by remember(items) {
         derivedStateOf {
             if (items.isEmpty() || totalCount <= 0) 0
@@ -51,6 +71,7 @@ fun <T : Any> PagingLayout(
         }
     }
 
+    // Observes scroll state and triggers prefetching when crossing the threshold
     LaunchedEffect(state, pageSize, totalCount) {
         snapshotFlow {
             val layoutInfo = state.layoutInfo
@@ -59,8 +80,9 @@ fun <T : Any> PagingLayout(
         }
             .map { lastVisibleIndex ->
                 val currentPage = lastVisibleIndex / pageSize
-
                 val itemsInCurrentPage = lastVisibleIndex % pageSize
+
+                // Trigger prefetch when user scrolls past 75% of the current page
                 val threshold = pageSize - (pageSize / 4)
 
                 if (itemsInCurrentPage >= threshold) {
@@ -104,7 +126,7 @@ fun <T : Any> PagingLayout(
         }
 
         if (showItemsCounter) {
-           counterBar(currentIndex)
+            counterBar(currentIndex)
         }
     }
 }
