@@ -23,7 +23,7 @@ sqldelight {
 kotlin {
     android {
         namespace = "io.github.wladyslawpopov.kpager.core"
-        compileSdk = 36
+        compileSdk = 37
     }
 
     val xcfName = "paging-coreKit"
@@ -33,16 +33,18 @@ kotlin {
 
     jvm()
 
+    val composeVersion = "1.10.3"
+
     sourceSets {
         commonMain {
             dependencies {
-                implementation("org.jetbrains.compose.ui:ui:1.10.3")
-                implementation("org.jetbrains.compose.foundation:foundation:1.10.3")
-                implementation("org.jetbrains.compose.runtime:runtime:1.10.3")
+                implementation("org.jetbrains.compose.ui:ui:$composeVersion")
+                implementation("org.jetbrains.compose.foundation:foundation:$composeVersion")
+                implementation("org.jetbrains.compose.runtime:runtime:$composeVersion")
                 implementation("org.jetbrains.compose.material3:material3:1.9.0")
 
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.8.0")
                 implementation("app.cash.sqldelight:coroutines-extensions:2.3.2")
 
                 implementation("io.insert-koin:koin-core:4.2.1")
@@ -74,9 +76,9 @@ kotlin {
         jvmTest.dependencies {
             implementation(kotlin("test"))
             implementation(kotlin("test-junit"))// JUnit 4
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
             implementation("app.cash.turbine:turbine:1.2.1")
-            implementation("org.jetbrains.compose.ui:ui-test-junit4:1.10.3")
+            implementation("org.jetbrains.compose.ui:ui-test:$composeVersion")
             implementation(compose.desktop.currentOs)
         }
     }
