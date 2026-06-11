@@ -39,25 +39,18 @@ class StablePaginatorTest {
 
     @Test
     fun test_initial_load() = runTest {
-        // Arrange
         paginator = TestPaginatorFactory.createPaginator(fakeApi, database)
-
-        // Act
         assertEquals(LoadState.IDLE, paginator.loadState.value)
-        paginator.reset(0)
 
-        // Wait until both pages are loaded (prefetchDistance = 1 behavior)
-        // Use >= to be more robust against unexpected size changes
+        paginator.reset(0)
         val items = paginator.itemsMap.first { it.size >= fakeApi.pageSize * 2 }
 
-        // Assert
         val currentState = paginator.loadState.value
         assertTrue(
             currentState is LoadState.IDLE || currentState is LoadState.END,
             "State should transition to IDLE or END after a successful load"
         )
 
-        // Check DB
         val rawItems = database.itemRawQueries.selectById("id_0").executeAsOneOrNull()
         assertTrue(rawItems != null, "Items must be stored in ItemRaw")
 
@@ -73,13 +66,11 @@ class StablePaginatorTest {
 
     @Test
     fun test_cache_first_display_and_network_refresh() = runTest {
-        // Arrange: pre-populate database with "old" data (1 page)
         TestPaginatorFactory.prePopulateDatabase(database, pages = 1, pageSize = fakeApi.pageSize)
-        fakeApi.networkDelayMs = 10L // Small delay to test cache emission
+        fakeApi.networkDelayMs = 10L
 
         paginator = TestPaginatorFactory.createPaginator(fakeApi, database)
 
-        // Act & Assert 1: Retrieve old cache
         val cachedData = paginator.itemsMap.first { it.size >= fakeApi.pageSize }
 
         assertEquals(fakeApi.pageSize, cachedData.size, "Cache should be emitted before network response")
@@ -89,11 +80,9 @@ class StablePaginatorTest {
             "Cache should contain old data (DB stubs)"
         )
 
-        // Act 2: Refresh
         fakeApi.networkDelayMs = 0L
         paginator.reset(0)
 
-        // Assert 2: Wait for new data to arrive
         val newData = paginator.itemsMap.first { map ->
             map.size >= fakeApi.pageSize * 2 && map[0]?.title?.startsWith("Item") == true
         }
@@ -105,27 +94,26 @@ class StablePaginatorTest {
         )
     }
 
-    @Test
-    fun test_endless_scroll_forward_and_db_pruning() = runTest {
-        // Arrange
+    private suspend fun performEndlessScrollForward() {
         fakeApi.totalPages = 10
         paginator = TestPaginatorFactory.createPaginator(fakeApi, database)
         paginator.reset(0)
 
-        // Wait for initial load (pages 0 and 1)
         paginator.itemsMap.first { it.size >= fakeApi.pageSize * 2 }
 
-        // Act: Scroll up to page 6
         for (page in 2..6) {
             paginator.onPrefetch(page)
             val expectedGlobalIndex = page * fakeApi.pageSize
             paginator.itemsMap.first { it.containsKey(expectedGlobalIndex) }
         }
 
-        // Wait for page 7
         paginator.itemsMap.first { it.containsKey(7 * fakeApi.pageSize) }
+    }
 
-        // Assert DB Pruning:
+    @Test
+    fun test_endless_scroll_forward_and_db_pruning() = runTest {
+        performEndlessScrollForward()
+
         val itemsMap = paginator.itemsMap.value
         val dbPages = database.listingEntryQueries.getExistingPageNumbers("test_query").executeAsList()
 
@@ -144,7 +132,7 @@ class StablePaginatorTest {
 
     @Test
     fun test_reverse_scrolling_recovery() = runTest {
-        test_endless_scroll_forward_and_db_pruning()
+        performEndlessScrollForward()
 
         paginator.onPrefetch(0)
 
