@@ -8,6 +8,9 @@ plugins {
     id("maven-publish")
 }
 
+group = "io.github.wladyslawpopov"
+version = "1.0.1"
+
 sqldelight {
     databases {
         create("PagingDataBase") {
@@ -25,7 +28,6 @@ kotlin {
     }
 
     val xcfName = "paging-coreKit"
-    iosX64 { binaries.framework { baseName = xcfName } }
     iosArm64 { binaries.framework { baseName = xcfName } }
     iosSimulatorArm64 { binaries.framework { baseName = xcfName } }
 

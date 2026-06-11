@@ -12,26 +12,39 @@ Unlike standard paging libraries, KPager is built with local-first and offline-f
 * **Compose Ready:** Comes with a highly customizable `PagingLayout` (based on `LazyGrid`) that handles prefetching thresholds automatically.
 * **Versatile:** Easily supports standard lists, reverse lists (for chats/messengers), and heterogeneous lists (mixing data with promo blocks or date separators).
 
-## 📦 Installation
+## 📦 Installation (Maven Local)
 
-This library is hosted on [JitPack](https://jitpack.io).
+Since this is a Kotlin Multiplatform library with iOS support, it currently relies on local publishing.
 
-**Step 1.** Add the JitPack repository to your root `build.gradle.kts` or `settings.gradle.kts`:
+**Step 1. Clone and Publish Locally**
+Clone this repository to your machine and publish the artifacts to your local Maven repository:
+```bash
+git clone [https://github.com/WladyslawPopov/KPager.git](https://github.com/WladyslawPopov/KPager.git)
+cd KPager
+./gradlew publishToMavenLocal
+```
+
+**Step 2. Setup your project's repositories**
+In your target project, ensure `mavenLocal()` is added to your repository list in `settings.gradle.kts` (or root `build.gradle.kts`):
 
 ```kotlin
-repositories {
-    mavenCentral()
-    maven("[https://jitpack.io](https://jitpack.io)")
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal() // Add this at the top
+        google()
+        mavenCentral()
+    }
 }
 ```
 
-**Step 2.** Add the dependency to your module's `build.gradle.kts` (in your `commonMain` source set):
+**Step 3. Add the dependency**
+Add the dependency to your module's `build.gradle.kts` (in your `commonMain` source set):
 
 ```kotlin
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("com.github.WladyslawPopov:KPage:1.0.0") 
+            implementation("io.github.wladyslawpopov:paging-core:1.0.1") 
         }
     }
 }
