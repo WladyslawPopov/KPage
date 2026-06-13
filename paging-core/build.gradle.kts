@@ -8,9 +8,6 @@ plugins {
     id("maven-publish")
 }
 
-group = "io.github.wladyslawpopov"
-version = "1.0.1"
-
 sqldelight {
     databases {
         create("PagingDataBase") {
