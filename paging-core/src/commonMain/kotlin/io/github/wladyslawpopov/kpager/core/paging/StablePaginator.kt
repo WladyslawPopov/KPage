@@ -78,6 +78,7 @@ class StablePaginator<T : Any>(
         ignoreUnknownKeys = true
         isLenient = true
         encodeDefaults = true
+        coerceInputValues = true
     }
 
     // In-memory cache to store parsed objects and avoid redundant JSON deserialization
@@ -110,7 +111,8 @@ class StablePaginator<T : Any>(
                             currentCache[row.json] ?: jsonSerializer.decodeFromString(serializer, row.json)
                         } catch (e: Exception) {
                             if (e is CancellationException) throw e
-                            throw e
+                            // Log the error or handle it silently to avoid crashing the whole list
+                            null
                         }
                     }
 
@@ -169,11 +171,16 @@ class StablePaginator<T : Any>(
      * Retrieves a single item directly from the local database by its ID.
      */
     override suspend fun getItemById(id: String): T? {
-        return withContext(dbDispatcher()){
+        return withContext(dbDispatcher()) {
             val currentRaw = itemQueries.selectById(id).executeAsOneOrNull()
 
             return@withContext if (currentRaw != null) {
-                jsonSerializer.decodeFromString(serializer, currentRaw.json)
+                try {
+                    jsonSerializer.decodeFromString(serializer, currentRaw.json)
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    null
+                }
             } else {
                 null
             }
