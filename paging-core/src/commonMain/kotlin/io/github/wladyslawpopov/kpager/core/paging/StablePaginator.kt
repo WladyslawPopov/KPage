@@ -104,45 +104,31 @@ class StablePaginator<T : Any>(
 
                 val currentCache = parsedCache
                 val newCache = mutableMapOf<String, T>()
+                val resultMap = LinkedHashMap<Int, T?>(dbItems.size)
 
-                val parsedItems = dbItems.mapNotNull { row ->
-                    val item = if (row.json == "{}") null else {
-                        try {
-                            currentCache[row.json] ?: jsonSerializer.decodeFromString(serializer, row.json)
-                        } catch (e: Exception) {
-                            if (e is CancellationException) throw e
-                            // Log the error or handle it silently to avoid crashing the whole list
-                            null
+                dbItems.groupBy { it.pageNumber }.forEach { (pageNumber, itemsOfPage) ->
+                    val pageStartOffset = pageNumber.toInt() * config.pageSize
+                    
+                    var validItemIndex = 0
+                    itemsOfPage.forEach { row ->
+                        val item = if (row.json == "{}") null else {
+                            try {
+                                currentCache[row.json] ?: jsonSerializer.decodeFromString(serializer, row.json)
+                            } catch (e: Exception) {
+                                if (e is CancellationException) throw e
+                                null
+                            }
+                        }
+
+                        if (item != null) {
+                            newCache[row.json] = item
+                            resultMap[pageStartOffset + validItemIndex] = item
+                            validItemIndex++
                         }
                     }
-
-                    if (item != null) {
-                        newCache[row.json] = item
-                        row.pageNumber to item
-                    } else null
                 }
 
                 parsedCache = newCache
-
-                if (parsedItems.isEmpty()) return@map emptyMap()
-
-                val minPage = parsedItems.minOf { it.first }.toInt()
-
-                // Calculate the theoretical starting index for the earliest loaded page
-                val startOffset = minPage * config.pageSize
-
-                val resultMap = LinkedHashMap<Int, T?>(parsedItems.size)
-
-                // We recalculate the global index sequentially (startOffset + index)
-                // instead of relying purely on the raw database sequence.
-                // If an item was deleted from the database, the original sequence
-                // would have "holes" (missing indices). Re-indexing here ensures
-                // the UI list remains strictly continuous without empty gaps.
-                parsedItems.forEachIndexed { index, pair ->
-                    val globalIndex = startOffset + index
-                    resultMap[globalIndex] = pair.second
-                }
-
                 resultMap
             }
             .flowOn(Dispatchers.Default)
