@@ -114,7 +114,7 @@ class StablePaginator<T : Any>(
                         val item = if (row.json == "{}") null else {
                             try {
                                 currentCache[row.json] ?: jsonSerializer.decodeFromString(serializer, row.json)
-                            } catch (e: Exception) {
+                            } catch (e: Throwable) {
                                 if (e is CancellationException) throw e
                                 null
                             }
@@ -179,16 +179,21 @@ class StablePaginator<T : Any>(
      */
     override fun reset(index: Int) {
         paginatorScope.launch {
-            mutex.withLock {
-                pagesCurrentlyLoading.clear()
-                setLoadState(LoadState.INITIAL)
+            try {
+                mutex.withLock {
+                    pagesCurrentlyLoading.clear()
+                    setLoadState(LoadState.INITIAL)
+                }
+
+                val pageToLoad = index / config.pageSize
+                val targetPage =
+                    if (pageToLoad > config.initialPageKey) pageToLoad else config.initialPageKey
+
+                loadPagesAround(targetPage, forceUpdate = true)
+            } catch (e: Throwable) {
+                if (e is CancellationException) throw e
+                setLoadState(LoadState.ERROR(e.message ?: "Reset error"))
             }
-
-            val pageToLoad = index / config.pageSize
-            val targetPage =
-                if (pageToLoad > config.initialPageKey) pageToLoad else config.initialPageKey
-
-            loadPagesAround(targetPage, forceUpdate = true)
         }
     }
 
@@ -251,7 +256,7 @@ class StablePaginator<T : Any>(
                     }
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             if (e is CancellationException) throw e
             setLoadState(LoadState.ERROR(e.message ?: "Unknown error"))
         } finally {
