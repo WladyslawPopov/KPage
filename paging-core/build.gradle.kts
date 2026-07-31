@@ -20,7 +20,7 @@ sqldelight {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 
     android {
         namespace = "io.github.wladyslawpopov.kpager.core"
