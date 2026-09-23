@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.wladyslawpopov.kpager.core.paging.data.PAGE_SIZE
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 
 /**
  * A highly customizable Composable grid layout designed to seamlessly work with [StablePaginator].
@@ -48,6 +47,7 @@ fun <T : Any> PagingLayout(
     columns: Int = 1,
     isReversingPaging: Boolean = false,
     showItemsCounter: Boolean = true,
+    isPlaceholder: ((item: T?) -> Boolean)? = null,
     state: LazyGridState = rememberLazyGridState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     spanProvider: ((item: T) -> GridItemSpan)? = null,
@@ -71,29 +71,49 @@ fun <T : Any> PagingLayout(
         }
     }
 
-    // Observes scroll state and triggers prefetching when crossing the threshold
-    LaunchedEffect(state, pageSize, totalCount) {
+    LaunchedEffect(state, pageSize, totalCount, items) {
         snapshotFlow {
             val layoutInfo = state.layoutInfo
-            val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()
-            lastVisibleItem?.index ?: 0
-        }
-            .map { lastVisibleIndex ->
-                val currentPage = lastVisibleIndex / pageSize
-                val itemsInCurrentPage = lastVisibleIndex % pageSize
+            val visibleItems = layoutInfo.visibleItemsInfo
+            if (visibleItems.isEmpty()) return@snapshotFlow emptySet()
 
-                // Trigger prefetch when user scrolls past 75% of the current page
-                val threshold = pageSize - (pageSize / 4)
+            val firstVisible = visibleItems.first().index
+            val lastVisible = visibleItems.last().index
 
-                if (itemsInCurrentPage >= threshold) {
-                    currentPage
-                } else {
-                    null
+            val pagesToPrefetch = mutableSetOf<Int>()
+
+            // 1. Instant prefetch if ANY item currently visible on screen is a placeholder
+            for (visibleItem in visibleItems) {
+                val idx = visibleItem.index
+                val item = items.getOrNull(idx)
+                if (item == null || (isPlaceholder != null && isPlaceholder(item))) {
+                    pagesToPrefetch.add(idx / pageSize)
                 }
             }
+
+            // 2. Prefetch next page when reaching bottom 25% of current page (scrolling down)
+            val lastItemInCurrentPage = lastVisible % pageSize
+            val bottomThreshold = pageSize - (pageSize / 4)
+            if (lastItemInCurrentPage >= bottomThreshold) {
+                pagesToPrefetch.add(lastVisible / pageSize)
+            }
+
+            // 3. Prefetch previous page when reaching top 25% of current page (scrolling up)
+            val firstItemInCurrentPage = firstVisible % pageSize
+            val topThreshold = pageSize / 4
+            if (firstItemInCurrentPage <= topThreshold) {
+                val currentPage = firstVisible / pageSize
+                if (currentPage > 0) {
+                    pagesToPrefetch.add(currentPage - 1)
+                }
+            }
+
+            pagesToPrefetch
+        }
             .distinctUntilChanged()
-            .collect { page ->
-                if (page != null) {
+            .collect { pages ->
+                for (page in pages) {
+                    println("[PagingGridLayout] Scroll threshold or placeholder hit -> onPrefetch(page = $page)")
                     onPrefetch(page)
                 }
             }
