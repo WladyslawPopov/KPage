@@ -5,6 +5,17 @@ import io.github.wladyslawpopov.kpager.core.paging.data.FakeApi
 import io.github.wladyslawpopov.kpager.core.paging.data.FakeItem
 import io.github.wladyslawpopov.kpager.core.paging.data.LoadState
 import io.github.wladyslawpopov.kpager.core.paging.data.TestPaginatorFactory
+import io.github.wladyslawpopov.kpager.core.paging.data.PagerPayload
+import io.github.wladyslawpopov.kpager.core.paging.data.PaginatorConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
@@ -45,7 +56,7 @@ class StablePaginatorTest {
         paginator.reset(0)
         val items = paginator.itemsMap.first { it.size >= fakeApi.pageSize * 2 }
 
-        val currentState = paginator.loadState.value
+        val currentState = paginator.loadState.first { it is LoadState.IDLE || it is LoadState.END }
         assertTrue(
             currentState is LoadState.IDLE || currentState is LoadState.END,
             "State should transition to IDLE or END after a successful load"
@@ -102,7 +113,7 @@ class StablePaginatorTest {
         paginator.itemsMap.first { it.size >= fakeApi.pageSize * 2 }
 
         for (page in 2..6) {
-            paginator.onPrefetch(page)
+            paginator.onVisiblePageChanged(page)
             val expectedGlobalIndex = page * fakeApi.pageSize
             paginator.itemsMap.first { it.containsKey(expectedGlobalIndex) }
         }
@@ -134,7 +145,7 @@ class StablePaginatorTest {
     fun test_reverse_scrolling_recovery() = runTest {
         performEndlessScrollForward()
 
-        paginator.onPrefetch(0)
+        paginator.onVisiblePageChanged(0)
 
         val itemsMap = paginator.itemsMap.first { it.containsKey(0) }
 
@@ -181,7 +192,7 @@ class StablePaginatorTest {
         paginator.itemsMap.first { it.size >= fakeApi.pageSize * 2 }
 
         fakeApi.shouldFail = true
-        paginator.onPrefetch(2)
+        paginator.onVisiblePageChanged(2)
 
         val errorState = paginator.loadState.filterIsInstance<LoadState.ERROR>().first()
         assertTrue(errorState.error.contains("ServerErrorException"))
@@ -210,15 +221,296 @@ class StablePaginatorTest {
         paginator.itemsMap.first { it.size >= fakeApi.pageSize * 2 }
 
         repeat(10) {
-            launch { paginator.onPrefetch(2) }
+            launch { paginator.onVisiblePageChanged(2) }
         }
 
-        val items = paginator.itemsMap.first { it.containsKey(2 * fakeApi.pageSize) }
+        val items = paginator.itemsMap.first { it.size >= fakeApi.pageSize * 4 }
 
         assertEquals(
-            fakeApi.pageSize * 3,
+            fakeApi.pageSize * 4,
             items.size,
             "Paginator must ignore duplicate concurrent requests"
         )
     }
+
+    private fun controlledPaginator(fetch: suspend (Int) -> PagerPayload<FakeItem>) = StablePaginator(
+        serializer = FakeItem.serializer(),
+        queryKey = "test_query",
+        config = PaginatorConfig(pageSize = 1, prefetchDistance = 0),
+        getPage = fetch,
+        idExtractor = { it.id },
+        db = database
+    )
+
+    @Test
+    fun test_close_cancels_in_flight_request() = runTest {
+        val started = CompletableDeferred<Unit>()
+        val cancelled = CompletableDeferred<Unit>()
+        paginator = controlledPaginator {
+            started.complete(Unit)
+            try {
+                awaitCancellation()
+            } finally {
+                cancelled.complete(Unit)
+            }
+        }
+        paginator.reset(0)
+        started.await()
+        paginator.close()
+        withContext(Dispatchers.Default) { withTimeout(2_000) { cancelled.await() } }
+    }
+
+    @Test
+    fun test_reset_cancels_previous_request() = runTest {
+        val started = CompletableDeferred<Unit>()
+        val cancelled = CompletableDeferred<Unit>()
+        var calls = 0
+        paginator = controlledPaginator {
+            if (++calls == 1) {
+                started.complete(Unit)
+                try {
+                    awaitCancellation()
+                } finally {
+                    cancelled.complete(Unit)
+                }
+            } else {
+                PagerPayload(1, false, listOf(FakeItem("id_0", "Fresh")))
+            }
+        }
+        paginator.reset(0)
+        started.await()
+        paginator.reset(0)
+        withContext(Dispatchers.Default) { withTimeout(2_000) { cancelled.await() } }
+        paginator.itemsMap.first { it[0]?.title == "Fresh" }
+    }
+
+    @Test
+    fun test_reset_discards_late_response_even_if_fetch_ignores_cancellation() = runTest {
+        val started = CompletableDeferred<Job>()
+        val releaseOldRequest = CompletableDeferred<Unit>()
+        var calls = 0
+        paginator = controlledPaginator {
+            if (++calls == 1) {
+                started.complete(currentCoroutineContext()[Job]!!)
+                withContext(NonCancellable) { releaseOldRequest.await() }
+                PagerPayload(99, true, listOf(FakeItem("id_0", "Stale")))
+            } else {
+                PagerPayload(1, false, listOf(FakeItem("id_0", "Fresh")))
+            }
+        }
+        try {
+            paginator.reset(0)
+            val oldJob = started.await()
+            paginator.reset(0)
+            paginator.itemsMap.first { it[0]?.title == "Fresh" }
+            paginator.loadState.first { it == LoadState.END }
+            releaseOldRequest.complete(Unit)
+            oldJob.join()
+            assertEquals(1, paginator.totalCount.value)
+            assertEquals("Fresh", paginator.getItemById("id_0")?.title)
+            assertEquals(LoadState.END, paginator.loadState.value)
+        } finally {
+            releaseOldRequest.complete(Unit)
+        }
+    }
+
+
+    @Test
+    fun test_cancelled_request_can_be_retried_without_error() = runTest {
+        val started = CompletableDeferred<Job>()
+        var calls = 0
+        paginator = controlledPaginator {
+            if (++calls == 1) {
+                started.complete(currentCoroutineContext()[Job]!!)
+                throw CancellationException("Request cancelled")
+            }
+            PagerPayload(1, false, listOf(FakeItem("id_0", "Retry")))
+        }
+        paginator.reset(0)
+        started.await().join()
+        assertEquals(LoadState.IDLE, paginator.loadState.value)
+        paginator.onVisiblePageChanged(0)
+        withContext(Dispatchers.Default) {
+            withTimeout(2_000) { paginator.itemsMap.first { it[0]?.title == "Retry" } }
+        }
+    }
+
+    @Test
+    fun test_rapid_resets_cancel_every_superseded_request() = runTest {
+        val requests = kotlinx.coroutines.channels.Channel<Job>(kotlinx.coroutines.channels.Channel.UNLIMITED)
+        val finish = CompletableDeferred<Unit>()
+        paginator = controlledPaginator {
+            requests.send(currentCoroutineContext()[Job]!!)
+            finish.await()
+            PagerPayload(1, false, listOf(FakeItem("id_0", "Latest")))
+        }
+        val superseded = mutableListOf<Job>()
+        try {
+            repeat(50) {
+                paginator.reset(0)
+                superseded.add(requests.receive())
+            }
+            paginator.reset(0)
+            val latest = requests.receive()
+            withContext(Dispatchers.Default) {
+                withTimeout(2_000) { superseded.forEach { it.join() } }
+            }
+            assertTrue(superseded.all { it.isCancelled })
+            assertTrue(latest.isActive)
+            assertEquals(LoadState.INITIAL, paginator.loadState.value)
+            finish.complete(Unit)
+            latest.join()
+            assertEquals("Latest", paginator.getItemById("id_0")?.title)
+            assertEquals(LoadState.END, paginator.loadState.value)
+        } finally {
+            finish.complete(Unit)
+            requests.close()
+        }
+    }
+
+    @Test
+    fun test_late_prefetch_preserves_visible_page() = runTest {
+        val db = TestPaginatorFactory.createInMemoryDriver()
+        for (page in 6..10) {
+            db.itemRawQueries.insertItemIfAbsent("id_$page", """{"id":"id_$page","title":"Cached"}""", 1)
+            db.listingEntryQueries.insertEntryIfAbsent("test_query", "id_$page", page.toLong(), page.toLong())
+            if (page != 10) db.pageMetadataQueries.insertPageMetadataIfAbsent("test_query", page.toLong(), "${page+1}", 20)
+        }
+        val oldStarted = CompletableDeferred<Job>()
+        val recentStarted = CompletableDeferred<Job>()
+        val releaseOld = CompletableDeferred<Unit>()
+        paginator = StablePaginator(
+            serializer = FakeItem.serializer(), queryKey = "test_query",
+            config = PaginatorConfig(pageSize = 1, prefetchDistance = 0, maxPagesInDb = 3),
+            idExtractor = { it.id }, db = db,
+            getPage = { page ->
+                if (page == 0) {
+                    oldStarted.complete(currentCoroutineContext()[Job]!!)
+                    releaseOld.await()
+                } else recentStarted.complete(currentCoroutineContext()[Job]!!)
+                PagerPayload(20, true, listOf(FakeItem("id_$page", "Fresh")))
+            }
+        )
+        try {
+            paginator.onVisiblePageChanged(0)
+            val old = oldStarted.await()
+            paginator.onVisiblePageChanged(10)
+            recentStarted.await().join()
+            assertEquals(listOf(6L,7L,8L,9L,10L), db.listingEntryQueries.getExistingPageNumbers("test_query").executeAsList().sorted())
+            releaseOld.complete(Unit)
+            old.join()
+            val remaining = db.listingEntryQueries.getExistingPageNumbers("test_query").executeAsList()
+            assertTrue(10L in remaining, "Visible page must survive a late response from a distant page")
+            assertEquals(listOf(6L,7L,8L,9L,10L), remaining.sorted())
+        } finally {
+            releaseOld.complete(Unit)
+            paginator.close()
+        }
+    }
+
+    @Test
+    fun test_prefetch_uses_cached_page_but_reset_refreshes_it() = runTest {
+        var calls = 0
+        paginator = controlledPaginator {
+            calls++
+            PagerPayload(1, false, listOf(FakeItem("id_0", "Version $calls")))
+        }
+        paginator.reset(0)
+        paginator.itemsMap.first { it[0]?.title == "Version 1" }
+        paginator.loadState.first { it == LoadState.END }
+        repeat(20) { paginator.onVisiblePageChanged(0) }
+        // Reset is ordered after all preceding prefetch commands; only it may perform another fetch.
+        paginator.reset(0)
+        paginator.itemsMap.first { it[0]?.title == "Version 2" }
+        assertEquals(2, calls)
+    }
+
+
+    @Test
+    fun test_quick_return_to_page_does_not_let_cancelled_job_remove_replacement() = runTest {
+        val requests = kotlinx.coroutines.channels.Channel<Pair<Int, Job>>(kotlinx.coroutines.channels.Channel.UNLIMITED)
+        val oldRelease = CompletableDeferred<Unit>()
+        val freshRelease = CompletableDeferred<Unit>()
+        var zeroCalls = 0
+        paginator = controlledPaginator { page ->
+            requests.send(page to currentCoroutineContext()[Job]!!)
+            if (page != 0) awaitCancellation()
+            if (++zeroCalls == 1) withContext(NonCancellable) { oldRelease.await() }
+            else freshRelease.await()
+            PagerPayload(1, false, listOf(FakeItem("id_0", "Fresh")))
+        }
+        try {
+            paginator.onVisiblePageChanged(0)
+            val old = requests.receive().second
+            paginator.onVisiblePageChanged(10)
+            val distant = requests.receive().second
+            paginator.onVisiblePageChanged(0)
+            val replacement = requests.receive().second
+            oldRelease.complete(Unit)
+            old.join()
+            assertTrue(replacement.isActive)
+            assertTrue(distant.isCancelled)
+            freshRelease.complete(Unit)
+            replacement.join()
+            assertEquals(2, zeroCalls)
+            assertEquals(LoadState.END, paginator.loadState.value)
+            assertEquals("Fresh", paginator.getItemById("id_0")?.title)
+        } finally {
+            oldRelease.complete(Unit)
+            freshRelease.complete(Unit)
+            requests.close()
+        }
+    }
+
+    @Test
+    fun test_many_position_jumps_cancel_obsolete_requests() = runTest {
+        val requests = kotlinx.coroutines.channels.Channel<Job>(kotlinx.coroutines.channels.Channel.UNLIMITED)
+        val release = CompletableDeferred<Unit>()
+        paginator = controlledPaginator { page ->
+            requests.send(currentCoroutineContext()[Job]!!)
+            release.await()
+            PagerPayload(100, true, listOf(FakeItem("id_$page", "Latest")))
+        }
+        val jobs = mutableListOf<Job>()
+        try {
+            repeat(50) { page ->
+                paginator.onVisiblePageChanged(page)
+                jobs.add(requests.receive())
+            }
+            withContext(Dispatchers.Default) {
+                withTimeout(2_000) { jobs.dropLast(1).forEach { it.join() } }
+            }
+            assertTrue(jobs.dropLast(1).all { it.isCancelled })
+            assertTrue(jobs.last().isActive)
+            release.complete(Unit)
+            jobs.last().join()
+            assertEquals(listOf(49L), database.listingEntryQueries.getExistingPageNumbers("test_query").executeAsList())
+        } finally {
+            release.complete(Unit)
+            requests.close()
+        }
+    }
+
+
+    @Test
+    fun test_jump_to_cached_page_finishes_loading_after_cancelling_old_request() = runTest {
+        TestPaginatorFactory.prePopulateDatabase(database, pages = 11, pageSize = 1)
+        val started = CompletableDeferred<Job>()
+        var calls = 0
+        paginator = controlledPaginator {
+            calls++
+            started.complete(currentCoroutineContext()[Job]!!)
+            awaitCancellation()
+        }
+        paginator.reset(0)
+        val old = started.await()
+        paginator.onVisiblePageChanged(10)
+        old.join()
+        withContext(Dispatchers.Default) {
+            withTimeout(2_000) { paginator.loadState.first { it == LoadState.END } }
+        }
+        assertTrue(old.isCancelled)
+        assertEquals(1, calls)
+    }
+
 }

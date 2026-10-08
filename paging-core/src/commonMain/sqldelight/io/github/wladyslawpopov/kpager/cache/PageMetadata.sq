@@ -23,3 +23,6 @@ DELETE FROM PageMetadata WHERE queryKey = ? AND pageNumber = ?;
 
 deleteAllPageMetadataByQuery:
 DELETE FROM PageMetadata WHERE queryKey = ?;
+
+getPageMetadata:
+SELECT * FROM PageMetadata WHERE queryKey = ? AND pageNumber = ?;

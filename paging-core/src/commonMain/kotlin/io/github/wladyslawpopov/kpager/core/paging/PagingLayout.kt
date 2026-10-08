@@ -12,19 +12,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.github.wladyslawpopov.kpager.core.paging.data.PagingIndexedItem
 import io.github.wladyslawpopov.kpager.core.paging.data.PAGE_SIZE
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 
 /**
  * A highly customizable Composable grid layout designed to seamlessly work with [StablePaginator].
- * It automatically detects when the user scrolls near the end of the list and triggers data prefetching.
+ * It reports the currently visible server page; the paginator manages all loading decisions.
  *
  * @param items The flattened list of currently loaded items. Null values represent loading placeholders.
+ * For lists containing decorative rows, implement [PagingIndexedItem] on each UI item.
  * @param totalCount The total number of items available on the server.
  * @param pageSize The number of items loaded per page.
  * @param columns The number of grid columns (default is 1 for a standard vertical list).
@@ -34,7 +38,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
  * @param contentPadding Padding applied around the entire grid content.
  * @param spanProvider An optional lambda to specify custom column spans for specific items.
  * @param keyExtractor A lambda to provide stable unique keys for the grid items to prevent unwanted recompositions.
- * @param onPrefetch Callback triggered when the layout determines the next page needs to be fetched.
+ * @param onVisiblePageChanged Reports the current server page to the paginator.
  * @param modifier Custom modifiers to apply to the root Box.
  * @param counterBar A custom Composable to display the current scroll position/index.
  * @param content The Composable block defining how each item should be rendered.
@@ -47,76 +51,39 @@ fun <T : Any> PagingLayout(
     columns: Int = 1,
     isReversingPaging: Boolean = false,
     showItemsCounter: Boolean = true,
-    isPlaceholder: ((item: T?) -> Boolean)? = null,
     state: LazyGridState = rememberLazyGridState(),
     contentPadding: PaddingValues = PaddingValues(0.dp),
     spanProvider: ((item: T) -> GridItemSpan)? = null,
     keyExtractor: (index: Int, item: T) -> Any,
-    onPrefetch: (pageIndex: Int) -> Unit,
+    onVisiblePageChanged: (pageIndex: Int) -> Unit,
     modifier: Modifier = Modifier,
     counterBar : @Composable (Int) -> Unit = {},
     content: @Composable (Int, T?) -> Unit
 ) {
-    val align = remember { if (isReversingPaging) Alignment.BottomStart else Alignment.TopStart }
+    require(pageSize > 0) { "pageSize must be positive" }
+    val align = remember(isReversingPaging) { if (isReversingPaging) Alignment.BottomStart else Alignment.TopStart }
+    val currentTotal by rememberUpdatedState(totalCount)
+    val currentItems by rememberUpdatedState(items)
+    val currentVisiblePageChanged by rememberUpdatedState(onVisiblePageChanged)
 
-    // Calculates the current globally visible index for the counter UI
-    val currentIndex by remember(items) {
+    val currentIndex by remember(state) {
         derivedStateOf {
-            if (items.isEmpty() || totalCount <= 0) 0
-            else {
-                val layoutInfo = state.layoutInfo
-                val lastVisibleItem = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-                (lastVisibleItem + 1).coerceIn(1, maxOf(1, totalCount))
-            }
+            val last = state.layoutInfo.visibleItemsInfo.mapNotNull {
+                if (it.index in currentItems.indices) sourceIndex(it.index, currentItems[it.index]) else null
+            }.maxOrNull()
+            if (last == null || currentTotal <= 0) 0 else (last + 1).coerceIn(1, currentTotal)
         }
     }
 
-    LaunchedEffect(state, pageSize, totalCount, items) {
+    // Observe only the visible position, never scan the list or decide what to fetch in the UI.
+    LaunchedEffect(state, pageSize) {
         snapshotFlow {
-            val layoutInfo = state.layoutInfo
-            val visibleItems = layoutInfo.visibleItemsInfo
-            if (visibleItems.isEmpty()) return@snapshotFlow emptySet()
-
-            val firstVisible = visibleItems.first().index
-            val lastVisible = visibleItems.last().index
-
-            val pagesToPrefetch = mutableSetOf<Int>()
-
-            // 1. Instant prefetch if ANY item currently visible on screen is a placeholder
-            for (visibleItem in visibleItems) {
-                val idx = visibleItem.index
-                val item = items.getOrNull(idx)
-                if (item == null || (isPlaceholder != null && isPlaceholder(item))) {
-                    pagesToPrefetch.add(idx / pageSize)
-                }
-            }
-
-            // 2. Prefetch next page when reaching bottom 25% of current page (scrolling down)
-            val lastItemInCurrentPage = lastVisible % pageSize
-            val bottomThreshold = pageSize - (pageSize / 4)
-            if (lastItemInCurrentPage >= bottomThreshold) {
-                pagesToPrefetch.add(lastVisible / pageSize)
-            }
-
-            // 3. Prefetch previous page when reaching top 25% of current page (scrolling up)
-            val firstItemInCurrentPage = firstVisible % pageSize
-            val topThreshold = pageSize / 4
-            if (firstItemInCurrentPage <= topThreshold) {
-                val currentPage = firstVisible / pageSize
-                if (currentPage > 0) {
-                    pagesToPrefetch.add(currentPage - 1)
-                }
-            }
-
-            pagesToPrefetch
+            state.layoutInfo.visibleItemsInfo.mapNotNull {
+                if (it.index in currentItems.indices) sourceIndex(it.index, currentItems[it.index]) else null
+            }.minOrNull()?.div(pageSize)
+        }.filterNotNull().distinctUntilChanged().collect { page ->
+            currentVisiblePageChanged(page)
         }
-            .distinctUntilChanged()
-            .collect { pages ->
-                for (page in pages) {
-                    println("[PagingGridLayout] Scroll threshold or placeholder hit -> onPrefetch(page = $page)")
-                    onPrefetch(page)
-                }
-            }
     }
 
     Box(
@@ -150,3 +117,7 @@ fun <T : Any> PagingLayout(
         }
     }
 }
+
+
+internal fun sourceIndex(uiIndex: Int, item: Any?): Int? =
+    (if (item is PagingIndexedItem) item.serverIndex else uiIndex)?.takeIf { it >= 0 }

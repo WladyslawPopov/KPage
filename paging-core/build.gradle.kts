@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "io.github.wladyslawpopov"
-version = "1.0.2"
+version = "1.0.3"
 
 sqldelight {
     databases {

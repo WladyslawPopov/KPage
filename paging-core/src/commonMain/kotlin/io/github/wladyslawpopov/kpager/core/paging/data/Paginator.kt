@@ -10,7 +10,8 @@ interface Paginator<T : Any> {
     suspend fun getItemById(id: String): T?
     suspend fun updateItem(id: String, updatedItem: T)
 
-    fun onPrefetch(pageToLoad: Int)
+    /** Reports the current server page; loading and cache retention are managed internally. */
+    fun onVisiblePageChanged(pageIndex: Int)
     fun reset(index: Int)
     fun close()
 }

@@ -4,10 +4,13 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import io.github.wladyslawpopov.kpager.cache.PagingDataBase
 import io.github.wladyslawpopov.kpager.core.paging.common.dbDispatcher
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -63,12 +66,35 @@ class StablePaginator<T : Any>(
     private val mutex = Mutex()
     private val dbMutex = Mutex()
 
-    // Tracks which pages are currently being fetched to prevent duplicate network requests
-    private val pagesCurrentlyLoading = mutableSetOf<Int>()
+    // Accessed only under mutex. A reset invalidates both requests and their results.
+    private val pageJobs = mutableMapOf<Int, Job>()
+    private var generation = 0L
+    private var retainedPages = config.initialPageKey..config.initialPageKey
 
     private val job = SupervisorJob()
     private val paginatorScope = CoroutineScope(job + Dispatchers.Default)
-    private var refreshJob: Job? = null
+    private val commands = Channel<suspend () -> Unit>(Channel.UNLIMITED)
+
+    init {
+        // Process UI commands in submission order, including position changes and resets.
+        paginatorScope.launch {
+            for (command in commands) {
+                mutex.withLock {
+                    try {
+                        currentCoroutineContext().ensureActive()
+                        command()
+                    } catch (e: Exception) {
+                        if (e is CancellationException) throw e
+                        setLoadState(LoadState.ERROR(e.message ?: "Pagination error"))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun submit(command: suspend () -> Unit) {
+        if (job.isActive) commands.trySend(command)
+    }
 
     private val itemQueries = db.itemRawQueries
     private val entryQueries = db.listingEntryQueries
@@ -144,13 +170,25 @@ class StablePaginator<T : Any>(
         }
     }
 
-    /**
-     * Triggers the fetching of a specific page.
-     * Usually called by the UI when the user scrolls near the end of the loaded list.
-     */
-    override fun onPrefetch(pageToLoad: Int) {
-        if (_loadState.value is LoadState.INITIAL) return
-        loadPagesAround(pageToLoad)
+    /** Updates the scroll anchor and loads missing pages around it, in either scroll direction. */
+    override fun onVisiblePageChanged(pageIndex: Int) = submit {
+        val target = maxOf(pageIndex, config.initialPageKey)
+        setVisiblePage(target)
+        loadPagesAround(target)
+        finishLoadingIfIdle()
+    }
+
+    // Cancel obsolete loads before scheduling replacements. Their cleanup is guarded by job identity.
+    private fun setVisiblePage(page: Int) {
+        val distance = config.prefetchDistance.coerceAtLeast(0)
+        val first = maxOf(config.initialPageKey, page - distance)
+        val last = (page.toLong() + distance).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+        retainedPages = first..last
+        val obsolete = pageJobs.filterKeys { it !in retainedPages }
+        obsolete.forEach { (number, load) ->
+            pageJobs.remove(number)
+            load.cancel()
+        }
     }
 
     /**
@@ -177,101 +215,109 @@ class StablePaginator<T : Any>(
      * Resets the paginator state and reloads data starting from the specified global index.
      * Useful for pull-to-refresh or restoring scroll position.
      */
-    override fun reset(index: Int) {
-        paginatorScope.launch {
-            try {
-                mutex.withLock {
-                    pagesCurrentlyLoading.clear()
-                    setLoadState(LoadState.INITIAL)
-                }
-
-                val pageToLoad = index / config.pageSize
-                val targetPage =
-                    if (pageToLoad > config.initialPageKey) pageToLoad else config.initialPageKey
-
-                loadPagesAround(targetPage, forceUpdate = true)
-            } catch (e: Throwable) {
-                if (e is CancellationException) throw e
-                setLoadState(LoadState.ERROR(e.message ?: "Reset error"))
-            }
-        }
+    override fun reset(index: Int) = submit {
+        generation++
+        pageJobs.values.forEach { it.cancel() }
+        pageJobs.clear()
+        setLoadState(LoadState.INITIAL)
+        val targetPage = maxOf(index / config.pageSize, config.initialPageKey)
+        setVisiblePage(targetPage)
+        loadPagesAround(targetPage, forceUpdate = true)
     }
 
     /**
      * Cancels all ongoing pagination coroutines. Should be called when the ViewModel/Component is destroyed.
      */
     override fun close() {
-        refreshJob?.cancel()
+        commands.cancel()
         paginatorScope.cancel()
     }
 
-    private fun loadPagesAround(targetPage: Int, forceUpdate: Boolean = false) {
-        val pageToLoad = maxOf(targetPage, config.initialPageKey).toLong()
-
-        val pagesToRequest = mutableListOf<Long>()
-        pagesToRequest.add(pageToLoad)
-
+    // Called under mutex; register jobs before starting them so concurrent prefetches cannot duplicate them.
+    private suspend fun loadPagesAround(targetPage: Int, forceUpdate: Boolean = false) {
+        val pageToLoad = maxOf(targetPage, config.initialPageKey)
         val currentTotal = _totalCount.value
-        val loadedItemsCount = (pageToLoad + 1) * config.pageSize
-
-        if (currentTotal == 0 || loadedItemsCount < currentTotal) {
-            if (config.prefetchDistance > 0) {
-                pagesToRequest.add(pageToLoad + 1)
-            }
+        val pagesToRequest = retainedPages.filter { page ->
+            page == pageToLoad || currentTotal == 0 || page.toLong() * config.pageSize < currentTotal
         }
 
-        pagesToRequest.distinct().forEach { page ->
-            paginatorScope.launch {
-                performPageLoad(page.toInt(), forceUpdate)
+        val cachedPages = if (forceUpdate) emptySet() else withContext(dbDispatcher()) {
+            pagesToRequest.filter { metaQueries.getPageMetadata(queryKey, it.toLong()).executeAsOneOrNull() != null }.toSet()
+        }
+        val requestGeneration = generation
+        pagesToRequest.forEach { page ->
+            if (pageJobs.containsKey(page) || page in cachedPages) return@forEach
+            if (_loadState.value !is LoadState.INITIAL && !forceUpdate) {
+                setLoadState(LoadState.NEXT)
+            }
+            val pageJob = paginatorScope.launch(start = CoroutineStart.LAZY) {
+                performPageLoad(page, requestGeneration)
+            }
+            pageJobs[page] = pageJob
+            pageJob.start()
+        }
+    }
+
+    private suspend fun performPageLoad(pageNumber: Int, requestGeneration: Long) {
+        val requestJob = currentCoroutineContext()[Job]
+        try {
+            val payload = getPage(pageNumber)
+            currentCoroutineContext().ensureActive()
+
+            val items = payload.objects
+            val total = payload.totalCount
+            val hasMore = payload.isMore || (total > (pageNumber.toLong() * config.pageSize) + items.size)
+            // Serialize reset with cache writes, so an obsolete response cannot overwrite the new generation.
+            mutex.withLock {
+                currentCoroutineContext().ensureActive()
+                if (requestGeneration != generation) return
+                dbMutex.withLock {
+                    withContext(dbDispatcher()) {
+                        currentCoroutineContext().ensureActive()
+                        db.transaction {
+                            processItemsRaw(items)
+                            entryQueries.deleteEntriesByPageNumber(queryKey, pageNumber.toLong())
+                            processListingEntries(pageNumber.toLong(), items, config.pageSize)
+                            processPageMetadata(pageNumber.toLong(), total.toLong(), hasMore)
+                            pruneOldPages()
+                        }
+                    }
+                }
+                _totalCount.value = total
+            }
+        } catch (e: Throwable) {
+            if (e is CancellationException) throw e
+            currentCoroutineContext().ensureActive()
+            mutex.withLock {
+                if (requestGeneration == generation) {
+                    setLoadState(LoadState.ERROR(e.message ?: "Unknown error"))
+                }
+            }
+        } finally {
+            // Cancellation must not prevent cleanup, and old jobs must not remove new jobs for the same page.
+            withContext(NonCancellable) {
+                mutex.withLock {
+                    if (requestGeneration == generation && pageJobs[pageNumber] === requestJob) {
+                        pageJobs.remove(pageNumber)
+                        finishLoadingIfIdle()
+                    }
+                }
             }
         }
     }
 
-    private suspend fun performPageLoad(pageNumber: Int, forceUpdate: Boolean = false) {
-        if (pagesCurrentlyLoading.contains(pageNumber)) return
-
-        mutex.withLock {
-            if (pagesCurrentlyLoading.contains(pageNumber)) return
-            pagesCurrentlyLoading.add(pageNumber)
-
-            if (_loadState.value !is LoadState.INITIAL && !forceUpdate) {
-                setLoadState(LoadState.NEXT)
-            }
-        }
-
+    // Called under mutex, including when a scroll cancels all loads and the new position is cached.
+    private suspend fun finishLoadingIfIdle() {
+        if (!job.isActive || pageJobs.isNotEmpty() || _loadState.value is LoadState.ERROR) return
         try {
-            val payload = fetchPage(pageNumber)
-
-            val items = payload.objects
-            val total = payload.totalCount
-            val hasMore = payload.isMore || (total > (pageNumber * config.pageSize) + items.size)
-            dbMutex.withLock {
-                withContext(dbDispatcher()) {
-                    db.transaction {
-                        processItemsRaw(items)
-                        entryQueries.deleteEntriesByPageNumber(queryKey, pageNumber.toLong())
-                        processListingEntries(pageNumber.toLong(), items, config.pageSize)
-                        processPageMetadata(pageNumber.toLong(), total.toLong(), hasMore)
-                        pruneOldPages(pageNumber)
-                    }
-                }
+            val isEnd = withContext(dbDispatcher()) {
+                val latestPage = metaQueries.getLatestPageMetadata(queryKey).executeAsOneOrNull()
+                latestPage != null && latestPage.nextPageKey == null
             }
-        } catch (e: Throwable) {
+            setLoadState(if (isEnd) LoadState.END else LoadState.IDLE)
+        } catch (e: Exception) {
             if (e is CancellationException) throw e
-            setLoadState(LoadState.ERROR(e.message ?: "Unknown error"))
-        } finally {
-            mutex.withLock {
-                pagesCurrentlyLoading.remove(pageNumber)
-
-                if (pagesCurrentlyLoading.isEmpty() && _loadState.value !is LoadState.ERROR) {
-                    val isEnd = withContext(dbDispatcher()) {
-                        val latestPage =
-                            metaQueries.getLatestPageMetadata(queryKey).executeAsOneOrNull()
-                        latestPage != null && latestPage.nextPageKey == null
-                    }
-                    setLoadState(if (isEnd) LoadState.END else LoadState.IDLE)
-                }
-            }
+            setLoadState(LoadState.ERROR(e.message ?: "Cache error"))
         }
     }
 
@@ -300,25 +346,23 @@ class StablePaginator<T : Any>(
     }
 
     // Deletes pages from the database that are outside the allowed maximum limit
-    private fun pruneOldPages(currentPageNumber: Int) {
+    private fun pruneOldPages() {
         val existingPages = entryQueries.getExistingPageNumbers(queryKey).executeAsList()
         val buffer = 2
         if (existingPages.size <= config.maxPagesInDb + buffer) return
 
-        val pagesToDelete = existingPages.sortedByDescending { pageNum ->
-            abs(currentPageNumber - pageNum.toInt())
-        }.take(existingPages.size - (config.maxPagesInDb + buffer))
+        val protectedPages = retainedPages
+        val limit = maxOf(config.maxPagesInDb + buffer, protectedPages.last - protectedPages.first + 1)
+        val pagesToDelete = existingPages.filter { it.toInt() !in protectedPages }
+            .sortedByDescending { pageNum ->
+                val page = pageNum.toInt()
+                minOf(abs(page.toLong() - protectedPages.first), abs(page.toLong() - protectedPages.last))
+            }.take((existingPages.size - limit).coerceAtLeast(0))
 
         pagesToDelete.forEach { pageNumToDelete ->
             entryQueries.deleteEntriesByPageNumber(queryKey, pageNumToDelete)
             metaQueries.deletePageMetadataByNumber(queryKey, pageNumToDelete)
         }
-    }
-
-    private suspend fun fetchPage(pageNumber: Int): PagerPayload<T> {
-        val payload = getPage(pageNumber)
-        _totalCount.value = payload.totalCount
-        return payload
     }
 
     /**

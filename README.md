@@ -93,22 +93,28 @@ val paginator = StablePaginator(
 paginator.reset(index = 0)
 ```
 
-### 2. Connect to Compose UI
-Collect the StateFlows and pass them to the `PagingLayout`.
+### 2. Prepare UI State Outside Compose
+The current `Paginator` API exposes `itemsMap`: its keys are global server indices, not positions within the cached subset. Your Store/ViewModel prepares the list for presentation and exposes it as UI state. `PagingLayout` receives that prepared list directly.
+
+Keep the conversion outside the composable and off the main thread. Preserve server positions and represent missing data with placeholders. Do not use `itemsMap.values.toList()`: removing gaps changes the meaning of the visible index after cache eviction. Avoid allocating a full list of empty slots up to a distant index on every update; use a list adapter that reads missing positions from the indexed snapshot on demand.
+
+`items` in the following example belongs to the application's UI state. It is not an additional property of `Paginator`: the current library exposes `itemsMap`, not a ready-made list flow.
+
+### 3. Connect to Compose UI
+The UI renders the prepared state and reports the visible server page through one callback. The paginator decides which neighboring pages to load, uses cached pages, cancels obsolete requests, and retains data around the current position. `reset()` explicitly refreshes data.
 
 ```kotlin
 @Composable
 fun UsersScreen(viewModel: MyViewModel) {
-    val itemsMap by viewModel.paginator.itemsMap.collectAsState()
-    val totalCount by viewModel.paginator.totalCount.collectAsState()
+    val state by viewModel.uiState.collectAsState()
 
     PagingLayout(
-        items = itemsMap.values.toList(),
-        totalCount = totalCount,
+        items = state.items,
+        totalCount = state.totalCount,
         pageSize = 60,
-        keyExtractor = { index, item -> item?.id ?: "placeholder_$index" },
-        onPrefetch = { page -> viewModel.paginator.onPrefetch(page) }
-    ) { index, item ->
+        keyExtractor = { _, item -> item.id },
+        onVisiblePageChanged = viewModel::onVisiblePageChanged,
+    ) { _, item ->
         if (item != null) {
             UserCard(item)
         } else {
@@ -118,24 +124,24 @@ fun UsersScreen(viewModel: MyViewModel) {
 }
 ```
 
+The Store/ViewModel forwards `onVisiblePageChanged(page)` to `paginator.onVisiblePageChanged(page)`. The UI does not select pages to fetch, manage cache eviction, or rebuild the pagination data structure.
+
 ## 🧠 Advanced Usage
 
 ### Mixing Items (Separators, Ads, Promos)
-KPager makes it incredibly easy to map your domain items into UI models. You don't need complex `PagingData` transformations. Just map the Flow!
+For mixed lists, implement `PagingIndexedItem` on your UI items. Keep the server index on data rows and placeholders; return null for decorative rows. Ordinary lists need no interface or wrapper.
 
 ```kotlin
-val uiItemsFlow = paginator.itemsMap.map { map ->
-    val uiList = mutableListOf<UiItem>()
-    map.values.forEachIndexed { index, item ->
-        // Inject a promo banner every 10 items
-        if (index > 0 && index % 10 == 0) {
-            uiList.add(UiItem.PromoBanner)
-        }
-        if (item != null) uiList.add(UiItem.UserItem(item))
+sealed interface UiItem : PagingIndexedItem {
+    data class UserItem(val user: User, override val serverIndex: Int) : UiItem
+    data class Placeholder(override val serverIndex: Int) : UiItem
+    data object PromoBanner : UiItem {
+        override val serverIndex: Int? = null
     }
-    uiList
 }
 ```
+
+Build these UI items in the Store/ViewModel's presentation adapter. A data row keeps the key from `itemsMap` as its `serverIndex`; a placeholder keeps the same index while data is missing; a banner or separator has no server index. The index travels with the item, so no parallel index list or mapping callback is needed. Pass the resulting UI list directly as `items = state.items`.
 
 ### Reverse Scrolling (Chats & Messengers)
 Building a chat? `PagingLayout` supports reverse layouts out-of-the-box. Just set `isReversingPaging = true`, and the layout will start from the bottom, fetching older messages as the user scrolls up.
@@ -145,7 +151,7 @@ PagingLayout(
     items = chatMessages,
     totalCount = totalMessagesCount,
     isReversingPaging = true, // Magic happens here!
-    onPrefetch = { page -> loadHistory(page) },
+    onVisiblePageChanged = { page -> paginator.onVisiblePageChanged(page) },
     // ...
 )
 ```
