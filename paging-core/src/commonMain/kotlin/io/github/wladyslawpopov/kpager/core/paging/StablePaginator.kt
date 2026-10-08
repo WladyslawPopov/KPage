@@ -85,7 +85,7 @@ class StablePaginator<T : Any>(
                         command()
                     } catch (e: Exception) {
                         if (e is CancellationException) throw e
-                        setLoadState(LoadState.ERROR(e.message ?: "Pagination error"))
+                        setLoadState(LoadState.ERROR(e))
                     }
                 }
             }
@@ -290,7 +290,7 @@ class StablePaginator<T : Any>(
             currentCoroutineContext().ensureActive()
             mutex.withLock {
                 if (requestGeneration == generation) {
-                    setLoadState(LoadState.ERROR(e.message ?: "Unknown error"))
+                    setLoadState(LoadState.ERROR(e))
                 }
             }
         } finally {
@@ -317,7 +317,7 @@ class StablePaginator<T : Any>(
             setLoadState(if (isEnd) LoadState.END else LoadState.IDLE)
         } catch (e: Exception) {
             if (e is CancellationException) throw e
-            setLoadState(LoadState.ERROR(e.message ?: "Cache error"))
+            setLoadState(LoadState.ERROR(e))
         }
     }
 

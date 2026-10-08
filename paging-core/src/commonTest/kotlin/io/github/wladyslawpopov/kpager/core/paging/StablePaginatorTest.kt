@@ -26,6 +26,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.test.assertSame
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class StablePaginatorTest {
@@ -195,7 +196,7 @@ class StablePaginatorTest {
         paginator.onVisiblePageChanged(2)
 
         val errorState = paginator.loadState.filterIsInstance<LoadState.ERROR>().first()
-        assertTrue(errorState.error.contains("ServerErrorException"))
+        assertTrue(errorState.error.message?.contains("ServerErrorException") == true)
 
         val currentItems = paginator.itemsMap.value
         assertTrue(currentItems.size >= fakeApi.pageSize * 2)
@@ -512,5 +513,22 @@ class StablePaginatorTest {
         assertTrue(old.isCancelled)
         assertEquals(1, calls)
     }
+
+    @Test
+    fun test_error_retains_original_throwable_and_cached_items() = runTest {
+        TestPaginatorFactory.prePopulateDatabase(database, pages = 1, pageSize = 1)
+        val originalCause = IllegalStateException("Original cause")
+        val failure = object : Throwable("Server message", originalCause) {}
+        paginator = controlledPaginator { throw failure }
+        val cached = paginator.itemsMap.first { it[0] != null }
+        paginator.reset(0)
+        val error = paginator.loadState.filterIsInstance<LoadState.ERROR>().first()
+        assertSame(failure, error.error)
+        assertSame(originalCause, error.error.cause)
+        assertEquals("Server message", error.error.message)
+        assertEquals(cached, paginator.itemsMap.value)
+    }
+
+
 
 }
