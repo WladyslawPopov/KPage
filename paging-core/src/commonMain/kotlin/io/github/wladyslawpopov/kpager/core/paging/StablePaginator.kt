@@ -69,6 +69,7 @@ class StablePaginator<T : Any>(
     // Accessed only under mutex. A reset invalidates both requests and their results.
     private val pageJobs = mutableMapOf<Int, Job>()
     private var generation = 0L
+    private var replaceCacheOnNextLoad = false
     private var retainedPages = config.initialPageKey..config.initialPageKey
 
     private val job = SupervisorJob()
@@ -213,10 +214,12 @@ class StablePaginator<T : Any>(
 
     /**
      * Resets the paginator state and reloads data starting from the specified global index.
-     * Useful for pull-to-refresh or restoring scroll position.
+     * Useful for pull-to-refresh or restoring scroll position. The first successful response
+     * replaces all cached pages for this query; failed refreshes keep the offline cache.
      */
     override fun reset(index: Int) = submit {
         generation++
+        replaceCacheOnNextLoad = true
         pageJobs.values.forEach { it.cancel() }
         pageJobs.clear()
         setLoadState(LoadState.INITIAL)
@@ -275,6 +278,12 @@ class StablePaginator<T : Any>(
                     withContext(dbDispatcher()) {
                         currentCoroutineContext().ensureActive()
                         db.transaction {
+                            // Old positions may conflict with IDs in the new server ordering.
+                            // Replace the whole query atomically, once per reset, after a successful fetch.
+                            if (replaceCacheOnNextLoad) {
+                                entryQueries.deleteAllEntriesByQuery(queryKey)
+                                metaQueries.deleteAllPageMetadataByQuery(queryKey)
+                            }
                             processItemsRaw(items)
                             entryQueries.deleteEntriesByPageNumber(queryKey, pageNumber.toLong())
                             processListingEntries(pageNumber.toLong(), items, config.pageSize)
@@ -282,6 +291,8 @@ class StablePaginator<T : Any>(
                             pruneOldPages()
                         }
                     }
+                    // Only a committed transaction consumes the pending replacement.
+                    replaceCacheOnNextLoad = false
                 }
                 _totalCount.value = total
             }

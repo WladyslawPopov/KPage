@@ -529,6 +529,101 @@ class StablePaginatorTest {
         assertEquals(cached, paginator.itemsMap.value)
     }
 
+    @Test
+    fun test_refresh_replaces_all_cached_pages_when_target_finishes_first() = runTest {
+        verifyRefreshReplacesCachedPages(firstCompletedPage = 0)
+    }
 
+    @Test
+    fun test_refresh_replaces_all_cached_pages_when_prefetch_finishes_first() = runTest {
+        verifyRefreshReplacesCachedPages(firstCompletedPage = 1)
+    }
+
+    private suspend fun verifyRefreshReplacesCachedPages(firstCompletedPage: Int) {
+        TestPaginatorFactory.prePopulateDatabase(database, pages = 3, pageSize = 60)
+        database.listingEntryQueries.insertEntryIfAbsent("other_query", "id_120", 0, 0)
+        database.pageMetadataQueries.insertPageMetadataIfAbsent("other_query", 0, null, 1)
+        // Eleven unique items have moved from cached page 2 into the fresh first page.
+        val freshZero = (120 until 131).map { "id_$it" } + (0 until 49).map { "id_$it" }
+        val freshOne = (60 until 120).map { "id_$it" }
+        val freshTwo = (180 until 240).map { "id_$it" }
+        val responses = listOf(freshZero, freshOne, freshTwo)
+        val releases = listOf(CompletableDeferred<Unit>(), CompletableDeferred<Unit>())
+        val requests = kotlinx.coroutines.channels.Channel<Pair<Int, Job>>(
+            kotlinx.coroutines.channels.Channel.UNLIMITED,
+        )
+        paginator = StablePaginator(
+            serializer = FakeItem.serializer(), queryKey = "test_query",
+            config = PaginatorConfig(pageSize = 60),
+            idExtractor = { it.id }, db = database,
+            getPage = { page ->
+                requests.send(page to currentCoroutineContext()[Job]!!)
+                if (page < 2) releases[page].await()
+                PagerPayload(20000, true, responses[page].map { FakeItem(it, "Fresh") })
+            },
+        )
+        try {
+            val cached = paginator.itemsMap.first { it.size == 180 }
+            paginator.reset(0)
+            val jobs = listOf(requests.receive(), requests.receive()).toMap()
+            assertEquals(setOf(0, 1), jobs.keys)
+            assertEquals(cached, paginator.itemsMap.value, "Keep offline data until a response succeeds")
+
+            releases[firstCompletedPage].complete(Unit)
+            withContext(Dispatchers.Default) {
+                withTimeout(5000) { jobs.getValue(firstCompletedPage).join() }
+            }
+            assertEquals(
+                listOf(firstCompletedPage.toLong()),
+                database.listingEntryQueries.getExistingPageNumbers("test_query").executeAsList(),
+                "The first successful response must remove every old page of this query",
+            )
+            assertTrue(database.pageMetadataQueries.getPageMetadata("test_query", 2).executeAsOneOrNull() == null)
+            assertEquals(1, database.listingEntryQueries.getItemsWithOrderForQuery("other_query").executeAsList().size)
+            assertTrue(database.pageMetadataQueries.getPageMetadata("other_query", 0).executeAsOneOrNull() != null)
+
+            val second = 1 - firstCompletedPage
+            releases[second].complete(Unit)
+            withContext(Dispatchers.Default) {
+                withTimeout(5000) { jobs.getValue(second).join() }
+            }
+            val refreshed = withContext(Dispatchers.Default) {
+                withTimeout(5000) { paginator.itemsMap.first { map ->
+                    map.size == 120 && freshZero.indices.all { map[it]?.id == freshZero[it] }
+                } }
+            }
+            assertEquals(freshZero + freshOne, (0 until 120).map { refreshed[it]?.id })
+            assertEquals(LoadState.IDLE, paginator.loadState.value, "Old terminal metadata must be removed")
+
+            paginator.onVisiblePageChanged(1)
+            val (page, reload) = requests.receive()
+            assertEquals(2, page, "The old third page must be fetched again when approached")
+            withContext(Dispatchers.Default) {
+                withTimeout(5000) { reload.join() }
+            }
+            val extended = withContext(Dispatchers.Default) {
+                withTimeout(5000) { paginator.itemsMap.first { it.size == 180 } }
+            }
+            assertEquals(freshZero + freshOne + freshTwo, (0 until 180).map { extended[it]?.id })
+        } finally {
+            releases.forEach { it.complete(Unit) }
+            paginator.close()
+            requests.close()
+        }
+    }
+
+    @Test
+    fun test_failed_refresh_preserves_all_cached_pages_and_metadata() = runTest {
+        TestPaginatorFactory.prePopulateDatabase(database, pages = 3, pageSize = 1)
+        val failure = IllegalStateException("Offline")
+        paginator = controlledPaginator { throw failure }
+        val cached = paginator.itemsMap.first { it.size == 3 }
+        paginator.reset(0)
+        val error = paginator.loadState.filterIsInstance<LoadState.ERROR>().first()
+        assertSame(failure, error.error)
+        assertEquals(cached, paginator.itemsMap.value)
+        assertEquals(listOf(0L, 1L, 2L), database.listingEntryQueries.getExistingPageNumbers("test_query").executeAsList())
+        assertTrue(database.pageMetadataQueries.getPageMetadata("test_query", 2).executeAsOneOrNull() != null)
+    }
 
 }
