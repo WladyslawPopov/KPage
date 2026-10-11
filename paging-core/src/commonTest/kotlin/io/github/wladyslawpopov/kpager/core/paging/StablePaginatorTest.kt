@@ -573,14 +573,12 @@ class StablePaginatorTest {
             withContext(Dispatchers.Default) {
                 withTimeout(5000) { jobs.getValue(firstCompletedPage).join() }
             }
+            assertEquals(cached, paginator.itemsMap.value, "A partial refresh must not replace visible items")
             assertEquals(
-                listOf(firstCompletedPage.toLong()),
+                listOf(0L, 1L, 2L),
                 database.listingEntryQueries.getExistingPageNumbers("test_query").executeAsList(),
-                "The first successful response must remove every old page of this query",
+                "Keep every cached page until the refresh window is ready",
             )
-            assertTrue(database.pageMetadataQueries.getPageMetadata("test_query", 2).executeAsOneOrNull() == null)
-            assertEquals(1, database.listingEntryQueries.getItemsWithOrderForQuery("other_query").executeAsList().size)
-            assertTrue(database.pageMetadataQueries.getPageMetadata("other_query", 0).executeAsOneOrNull() != null)
 
             val second = 1 - firstCompletedPage
             releases[second].complete(Unit)
@@ -593,6 +591,9 @@ class StablePaginatorTest {
                 } }
             }
             assertEquals(freshZero + freshOne, (0 until 120).map { refreshed[it]?.id })
+            assertTrue(database.pageMetadataQueries.getPageMetadata("test_query", 2).executeAsOneOrNull() == null)
+            assertEquals(1, database.listingEntryQueries.getItemsWithOrderForQuery("other_query").executeAsList().size)
+            assertTrue(database.pageMetadataQueries.getPageMetadata("other_query", 0).executeAsOneOrNull() != null)
             assertEquals(LoadState.IDLE, paginator.loadState.value, "Old terminal metadata must be removed")
 
             paginator.onVisiblePageChanged(1)
@@ -609,6 +610,41 @@ class StablePaginatorTest {
             releases.forEach { it.complete(Unit) }
             paginator.close()
             requests.close()
+        }
+    }
+
+    @Test
+    fun test_failed_prefetch_after_successful_target_preserves_refresh_cache() = runTest {
+        TestPaginatorFactory.prePopulateDatabase(database, pages = 3, pageSize = 1)
+        val targetJob = CompletableDeferred<Job>()
+        val failPrefetch = CompletableDeferred<Unit>()
+        val failure = IllegalStateException("Prefetch failed")
+        paginator = StablePaginator(
+            serializer = FakeItem.serializer(), queryKey = "test_query",
+            config = PaginatorConfig(pageSize = 1), idExtractor = { it.id }, db = database,
+            getPage = { page ->
+                if (page == 0) {
+                    targetJob.complete(currentCoroutineContext()[Job]!!)
+                    PagerPayload(3, true, listOf(FakeItem("id_0", "Fresh")))
+                } else {
+                    failPrefetch.await()
+                    throw failure
+                }
+            },
+        )
+        try {
+            val cached = paginator.itemsMap.first { it.size == 3 }
+            paginator.reset(0)
+            targetJob.await().join()
+            assertEquals(cached, paginator.itemsMap.value)
+            failPrefetch.complete(Unit)
+            val error = paginator.loadState.filterIsInstance<LoadState.ERROR>().first()
+            assertSame(failure, error.error)
+            assertEquals(cached, paginator.itemsMap.value)
+            assertTrue(paginator.getItemById("id_0")?.title?.startsWith("Old") == true)
+            assertEquals(listOf(0L, 1L, 2L), database.listingEntryQueries.getExistingPageNumbers("test_query").executeAsList())
+        } finally {
+            failPrefetch.complete(Unit)
         }
     }
 

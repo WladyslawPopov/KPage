@@ -70,6 +70,7 @@ class StablePaginator<T : Any>(
     private val pageJobs = mutableMapOf<Int, Job>()
     private var generation = 0L
     private var replaceCacheOnNextLoad = false
+    private val refreshPages = mutableMapOf<Int, PagerPayload<T>>()
     private var retainedPages = config.initialPageKey..config.initialPageKey
 
     private val job = SupervisorJob()
@@ -186,6 +187,15 @@ class StablePaginator<T : Any>(
         val last = (page.toLong() + distance).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
         retainedPages = first..last
         val obsolete = pageJobs.filterKeys { it !in retainedPages }
+        if (replaceCacheOnNextLoad && (obsolete.isNotEmpty() || refreshPages.keys.any { it !in retainedPages })) {
+            // Leaving the refresh window abandons the batch and keeps the previous cache intact.
+            generation++
+            pageJobs.values.forEach { it.cancel() }
+            pageJobs.clear()
+            refreshPages.clear()
+            replaceCacheOnNextLoad = false
+            return
+        }
         obsolete.forEach { (number, load) ->
             pageJobs.remove(number)
             load.cancel()
@@ -214,12 +224,13 @@ class StablePaginator<T : Any>(
 
     /**
      * Resets the paginator state and reloads data starting from the specified global index.
-     * Useful for pull-to-refresh or restoring scroll position. The first successful response
-     * replaces all cached pages for this query; failed refreshes keep the offline cache.
+     * Useful for pull-to-refresh or restoring scroll position. Refresh responses replace
+     * cached pages atomically when the requested window is ready; failures keep the offline cache.
      */
     override fun reset(index: Int) = submit {
         generation++
         replaceCacheOnNextLoad = true
+        refreshPages.clear()
         pageJobs.values.forEach { it.cancel() }
         pageJobs.clear()
         setLoadState(LoadState.INITIAL)
@@ -249,7 +260,7 @@ class StablePaginator<T : Any>(
         }
         val requestGeneration = generation
         pagesToRequest.forEach { page ->
-            if (pageJobs.containsKey(page) || page in cachedPages) return@forEach
+            if (pageJobs.containsKey(page) || page in cachedPages || page in refreshPages) return@forEach
             if (_loadState.value !is LoadState.INITIAL && !forceUpdate) {
                 setLoadState(LoadState.NEXT)
             }
@@ -267,34 +278,15 @@ class StablePaginator<T : Any>(
             val payload = getPage(pageNumber)
             currentCoroutineContext().ensureActive()
 
-            val items = payload.objects
-            val total = payload.totalCount
-            val hasMore = payload.isMore || (total > (pageNumber.toLong() * config.pageSize) + items.size)
-            // Serialize reset with cache writes, so an obsolete response cannot overwrite the new generation.
+            // Serialize reset with responses so obsolete requests cannot overwrite a new generation.
             mutex.withLock {
                 currentCoroutineContext().ensureActive()
                 if (requestGeneration != generation) return
-                dbMutex.withLock {
-                    withContext(dbDispatcher()) {
-                        currentCoroutineContext().ensureActive()
-                        db.transaction {
-                            // Old positions may conflict with IDs in the new server ordering.
-                            // Replace the whole query atomically, once per reset, after a successful fetch.
-                            if (replaceCacheOnNextLoad) {
-                                entryQueries.deleteAllEntriesByQuery(queryKey)
-                                metaQueries.deleteAllPageMetadataByQuery(queryKey)
-                            }
-                            processItemsRaw(items)
-                            entryQueries.deleteEntriesByPageNumber(queryKey, pageNumber.toLong())
-                            processListingEntries(pageNumber.toLong(), items, config.pageSize)
-                            processPageMetadata(pageNumber.toLong(), total.toLong(), hasMore)
-                            pruneOldPages()
-                        }
-                    }
-                    // Only a committed transaction consumes the pending replacement.
-                    replaceCacheOnNextLoad = false
+                if (replaceCacheOnNextLoad) {
+                    refreshPages[pageNumber] = payload
+                } else {
+                    persistPages(mapOf(pageNumber to payload), replaceQuery = false)
                 }
-                _totalCount.value = total
             }
         } catch (e: Throwable) {
             if (e is CancellationException) throw e
@@ -321,6 +313,11 @@ class StablePaginator<T : Any>(
     private suspend fun finishLoadingIfIdle() {
         if (!job.isActive || pageJobs.isNotEmpty() || _loadState.value is LoadState.ERROR) return
         try {
+            if (replaceCacheOnNextLoad && refreshPages.isNotEmpty()) {
+                persistPages(refreshPages.toMap(), replaceQuery = true)
+                replaceCacheOnNextLoad = false
+                refreshPages.clear()
+            }
             val isEnd = withContext(dbDispatcher()) {
                 val latestPage = metaQueries.getLatestPageMetadata(queryKey).executeAsOneOrNull()
                 latestPage != null && latestPage.nextPageKey == null
@@ -329,6 +326,32 @@ class StablePaginator<T : Any>(
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             setLoadState(LoadState.ERROR(e))
+        }
+    }
+
+    // Called under mutex. Publish the complete refresh window in one database transaction.
+    private suspend fun persistPages(pages: Map<Int, PagerPayload<T>>, replaceQuery: Boolean) {
+        dbMutex.withLock {
+            withContext(dbDispatcher()) {
+                currentCoroutineContext().ensureActive()
+                db.transaction {
+                    if (replaceQuery) {
+                        entryQueries.deleteAllEntriesByQuery(queryKey)
+                        metaQueries.deleteAllPageMetadataByQuery(queryKey)
+                    }
+                    pages.entries.sortedBy { it.key }.forEach { (pageNumber, payload) ->
+                        val items = payload.objects
+                        val total = payload.totalCount
+                        val hasMore = payload.isMore || total > pageNumber.toLong() * config.pageSize + items.size
+                        processItemsRaw(items)
+                        entryQueries.deleteEntriesByPageNumber(queryKey, pageNumber.toLong())
+                        processListingEntries(pageNumber.toLong(), items, config.pageSize)
+                        processPageMetadata(pageNumber.toLong(), total.toLong(), hasMore)
+                    }
+                    pruneOldPages()
+                }
+            }
+            _totalCount.value = pages.values.last().totalCount
         }
     }
 
