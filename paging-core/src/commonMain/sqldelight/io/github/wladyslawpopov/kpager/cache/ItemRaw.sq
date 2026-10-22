@@ -16,3 +16,6 @@ VALUES (?, ?, ?);
 
 selectById:
 SELECT * FROM ItemRaw WHERE id = ?;
+
+clearAll:
+DELETE FROM ItemRaw;

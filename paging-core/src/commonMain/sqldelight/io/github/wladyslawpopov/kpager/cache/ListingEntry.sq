@@ -37,3 +37,6 @@ DELETE FROM ListingEntry WHERE queryKey = ? AND pageNumber = ?;
 
 deleteAllEntriesByQuery:
 DELETE FROM ListingEntry WHERE queryKey = ?;
+
+clearAll:
+DELETE FROM ListingEntry;
