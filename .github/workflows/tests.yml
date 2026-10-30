@@ -1,4 +1,4 @@
-name: KPager CI
+name: KPage CI
 
 on:
   push:

@@ -2,12 +2,11 @@ package io.github.wladyslawpopov.kpager.core.paging.data
 
 import io.github.wladyslawpopov.kpager.cache.PagingDataBase
 import io.github.wladyslawpopov.kpager.core.paging.StablePaginator
-import io.github.wladyslawpopov.kpager.core.paging.common.getDriver
 
 object TestPaginatorFactory {
 
     fun createInMemoryDriver(): PagingDataBase {
-        val driver = getDriver()
+        val driver = createTestDriver()
         return PagingDataBase(driver)
     }
 
