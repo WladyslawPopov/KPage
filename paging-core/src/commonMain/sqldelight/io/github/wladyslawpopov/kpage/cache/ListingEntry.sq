@@ -1,0 +1,38 @@
+-- Changing tables or indexes in any .sq file of a released version requires bumping
+-- SCHEMA_VERSION in PagingDriverFiles.kt: the version is part of the cache file name.
+
+-- position is the global position on the server (pageNumber * pageSize + index).
+-- The same item may occupy several positions, so there are no holes when the server shifts pages.
+CREATE TABLE ListingEntry (
+  queryKey TEXT    NOT NULL,
+  position INTEGER NOT NULL,
+  itemType TEXT    NOT NULL,
+  itemId   TEXT    NOT NULL,
+  PRIMARY KEY(queryKey, position)
+);
+
+CREATE INDEX idx_listing_item ON ListingEntry(itemType, itemId, queryKey);
+
+upsertEntry:
+INSERT OR REPLACE INTO ListingEntry(queryKey, position, itemType, itemId)
+VALUES (?, ?, ?, ?);
+
+deleteEntriesInRange:
+DELETE FROM ListingEntry WHERE queryKey = ? AND position >= ? AND position < ?;
+
+deleteEntriesFrom:
+DELETE FROM ListingEntry WHERE queryKey = ? AND position >= ?;
+
+deleteAllEntriesByQuery:
+DELETE FROM ListingEntry WHERE queryKey = ?;
+
+countEntries:
+SELECT COUNT(*) FROM ListingEntry WHERE queryKey = ?;
+
+getExistingPageNumbers:
+SELECT DISTINCT position / :pageSize AS pageNumber FROM ListingEntry
+WHERE queryKey = :queryKey
+ORDER BY pageNumber ASC;
+
+clearAll:
+DELETE FROM ListingEntry;

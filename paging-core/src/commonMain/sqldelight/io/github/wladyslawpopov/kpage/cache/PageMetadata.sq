@@ -1,0 +1,35 @@
+-- Changing tables or indexes in any .sq file of a released version requires bumping
+-- SCHEMA_VERSION in PagingDriverFiles.kt: the version is part of the cache file name.
+
+-- A row means that the page is fully cached; hasMore tells whether the server has pages after it.
+CREATE TABLE PageMetadata (
+    queryKey   TEXT    NOT NULL,
+    pageNumber INTEGER NOT NULL,
+    hasMore    INTEGER AS kotlin.Boolean NOT NULL,
+    PRIMARY KEY(queryKey, pageNumber)
+);
+
+getLatestPageMetadata:
+SELECT * FROM PageMetadata WHERE queryKey = ? ORDER BY pageNumber DESC LIMIT 1;
+
+upsertPageMetadata:
+INSERT OR REPLACE INTO PageMetadata(queryKey, pageNumber, hasMore)
+VALUES (?, ?, ?);
+
+getPageMetadata:
+SELECT * FROM PageMetadata WHERE queryKey = ? AND pageNumber = ?;
+
+getLoadedPageNumbers:
+SELECT pageNumber FROM PageMetadata WHERE queryKey = ? ORDER BY pageNumber ASC;
+
+deletePageMetadataByNumber:
+DELETE FROM PageMetadata WHERE queryKey = ? AND pageNumber = ?;
+
+deletePageMetadataFrom:
+DELETE FROM PageMetadata WHERE queryKey = ? AND pageNumber >= ?;
+
+deleteAllPageMetadataByQuery:
+DELETE FROM PageMetadata WHERE queryKey = ?;
+
+clearAll:
+DELETE FROM PageMetadata;

@@ -1,0 +1,14 @@
+-- Changing tables or indexes in any .sq file of a released version requires bumping
+-- SCHEMA_VERSION in PagingDriverFiles.kt: the version is part of the cache file name.
+
+-- Settings of the whole cache, at most one row. No row means the defaults.
+CREATE TABLE CacheSettings (
+    id       INTEGER NOT NULL PRIMARY KEY CHECK (id = 0),
+    maxLists INTEGER NOT NULL
+);
+
+getMaxLists:
+SELECT maxLists FROM CacheSettings WHERE id = 0;
+
+setMaxLists:
+INSERT OR REPLACE INTO CacheSettings(id, maxLists) VALUES (0, ?);

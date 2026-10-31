@@ -1,0 +1,51 @@
+-- Changing tables or indexes in any .sq file of a released version requires bumping
+-- SCHEMA_VERSION in PagingDriverFiles.kt: the version is part of the cache file name.
+
+-- One row per list. lastAccessedAt is a monotonic counter (MAX + 1), not a time, so the
+-- least recently used lists can be found deterministically.
+CREATE TABLE QueryMeta (
+    queryKey       TEXT    NOT NULL PRIMARY KEY,
+    totalCount     INTEGER NOT NULL,
+    pageSize       INTEGER NOT NULL,
+    lastAccessedAt INTEGER NOT NULL
+);
+
+insertIfAbsent:
+INSERT OR IGNORE INTO QueryMeta(queryKey, totalCount, pageSize, lastAccessedAt)
+VALUES (?, 0, ?, 0);
+
+selectByKey:
+SELECT * FROM QueryMeta WHERE queryKey = ?;
+
+touch:
+UPDATE QueryMeta
+SET lastAccessedAt = (SELECT COALESCE(MAX(lastAccessedAt), 0) + 1 FROM QueryMeta)
+WHERE queryKey = ?;
+
+setPageSize:
+UPDATE QueryMeta SET pageSize = ?, totalCount = 0 WHERE queryKey = ?;
+
+setTotalCount:
+UPDATE QueryMeta SET totalCount = ? WHERE queryKey = ?;
+
+getQueryKeysToEvict:
+SELECT queryKey FROM QueryMeta ORDER BY lastAccessedAt DESC LIMIT 9223372036854775807 OFFSET ?;
+
+deleteByKey:
+DELETE FROM QueryMeta WHERE queryKey = ?;
+
+-- One consistent snapshot of a list: its total count together with every cached position.
+-- A list without entries still returns one row (position and json are NULL).
+getSnapshot:
+SELECT QueryMeta.totalCount, ListingEntry.position, ItemRaw.json
+FROM QueryMeta
+LEFT JOIN ListingEntry ON ListingEntry.queryKey = QueryMeta.queryKey
+LEFT JOIN ItemRaw ON ItemRaw.itemType = ListingEntry.itemType AND ItemRaw.id = ListingEntry.itemId
+WHERE QueryMeta.queryKey = ?
+ORDER BY ListingEntry.position ASC;
+
+countQueries:
+SELECT COUNT(*) FROM QueryMeta;
+
+clearAll:
+DELETE FROM QueryMeta;

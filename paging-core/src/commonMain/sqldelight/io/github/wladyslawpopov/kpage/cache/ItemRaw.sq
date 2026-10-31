@@ -1,0 +1,41 @@
+-- Changing tables or indexes in any .sq file of a released version requires bumping
+-- SCHEMA_VERSION in PagingDriverFiles.kt: the version is part of the cache file name.
+CREATE TABLE ItemRaw (
+  itemType TEXT NOT NULL,
+  id       TEXT NOT NULL,
+  json     TEXT NOT NULL,
+  PRIMARY KEY(itemType, id)
+);
+
+upsertItem:
+INSERT OR REPLACE INTO ItemRaw(itemType, id, json)
+VALUES (?, ?, ?);
+
+insertItemIfAbsent:
+INSERT OR IGNORE INTO ItemRaw(itemType, id, json)
+VALUES (?, ?, ?);
+
+updateJson:
+UPDATE ItemRaw
+SET json = ?
+WHERE itemType = ? AND id = ?;
+
+selectById:
+SELECT * FROM ItemRaw WHERE itemType = ? AND id = ?;
+
+deleteUnreferenced:
+DELETE FROM ItemRaw
+WHERE NOT EXISTS (
+  SELECT 1 FROM ListingEntry
+  WHERE ListingEntry.itemType = ItemRaw.itemType AND ListingEntry.itemId = ItemRaw.id
+);
+
+countItems:
+SELECT COUNT(*) FROM ItemRaw;
+
+-- Size of the stored JSON in bytes.
+dataSize:
+SELECT CAST(COALESCE(SUM(LENGTH(CAST(json AS BLOB))), 0) AS INTEGER) FROM ItemRaw;
+
+clearAll:
+DELETE FROM ItemRaw;

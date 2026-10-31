@@ -9,12 +9,12 @@ plugins {
 }
 
 group = "io.github.wladyslawpopov"
-version = "1.0.7"
+version = "2.0.0"
 
 sqldelight {
     databases {
-        create("PagingDataBase") {
-            packageName.set("io.github.wladyslawpopov.kpager.cache")
+        create("PagingDatabase") {
+            packageName.set("io.github.wladyslawpopov.kpage.cache")
         }
     }
 }
@@ -23,8 +23,9 @@ kotlin {
     jvmToolchain(21)
 
     android {
-        namespace = "io.github.wladyslawpopov.kpager.core"
-        compileSdk = 37
+        namespace = "io.github.wladyslawpopov.kpage.core"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
     }
 
     val xcfName = "paging-coreKit"
@@ -36,16 +37,15 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                // Types of these libraries are part of the public API (StateFlow, LazyListState,
+                // KSerializer, SqlDriver), so consumers get them too.
+                api(libs.runtime)
+                api(libs.foundation)
+                api(libs.kotlinx.serialization.json)
+                api(libs.sqldelight.coroutines)
+
                 implementation(libs.ui)
-                implementation(libs.runtime)
-                implementation(libs.material3)
-                implementation(libs.components.resources)
-
-                implementation(libs.kotlinx.serialization.json)
-                implementation(libs.kotlinx.datetime)
-                implementation(libs.sqldelight.coroutines)
-
-                implementation(libs.koin.core)
+                implementation(libs.lifecycle.runtime.compose)
             }
         }
 
@@ -53,9 +53,7 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.coroutines.test)
-                implementation(libs.turbine)
                 implementation(libs.ui.test)
-                implementation(libs.koin.test)
             }
         }
 
@@ -73,6 +71,10 @@ kotlin {
 
         jvmMain.dependencies {
             implementation(libs.sqldelight.jvm)
+        }
+
+        // Native Skiko binaries of the build machine: for UI tests only, never in the published library.
+        jvmTest.dependencies {
             implementation(compose.desktop.currentOs)
         }
     }
