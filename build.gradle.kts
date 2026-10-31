@@ -5,4 +5,5 @@ plugins {
     alias(libs.plugins.composeCompiler) apply false
     alias(libs.plugins.serialization) apply false
     alias(libs.plugins.sqldelight) apply false
+    alias(libs.plugins.mavenPublish) apply false
 }

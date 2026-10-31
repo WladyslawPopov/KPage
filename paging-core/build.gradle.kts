@@ -5,11 +5,43 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.serialization)
     alias(libs.plugins.sqldelight)
-    id("maven-publish")
+    alias(libs.plugins.mavenPublish)
 }
 
 group = "io.github.wladyslawpopov"
 version = "2.0.0"
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+
+    coordinates(group.toString(), "paging-core", version.toString())
+
+    pom {
+        name.set("KPage paging-core")
+        description.set("Kotlin Multiplatform paging library with stable pagination and persistent cache.")
+        url.set("https://github.com/WladyslawPopov/KPage")
+        licenses {
+            license {
+                name.set("The Apache License, Version 2.0")
+                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                distribution.set("repo")
+            }
+        }
+        developers {
+            developer {
+                id.set("WladyslawPopov")
+                name.set("Wladyslaw Popov")
+                url.set("https://github.com/WladyslawPopov")
+            }
+        }
+        scm {
+            url.set("https://github.com/WladyslawPopov/KPage")
+            connection.set("scm:git:git://github.com/WladyslawPopov/KPage.git")
+            developerConnection.set("scm:git:ssh://git@github.com/WladyslawPopov/KPage.git")
+        }
+    }
+}
 
 sqldelight {
     databases {
