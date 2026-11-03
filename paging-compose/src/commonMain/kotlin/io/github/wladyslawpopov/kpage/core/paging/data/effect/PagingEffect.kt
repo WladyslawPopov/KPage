@@ -12,12 +12,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.wladyslawpopov.kpage.core.paging.common.rememberConfigurationChangeCheck
-import io.github.wladyslawpopov.kpage.core.paging.data.NOT_LAID_OUT
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 
 /**
  * Connects the app's lazy list to the paginator. It reports the server indexes of the visible items
@@ -60,78 +56,31 @@ private fun PagingEffect(
     val lifecycleOwner = LocalLifecycleOwner.current
     val isConfigurationChange = rememberConfigurationChangeCheck()
     // A new paginator (for example after a filter change) shows a new list and gets its own onShown.
-    val visibility = remember(events) { Visibility() }
+    val tracker = remember(events) { PagingListTracker(events) }
 
     // Observe only the visible position, never scan the list or decide what to fetch in the UI.
-    LaunchedEffect(state, events) {
-        snapshotFlow {
-            val rows = currentItems
-            val visible = visibleRows()
-            // Before the first layout a non-empty list has no visible rows yet: nothing to report.
-            if (visible.isEmpty() && rows.isNotEmpty()) return@snapshotFlow NOT_LAID_OUT
-            val indexes = visible.mapNotNull {
-                if (it in rows.indices) sourceIndex(it, rows[it]) else null
-            }
-            // Null: no server rows are visible (an empty list, or only decorations).
-            if (indexes.isEmpty()) null else indexes.min()..indexes.max()
-        }.filter { it !== NOT_LAID_OUT }
-            .distinctUntilChanged()
-            .collect { range ->
-                visibility.known = true
-                visibility.lastRange = range
-                // A list shown without rows is shown again once it gets them: it may only have been
-                // not read yet, and the paginator decides about the refresh by the first rows.
-                val show = !visibility.shown || (range != null && !visibility.withRows)
-                if (show && lifecycleOwner.isAtLeastStarted) {
-                    visibility.shown = true
-                    visibility.withRows = range != null
-                    events.onShown(range)
-                } else if (range != null) {
-                    events.onVisibleRangeChanged(range)
-                }
-            }
+    LaunchedEffect(state, tracker) {
+        snapshotFlow { Layout(currentItems, visibleRows()) }
+            .collect { tracker.onLayout(it.rows, it.visibleRows) }
     }
 
-    DisposableEffect(lifecycleOwner, events) {
+    DisposableEffect(lifecycleOwner, tracker) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_START -> if (!visibility.shown && visibility.known) {
-                    visibility.shown = true
-                    visibility.withRows = visibility.lastRange != null
-                    events.onShown(visibility.lastRange)
-                }
-
-                Lifecycle.Event.ON_STOP -> if (visibility.shown && !isConfigurationChange()) {
-                    visibility.shown = false
-                    events.onHidden()
-                }
-
+                Lifecycle.Event.ON_START -> tracker.onStart()
+                Lifecycle.Event.ON_STOP -> tracker.onStop(isConfigurationChange())
                 else -> Unit
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
-            if (visibility.shown && !isConfigurationChange()) {
-                visibility.shown = false
-                events.onHidden()
-            }
+            tracker.onStop(isConfigurationChange())
         }
     }
 }
 
-private class Visibility {
-    // onShown was sent since the last onHidden.
-    var shown = false
-    // The last onShown carried visible rows.
-    var withRows = false
-    // The visible rows were observed at least once; lastRange is meaningful.
-    var known = false
-    var lastRange: IntRange? = null
-}
-
-internal fun sourceIndex(uiIndex: Int, item: Any?): Int? =
-    (if (item is PagingIndexedItem) item.serverIndex else uiIndex)?.takeIf { it >= 0 }
-
-private val LifecycleOwner.isAtLeastStarted: Boolean
-    get() = lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
+// Not a data class: snapshotFlow would compare the rows with equals on every new data snapshot,
+// which for a decorated or custom list can walk all totalCount rows. The tracker skips repeated
+// ranges itself.
+private class Layout(val rows: List<Any?>, val visibleRows: List<Int>)

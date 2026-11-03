@@ -20,9 +20,6 @@ internal const val LEGACY_DATABASE_NAME = "PagingDataBase"
 /** SQLite sidecar files that belong to a database file. */
 internal val SQLITE_SIDECAR_SUFFIXES = listOf("-wal", "-shm", "-journal")
 
-/** Marks a lazy list that has not been laid out yet, so nothing is reported to the paginator. */
-internal val NOT_LAID_OUT = IntRange(Int.MIN_VALUE, Int.MIN_VALUE)
-
 
 /**
  * A hide followed by a show within this time is not leaving the list (fast tab switches). Nobody

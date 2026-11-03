@@ -1,15 +1,13 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
     alias(libs.plugins.serialization)
     alias(libs.plugins.sqldelight)
     alias(libs.plugins.mavenPublish)
 }
 
 group = "io.github.wladyslawpopov"
-version = "2.0.0"
+version = "2.1.0"
 
 mavenPublishing {
     publishToMavenCentral()
@@ -69,15 +67,10 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                // Types of these libraries are part of the public API (StateFlow, LazyListState,
-                // KSerializer, SqlDriver), so consumers get them too.
-                api(libs.runtime)
-                api(libs.foundation)
+                // Types of these libraries are part of the public API (StateFlow, KSerializer,
+                // SqlDriver), so consumers get them too.
                 api(libs.kotlinx.serialization.json)
                 api(libs.sqldelight.coroutines)
-
-                implementation(libs.ui)
-                implementation(libs.lifecycle.runtime.compose)
             }
         }
 
@@ -85,7 +78,6 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.coroutines.test)
-                implementation(libs.ui.test)
             }
         }
 
@@ -103,11 +95,6 @@ kotlin {
 
         jvmMain.dependencies {
             implementation(libs.sqldelight.jvm)
-        }
-
-        // Native Skiko binaries of the build machine: for UI tests only, never in the published library.
-        jvmTest.dependencies {
-            implementation(compose.desktop.currentOs)
         }
     }
 }

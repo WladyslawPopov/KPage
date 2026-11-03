@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -14,7 +15,10 @@ import androidx.compose.ui.test.hasScrollToIndexAction
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.runComposeUiTest
 import androidx.compose.ui.unit.dp
-import io.github.wladyslawpopov.kpage.core.paging.data.FakeItem
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.wladyslawpopov.kpage.core.paging.data.effect.PagingEffect
 import io.github.wladyslawpopov.kpage.core.paging.data.effect.PagingEvents
 import io.github.wladyslawpopov.kpage.core.paging.data.effect.PagingIndexedItem
@@ -25,6 +29,13 @@ import kotlin.test.assertTrue
 /** What `PagingEffect` reports to the paginator: visible server positions, shown and hidden. */
 @OptIn(ExperimentalTestApi::class)
 class PagingEffectTest {
+
+    private data class FakeItem(val id: String, val title: String)
+
+    private class TestLifecycleOwner(initial: Lifecycle.State) : LifecycleOwner {
+        val registry = LifecycleRegistry.createUnsafe(this).apply { currentState = initial }
+        override val lifecycle: Lifecycle get() = registry
+    }
 
     private val loaded = List(60) { FakeItem("id_$it", "Item $it") }
 
@@ -126,6 +137,38 @@ class PagingEffectTest {
             assertEquals(0, second.shown.single()?.first)
             assertEquals(1, first.hidden, "The old paginator is told the list is gone")
         }
+    }
+
+    @Test
+    fun stopping_the_host_hides_and_starting_shows_again() = runComposeUiTest {
+        val events = RecordingEvents()
+        val owner = TestLifecycleOwner(Lifecycle.State.RESUMED)
+        setContent {
+            CompositionLocalProvider(LocalLifecycleOwner provides owner) { TestList(loaded, events) }
+        }
+        waitUntil(timeoutMillis = 5_000L) { events.shown.size == 1 }
+
+        runOnIdle { owner.registry.currentState = Lifecycle.State.CREATED }
+        waitUntil(timeoutMillis = 5_000L) { events.hidden == 1 }
+
+        runOnIdle { owner.registry.currentState = Lifecycle.State.RESUMED }
+        waitUntil(timeoutMillis = 5_000L) { events.shown.size == 2 }
+        runOnIdle { assertEquals(listOf(0, 0), events.shown.map { it?.first }) }
+    }
+
+    @Test
+    fun a_host_that_is_not_started_shows_nothing_until_it_starts() = runComposeUiTest {
+        val events = RecordingEvents()
+        val owner = TestLifecycleOwner(Lifecycle.State.CREATED)
+        setContent {
+            CompositionLocalProvider(LocalLifecycleOwner provides owner) { TestList(loaded, events) }
+        }
+        waitForIdle()
+        runOnIdle { assertTrue(events.shown.isEmpty(), "Nothing is shown before the host starts") }
+
+        runOnIdle { owner.registry.currentState = Lifecycle.State.STARTED }
+        waitUntil(timeoutMillis = 5_000L) { events.shown.size == 1 }
+        runOnIdle { assertEquals(0, events.shown.single()?.first) }
     }
 
     /** [firsts] collects the first visible position of every report (shown or changed). */
