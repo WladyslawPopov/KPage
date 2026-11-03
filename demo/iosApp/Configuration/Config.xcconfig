@@ -1,7 +1,13 @@
 TEAM_ID=
 
+// Your Apple team: put TEAM_ID=<id> into Local.xcconfig next to this file (not in Git).
+#include? "Local.xcconfig"
+
 PRODUCT_NAME=KPageDemo
 PRODUCT_BUNDLE_IDENTIFIER=io.github.wladyslawpopov.kpage.demo.KPageDemo$(TEAM_ID)
 
 CURRENT_PROJECT_VERSION=1
 MARKETING_VERSION=1.0
+
+// The Kotlin framework is static: the SQLite of SQLDelight (KPage cache) is linked by the app.
+OTHER_LDFLAGS = $(inherited) -lsqlite3
