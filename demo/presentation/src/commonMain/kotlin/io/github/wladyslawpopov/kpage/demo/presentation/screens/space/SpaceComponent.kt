@@ -3,16 +3,12 @@ package io.github.wladyslawpopov.kpage.demo.presentation.screens.space
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceRepository
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentContext
 import io.github.wladyslawpopov.kpage.demo.presentation.component.StateOwner
-import io.github.wladyslawpopov.kpage.demo.presentation.component.UiBinding
 import io.github.wladyslawpopov.kpage.demo.presentation.navigation.AppNavigator
 import io.github.wladyslawpopov.kpage.demo.presentation.navigation.ScreenComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageOwner
 
-interface SpaceComponent : ScreenComponent, StateOwner<SpaceState, SpaceIntent>, PageOwner {
-    /** Subscribes [ui] to the state of this screen. */
-    fun bindSpace(ui: SpaceUi): UiBinding
-}
+interface SpaceComponent : ScreenComponent, StateOwner<SpaceState, SpaceIntent>, PageOwner
 
 internal class DefaultSpaceComponent(
     context: ComponentContext,
@@ -33,6 +29,4 @@ internal class DefaultSpaceComponent(
     }
 
     override fun onIntent(intent: SpaceIntent) = engine.onIntent(intent)
-
-    override fun bindSpace(ui: SpaceUi): UiBinding = bindState(ui::renderSpace)
 }

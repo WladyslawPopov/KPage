@@ -52,7 +52,12 @@ class PaginatorEngine<Q : Any, T : Any, D : Any>(
                 }
             }
             .collect { paging ->
-                updateState(getState().copy(paging = paging, rows = paging.items.decorate(decorations)))
+                updateState(
+                    getState().copy(
+                        paging = paging,
+                        rows = paging.items.decorate(decorations)
+                    )
+                )
                 reportError(paging.loadState)
             }
     }
@@ -67,7 +72,8 @@ class PaginatorEngine<Q : Any, T : Any, D : Any>(
         updateState(state.copy(rows = state.items.decorate(block)))
     }
 
-    suspend fun updateItem(id: String, transform: (T) -> T): T? = paginator?.updateItem(id, transform)
+    suspend fun updateItem(id: String, transform: (T) -> T): T? =
+        paginator?.updateItem(id, transform)
 
     suspend fun getItem(id: String): T? = paginator?.getItemById(id)
 
@@ -75,7 +81,13 @@ class PaginatorEngine<Q : Any, T : Any, D : Any>(
         paginator?.close()
         paginator = newPaginator
         lastError = null
-        updateState(getState().copy(events = newPaginator, paging = emptyPaging(), rows = emptyList()))
+        updateState(
+            getState().copy(
+                events = newPaginator,
+                paging = emptyPaging(),
+                rows = emptyList()
+            )
+        )
     }
 
     private fun setQuery(query: Q) {

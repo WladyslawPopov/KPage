@@ -3,16 +3,12 @@ package io.github.wladyslawpopov.kpage.demo.presentation.screens.chat
 import io.github.wladyslawpopov.kpage.demo.domain.chat.ChatRepository
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentContext
 import io.github.wladyslawpopov.kpage.demo.presentation.component.StateOwner
-import io.github.wladyslawpopov.kpage.demo.presentation.component.UiBinding
 import io.github.wladyslawpopov.kpage.demo.presentation.navigation.AppNavigator
 import io.github.wladyslawpopov.kpage.demo.presentation.navigation.ScreenComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageOwner
 
-interface ChatComponent : ScreenComponent, StateOwner<ChatState, ChatIntent>, PageOwner {
-    /** Subscribes [ui] to the state of this screen. */
-    fun bindChat(ui: ChatUi): UiBinding
-}
+interface ChatComponent : ScreenComponent, StateOwner<ChatState, ChatIntent>, PageOwner
 
 internal class DefaultChatComponent(
     context: ComponentContext,
@@ -33,6 +29,4 @@ internal class DefaultChatComponent(
     }
 
     override fun onIntent(intent: ChatIntent) = engine.onIntent(intent)
-
-    override fun bindChat(ui: ChatUi): UiBinding = bindState(ui::renderChat)
 }

@@ -1,52 +1,51 @@
 import SwiftUI
 import SharedLogic
 
-/// Navigation of the app: a stack per tab (a root and a path above it). Creates the components of the
-/// routes, destroys them when they leave a stack and decides which one is shown.
+/// Navigation of the app: the selected tab and app activity. The components live in
+/// `ComponentHolder`, which is told about every change. `savedState` is the text of the current
+/// navigation snapshot, for the scene storage.
 @Observable
 final class IosNavigator: NSObject, AppNavigator {
     @ObservationIgnored private let factory: ScreenFactory
-    @ObservationIgnored private var nextId = 0
+    @ObservationIgnored private var holder: ComponentHolder!
     @ObservationIgnored private var isAppActive = false
 
-    private(set) var roots: [AppTab: StackEntry] = [:]
-    private var paths: [AppTab: [StackEntry]] = [:]
+    var roots: [AppTab: StackEntry] { holder.roots }
+
+    private(set) var savedState = ""
 
     var selectedTab: AppTab = .space {
-        didSet { updateLifecycle() }
+        didSet { changed() }
     }
 
-    init(factory: ScreenFactory) {
+    init(factory: ScreenFactory, saved: NavigationSnapshot? = nil) {
         self.factory = factory
+        selectedTab = saved?.selectedTab ?? .space
         super.init()
-        for tab in AppTab.entries {
-            roots[tab] = create(route: tab.root)
-            paths[tab] = []
+        holder = ComponentHolder(initialPaths: saved?.paths ?? [:]) { [unowned self] route, context in
+            factory.create(route: route, context: context, navigator: self)
         }
+        savedState = encodeSnapshot()
     }
 
     func open(route: Route) {
-        paths[selectedTab, default: []].append(create(route: route))
-        updateLifecycle()
+        holder.push(tab: selectedTab, route: route)
+        changed()
     }
 
     func back() -> Bool {
-        guard let last = paths[selectedTab]?.last else { return false }
-        paths[selectedTab]?.removeLast()
-        last.context.destroy()
-        updateLifecycle()
+        guard holder.pop(tab: selectedTab) else { return false }
+        changed()
         return true
     }
 
     /// The path of a tab for NavigationStack; entries removed by the user (swipe back) are destroyed.
     func path(for tab: AppTab) -> Binding<[StackEntry]> {
         Binding(
-            get: { self.paths[tab] ?? [] },
+            get: { self.holder.path(for: tab) },
             set: { newPath in
-                let removed = (self.paths[tab] ?? []).filter { !newPath.contains($0) }
-                self.paths[tab] = newPath
-                removed.forEach { $0.context.destroy() }
-                self.updateLifecycle()
+                self.holder.setPath(newPath, for: tab)
+                self.changed()
             }
         )
     }
@@ -56,28 +55,17 @@ final class IosNavigator: NSObject, AppNavigator {
         updateLifecycle()
     }
 
-    private func updateLifecycle() {
-        for tab in AppTab.entries {
-            let stack = [roots[tab]].compactMap { $0 } + (paths[tab] ?? [])
-            for (index, entry) in stack.enumerated() {
-                let shown = isAppActive && tab == selectedTab && index == stack.count - 1
-                if entry.isShown == shown { continue }
-                entry.isShown = shown
-                if shown { entry.context.show() } else { entry.context.hide() }
-                print("KPageDemo: \(entry.route) \(shown ? "shown" : "hidden")")
-            }
-        }
+    private func changed() {
+        updateLifecycle()
+        savedState = encodeSnapshot()
     }
 
-    private func create(route: Route) -> StackEntry {
-        let context = ComponentContext()
-        let entry = StackEntry(
-            id: nextId,
-            route: route,
-            context: context,
-            component: factory.create(route: route, context: context, navigator: self)
-        )
-        nextId += 1
-        return entry
+    private func updateLifecycle() {
+        holder.updateLifecycle(selectedTab: selectedTab, isAppActive: isAppActive)
+    }
+
+    private func encodeSnapshot() -> String {
+        let snapshot = NavigationSnapshot(selectedTab: selectedTab, paths: holder.snapshotPaths())
+        return NavigationSnapshotCodec.shared.encode(snapshot: snapshot)
     }
 }

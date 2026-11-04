@@ -1,47 +1,48 @@
 package io.github.wladyslawpopov.kpage.demo.android.navigation
 
-import android.util.Log
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentContext
 import io.github.wladyslawpopov.kpage.demo.presentation.navigation.AppNavigator
 import io.github.wladyslawpopov.kpage.demo.presentation.navigation.AppTab
+import io.github.wladyslawpopov.kpage.demo.presentation.navigation.NavigationSnapshot
 import io.github.wladyslawpopov.kpage.demo.presentation.navigation.Route
 import io.github.wladyslawpopov.kpage.demo.presentation.navigation.ScreenFactory
 
 /**
- * Navigation of the app: a stack per tab. Creates the components of the routes, destroys them when
- * they leave a stack and decides which one is shown.
+ * Navigation of the app: the selected tab and app visibility. The components live in
+ * [ComponentHolder], which is told about every change. [onChanged] receives the new snapshot
+ * after every navigation change.
  */
-class AndroidNavigator(private val factory: ScreenFactory) : AppNavigator {
-    private var nextId = 0L
+class AndroidNavigator(
+    private val factory: ScreenFactory,
+    saved: NavigationSnapshot? = null,
+    private val onChanged: (NavigationSnapshot) -> Unit = {},
+) : AppNavigator {
+    private val holder = ComponentHolder(saved?.paths.orEmpty()) { route, context ->
+        factory.create(route, context, this)
+    }
     private var isAppVisible = false
 
-    var selectedTab by mutableStateOf(AppTab.SPACE)
+    var selectedTab by mutableStateOf(saved?.selectedTab ?: AppTab.SPACE)
         private set
 
-    val stacks: Map<AppTab, SnapshotStateList<StackEntry>> =
-        AppTab.entries.associateWith { tab -> mutableStateListOf(create(tab.root)) }
+    val stacks get() = holder.stacks
 
     override fun open(route: Route) {
-        stacks.getValue(selectedTab).add(create(route))
-        updateLifecycle()
+        holder.push(selectedTab, route)
+        changed()
     }
 
     override fun back(): Boolean {
-        val stack = stacks.getValue(selectedTab)
-        if (stack.size <= 1) return false
-        stack.removeAt(stack.lastIndex).context.destroy()
-        updateLifecycle()
+        if (!holder.pop(selectedTab)) return false
+        changed()
         return true
     }
 
     fun selectTab(tab: AppTab) {
         selectedTab = tab
-        updateLifecycle()
+        changed()
     }
 
     /** The activity is shown or hidden (not for a configuration change). */
@@ -50,26 +51,12 @@ class AndroidNavigator(private val factory: ScreenFactory) : AppNavigator {
         updateLifecycle()
     }
 
-    fun destroyAll() = stacks.values.forEach { stack -> stack.forEach { it.context.destroy() } }
+    fun destroyAll() = holder.destroyAll()
 
-    private fun updateLifecycle() {
-        stacks.forEach { (tab, stack) ->
-            stack.forEachIndexed { index, entry ->
-                val shown = isAppVisible && tab == selectedTab && index == stack.lastIndex
-                if (entry.isShown == shown) return@forEachIndexed
-                entry.isShown = shown
-                if (shown) entry.context.show() else entry.context.hide()
-                Log.d(TAG, "${entry.route} ${if (shown) "shown" else "hidden"}")
-            }
-        }
+    private fun changed() {
+        updateLifecycle()
+        onChanged(NavigationSnapshot(selectedTab, holder.paths()))
     }
 
-    private fun create(route: Route): StackEntry {
-        val context = ComponentContext()
-        return StackEntry(nextId++, route, context, factory.create(route, context, this))
-    }
-
-    private companion object {
-        const val TAG = "KPageDemo"
-    }
+    private fun updateLifecycle() = holder.updateLifecycle(selectedTab, isAppVisible)
 }

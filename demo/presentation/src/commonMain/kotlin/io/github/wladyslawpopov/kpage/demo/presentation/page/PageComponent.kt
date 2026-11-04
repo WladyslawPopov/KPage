@@ -7,7 +7,6 @@ import io.github.wladyslawpopov.kpage.demo.presentation.component.ErrorReporter
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ScreenError
 import io.github.wladyslawpopov.kpage.demo.presentation.component.StateComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.component.StateOwner
-import io.github.wladyslawpopov.kpage.demo.presentation.component.UiBinding
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -39,15 +38,6 @@ abstract class PageComponent<S : PageScreenState<S>, I : Any>(
     private var nextToastId = 0L
 
     protected open fun updateState(transform: (S) -> S) = mutableState.update(transform)
-
-    /**
-     * Pushes the current state and every change to [render] on Main until the binding is ended or the
-     * component is destroyed. Screens expose it typed: `fun bindSpace(ui: SpaceUi) = bindState(ui::renderSpace)`.
-     */
-    protected fun bindState(render: (S) -> Unit): UiBinding {
-        val job = launchMain { state.collect { render(it) } }
-        return UiBinding { job.cancel() }
-    }
 
     /** Runs on Main and is ignored after the component is destroyed. */
     final override fun onPageIntent(intent: PageIntent) {

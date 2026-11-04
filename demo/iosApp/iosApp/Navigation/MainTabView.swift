@@ -2,19 +2,41 @@ import SwiftUI
 import SharedLogic
 
 struct MainTabView: View {
-    @State private var navigator = IosNavigator(factory: IosKoinKt.screenFactory())
+    @SceneStorage("navigation") private var savedNavigation = ""
+    @State private var navigator: IosNavigator?
+
+    var body: some View {
+        // A real container (not Group): it is on screen before the navigator exists, so onAppear fires.
+        ZStack {
+            Color.clear
+            if let navigator { TabsContent(navigator: navigator) }
+        }
+        .onAppear {
+            guard navigator == nil else { return }
+            navigator = IosNavigator(
+                factory: IosKoinKt.screenFactory(),
+                saved: NavigationSnapshotCodec.shared.decode(text: savedNavigation)
+            )
+        }
+        .onChange(of: navigator?.savedState) { _, text in
+            if let text { savedNavigation = text }
+        }
+    }
+}
+
+private struct TabsContent: View {
+    @Bindable var navigator: IosNavigator
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
-        @Bindable var navigator = navigator
         TabView(selection: $navigator.selectedTab) {
             ForEach(AppTab.entries, id: \.self) { tab in
                 NavigationStack(path: navigator.path(for: tab)) {
                     if let root = navigator.roots[tab] {
-                        ScreenHost(component: root.component)
+                        ScreenHost(entry: root)
                     }
                 }
-                .navigationDestination(for: StackEntry.self) { ScreenHost(component: $0.component) }
+                .navigationDestination(for: StackEntry.self) { ScreenHost(entry: $0) }
                 .tabItem { Label(tab.title.text, systemImage: tab.icon.sfSymbol) }
                 .tag(tab)
             }
