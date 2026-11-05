@@ -1,6 +1,6 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.cache
 
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
+import io.github.wladyslawpopov.kpage.demo.domain.favorites.FavoritesRepository
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentContext
 import io.github.wladyslawpopov.kpage.demo.presentation.component.StateOwner
 import io.github.wladyslawpopov.kpage.demo.presentation.navigation.AppNavigator
@@ -13,7 +13,7 @@ interface CacheComponent : ScreenComponent, StateOwner<CacheState, CacheIntent>,
 internal class DefaultCacheComponent(
     context: ComponentContext,
     private val navigator: AppNavigator,
-    repository: CacheRepository,
+    repository: FavoritesRepository,
 ) : PageComponent<CacheState, CacheIntent>(context, CacheState()), CacheComponent {
 
     private val engine = CacheEngine(

@@ -1,0 +1,23 @@
+-- The id grows with every insert, so the newest favorite has the highest one.
+CREATE TABLE favorite (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nasa_id TEXT NOT NULL UNIQUE
+);
+
+insert:
+INSERT OR IGNORE INTO favorite(nasa_id) VALUES (?);
+
+delete:
+DELETE FROM favorite WHERE nasa_id = ?;
+
+count:
+SELECT COUNT(*) FROM favorite;
+
+selectAll:
+SELECT nasa_id FROM favorite ORDER BY id DESC;
+
+selectPage:
+SELECT nasa_id FROM favorite ORDER BY id DESC LIMIT :limit OFFSET :offset;
+
+selectExisting:
+SELECT nasa_id FROM favorite WHERE nasa_id IN :ids;

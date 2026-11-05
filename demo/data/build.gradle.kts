@@ -2,6 +2,15 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.sqldelight)
+}
+
+sqldelight {
+    databases {
+        create("DemoDatabase") {
+            packageName.set("io.github.wladyslawpopov.kpage.demo.data.db")
+        }
+    }
 }
 
 kotlin {
@@ -27,9 +36,18 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.serialization.kotlinx.json)
         }
-        androidMain.dependencies { implementation(libs.ktor.client.android) }
-        iosMain.dependencies { implementation(libs.ktor.client.darwin) }
-        jvmMain.dependencies { implementation(libs.ktor.client.java) }
+        androidMain.dependencies {
+            implementation(libs.ktor.client.android)
+            implementation(libs.sqldelight.android)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+            implementation(libs.sqldelight.native)
+        }
+        jvmMain.dependencies {
+            implementation(libs.ktor.client.java)
+            implementation(libs.sqldelight.jvm)
+        }
         commonTest.dependencies { implementation(libs.kotlin.test) }
     }
 }
