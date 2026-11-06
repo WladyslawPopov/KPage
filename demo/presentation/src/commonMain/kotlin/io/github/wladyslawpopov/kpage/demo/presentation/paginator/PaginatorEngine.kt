@@ -85,7 +85,7 @@ class PaginatorEngine<Q : Any, T : Any, D : Any>(
             getState().copy(
                 events = newPaginator,
                 paging = emptyPaging(),
-                rows = emptyList()
+                rows = emptyRows()
             )
         )
     }

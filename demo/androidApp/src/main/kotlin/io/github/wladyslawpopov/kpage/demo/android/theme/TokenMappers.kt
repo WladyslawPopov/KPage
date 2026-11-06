@@ -2,6 +2,7 @@ package io.github.wladyslawpopov.kpage.demo.android.theme
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
@@ -127,6 +128,7 @@ fun AppIconKey.vector(): ImageVector = when (this) {
     AppIconKey.INFO -> Icons.Filled.Info
     AppIconKey.NO_INTERNET -> Icons.Filled.Warning
     AppIconKey.NOTHING_FOUND -> Icons.Filled.Search
+    AppIconKey.NO_IMAGE -> Icons.Filled.BrokenImage
     AppIconKey.SPACE -> Icons.Filled.Star
     AppIconKey.CHAT -> Icons.Filled.Email
     AppIconKey.LAB -> Icons.Filled.Build

@@ -19,19 +19,18 @@ class PagingListTracker(private val events: PagingEvents) {
 
     /**
      * Reports what is on screen. [rows] are exactly the rows of the list, in the same order: row `i`
-     * is `rows[i]`. Rows implementing [PagingIndexedItem] give their server index (decorations return
-     * null); other rows use their position. [visibleRows] are indexes in [rows] of the rows on
-     * screen, in any order. Call it on every layout change and whenever [rows] change; an empty list
-     * on screen is reported with empty [rows] and empty [visibleRows]. Repeated calls are cheap.
+     * is read as `rows.serverIndexAt(i)` (null for decorations). [visibleRows] are indexes in [rows]
+     * of the rows on screen, in any order. Call it on every layout change and whenever [rows] change;
+     * an empty list on screen is reported with no rows and empty [visibleRows]. Repeated calls are
+     * cheap: only the visible rows are read.
      */
-    fun onLayout(rows: List<Any?>, visibleRows: Collection<Int>) {
+    fun onLayout(rows: PagingRowSource, visibleRows: List<Int>) {
         // Before the first layout a non-empty list has no visible rows yet: nothing to report.
-        if (visibleRows.isEmpty() && rows.isNotEmpty()) return
+        if (visibleRows.isEmpty() && rows.rowCount > 0) return
         var first = Int.MAX_VALUE
         var last = Int.MIN_VALUE
         for (row in visibleRows) {
-            if (row !in rows.indices) continue
-            val index = sourceIndex(row, rows[row]) ?: continue
+            val index = rows.serverIndexAt(row) ?: continue
             if (index < first) first = index
             if (index > last) last = index
         }
@@ -62,13 +61,10 @@ class PagingListTracker(private val events: PagingEvents) {
         }
     }
 
-    /**
-     * The host is hidden or the list is gone. With [isConfigurationChange] (Android recreating the
-     * screen) the list is not reported as hidden.
-     */
-    fun onStop(isConfigurationChange: Boolean = false) {
+    /** The host is hidden or the list is gone. */
+    fun onStop() {
         started = false
-        if (shown && !isConfigurationChange) {
+        if (shown) {
             shown = false
             events.onHidden()
         }

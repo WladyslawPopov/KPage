@@ -1,13 +1,6 @@
 import SwiftUI
 import SharedLogic
 
-struct SpaceScreen: View {
-    let component: SpaceComponent
-    let state: SpaceState
-
-    var body: some View { PlaceholderScreen(topBar: state.topBar, text: state.text) }
-}
-
 struct ChatScreen: View {
     let component: ChatComponent
     let state: ChatState

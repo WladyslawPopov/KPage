@@ -7,13 +7,6 @@ import io.github.wladyslawpopov.kpage.demo.presentation.screens.cache.CacheCompo
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.ChatComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.lab.LabComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.settings.SettingsComponent
-import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.SpaceComponent
-
-@Composable
-fun SpaceScreen(component: SpaceComponent) {
-    val state by component.state.collectAsState()
-    PlaceholderScreen(state.topBar, state.text)
-}
 
 @Composable
 fun ChatScreen(component: ChatComponent) {

@@ -127,6 +127,7 @@ extension AppIconKey {
         case .info: return "info.circle"
         case .noInternet: return "wifi.slash"
         case .nothingFound: return "magnifyingglass"
+        case .noImage: return "photo"
         case .space: return "sparkles"
         case .chat: return "bubble.left.and.bubble.right"
         case .lab: return "flask"

@@ -1,6 +1,7 @@
 package io.github.wladyslawpopov.kpage.core.paging.data.state
 
 import io.github.wladyslawpopov.kpage.core.paging.data.effect.PagingIndexedItem
+import io.github.wladyslawpopov.kpage.core.paging.data.effect.PagingRowSource
 
 /** One row of a decorated list: a server position (an item or a placeholder) or a decoration. */
 sealed interface PagingRow<out T : Any, out D : Any> : PagingIndexedItem {
@@ -39,16 +40,132 @@ interface DecorationScope<T : Any, D : Any> {
 }
 
 /**
- * Builds the UI list: every server position plus the decorations, `size = items.size + decorations`.
- * Only loaded items and decorations are visited and stored, so the cost does not depend on the
- * total count; rows are created on access.
+ * Builds the rows of the UI: every server position plus the decorations,
+ * `rowCount = items.size + decorations`. Only loaded items and decorations are visited and stored,
+ * so the cost does not depend on the total count.
  */
 fun <T : Any, D : Any> PagedList<T>.decorate(
     block: DecorationScope<T, D>.() -> Unit
-): List<PagingRow<T, D>> {
+): PagingRows<T, D> {
     val scope = DecorationBuilder<T, D>(this)
     scope.block()
-    return DecoratedList(this, scope.decorations.sortedBy { it.beforeIndex })
+    return PagingRows(this, scope.decorations.sortedBy { it.beforeIndex })
+}
+
+/** The rows of the UI without decorations: one row per server position. */
+fun <T : Any> PagedList<T>.rows(): PagingRows<T, Nothing> = PagingRows(this, emptyList())
+
+/**
+ * The rows a list UI draws: every server position (an item or a placeholder) and the decorations,
+ * sorted by position. A row is created when it is read, so a list as long as the total count costs
+ * only its loaded items and decorations.
+ *
+ * Not a `List` on purpose: Kotlin/Native turns every `List` into an `NSArray`, so a UI outside Kotlin
+ * (SwiftUI, UIKit) would get a converted copy. This object crosses by reference and is read row by row.
+ * Compose reads it the same way: `items(count = rows.rowCount) { rows[it] }`.
+ *
+ * Equality compares the items and the decorations, not every row.
+ */
+class PagingRows<out T : Any, out D : Any> internal constructor(
+    // Only read, never written: safe for the covariant T and D. Internal so equals can compare
+    // the rows of another instance.
+    internal val items: PagedList<@UnsafeVariance T>,
+    internal val decorations: List<PagingRow.Decoration<@UnsafeVariance D>>,
+) : PagingRowSource {
+
+    // UI index of every decoration: its position plus the decorations before it.
+    private val decorationRows = IntArray(decorations.size) { decorations[it].beforeIndex + it }
+
+    override val rowCount: Int = items.size + decorations.size
+
+    operator fun get(index: Int): PagingRow<T, D> {
+        checkIndex(index)
+        val decoration = decorationAt(index)
+        if (decoration >= 0) return decorations[decoration]
+        val serverIndex = index - decorationsBefore(index)
+        return PagingRow.Item(serverIndex, items[serverIndex])
+    }
+
+    override fun serverIndexAt(row: Int): Int? {
+        if (row !in 0 until rowCount || decorationAt(row) >= 0) return null
+        return row - decorationsBefore(row)
+    }
+
+    /**
+     * Keys for a lazy list, safe when the server shifts its pages. An item keeps the key of
+     * [itemKey], so rows stay stable when new items shift the list; an item that briefly repeats on a
+     * second position gets the position added, so keys never collide. Placeholders are keyed by
+     * their position, decorations by [decorationKey] or by their position and order.
+     *
+     * Keys made here are strings; give [itemKey] a key a Bundle can save too (a string or a number).
+     * Build it once per rows (`remember(rows) { rows.keys { it.id } }`): it walks the loaded items.
+     */
+    fun keys(
+        itemKey: (T) -> Any,
+        decorationKey: ((decoration: D, beforeIndex: Int) -> Any)? = null,
+    ): (index: Int) -> Any {
+        val seen = HashSet<Any>()
+        val repeats = items.loadedIndices.filterTo(HashSet()) { index -> !seen.add(itemKey(items[index]!!)) }
+        return { index ->
+            checkIndex(index)
+            val decorationIndex = decorationAt(index)
+            if (decorationIndex >= 0) {
+                val decoration = decorations[decorationIndex]
+                decorationKey?.invoke(decoration.value, decoration.beforeIndex)
+                    ?: "decoration:${decoration.beforeIndex}:${decorationIndex - firstDecorationAt(decoration.beforeIndex)}"
+            } else {
+                val serverIndex = index - decorationsBefore(index)
+                val item = items[serverIndex]
+                when {
+                    item == null -> "slot:$serverIndex"
+                    serverIndex in repeats -> "${itemKey(item)}#$serverIndex"
+                    else -> itemKey(item)
+                }
+            }
+        }
+    }
+
+    override fun equals(other: Any?): Boolean =
+        other === this || other is PagingRows<*, *> && items == other.items && decorations == other.decorations
+
+    // Consistent with equals without walking the list: equal rows have the same size and decorations.
+    override fun hashCode(): Int = 31 * items.size + decorations.hashCode()
+
+    override fun toString(): String = "PagingRows(rowCount=$rowCount, decorations=${decorations.size})"
+
+    private fun checkIndex(index: Int) {
+        if (index !in 0 until rowCount) throw IndexOutOfBoundsException("index: $index, rowCount: $rowCount")
+    }
+
+    // Decorations before the UI row [index]; when the row is a decoration, it is the next one.
+    private fun decorationsBefore(index: Int): Int = decorationRows.lowerBound(index)
+
+    // Index in [decorations] of the decoration at the UI row [index], or -1 for a server position.
+    private fun decorationAt(index: Int): Int {
+        val before = decorationsBefore(index)
+        return if (before < decorationRows.size && decorationRows[before] == index) before else -1
+    }
+
+    // Index in [decorations] of the first decoration placed before [beforeIndex].
+    private fun firstDecorationAt(beforeIndex: Int): Int {
+        var low = 0
+        var high = decorations.size
+        while (low < high) {
+            val mid = (low + high) ushr 1
+            if (decorations[mid].beforeIndex < beforeIndex) low = mid + 1 else high = mid
+        }
+        return low
+    }
+
+    private fun IntArray.lowerBound(value: Int): Int {
+        var low = 0
+        var high = size
+        while (low < high) {
+            val mid = (low + high) ushr 1
+            if (this[mid] < value) low = mid + 1 else high = mid
+        }
+        return low
+    }
 }
 
 private class DecorationBuilder<T : Any, D : Any>(override val items: PagedList<T>) : DecorationScope<T, D> {
@@ -70,47 +187,5 @@ private class DecorationBuilder<T : Any, D : Any>(override val items: PagedList<
             if (next != prev + 1) continue
             rule(items[prev]!!, items[next]!!)?.let { decorations += PagingRow.Decoration(it, next) }
         }
-    }
-}
-
-/**
- * The merge of the server positions and the decorations, sorted by position. Equality compares the
- * items and the decorations, not every row; [hashCode] follows the [List] contract and walks the list.
- */
-private class DecoratedList<T : Any, D : Any>(
-    private val items: PagedList<T>,
-    private val decorations: List<PagingRow.Decoration<D>>,
-) : AbstractList<PagingRow<T, D>>(), RandomAccess {
-
-    // UI index of every decoration: its position plus the decorations before it.
-    private val decorationRows = IntArray(decorations.size) { decorations[it].beforeIndex + it }
-
-    override val size: Int = items.size + decorations.size
-
-    override fun get(index: Int): PagingRow<T, D> {
-        if (index !in indices) throw IndexOutOfBoundsException("index: $index, size: $size")
-        // Decorations before this row; when the row is a decoration, it is the next one.
-        val before = decorationRows.lowerBound(index)
-        if (before < decorationRows.size && decorationRows[before] == index) return decorations[before]
-        val serverIndex = index - before
-        return PagingRow.Item(serverIndex, items[serverIndex])
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (other === this) return true
-        if (other is DecoratedList<*, *>) return items == other.items && decorations == other.decorations
-        return super.equals(other)
-    }
-
-    override fun hashCode(): Int = super.hashCode()
-
-    private fun IntArray.lowerBound(value: Int): Int {
-        var low = 0
-        var high = size
-        while (low < high) {
-            val mid = (low + high) ushr 1
-            if (this[mid] < value) low = mid + 1 else high = mid
-        }
-        return low
     }
 }

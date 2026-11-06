@@ -3,6 +3,9 @@ package io.github.wladyslawpopov.kpage.core.paging
 import io.github.wladyslawpopov.kpage.core.paging.data.effect.PagingEvents
 import io.github.wladyslawpopov.kpage.core.paging.data.effect.PagingIndexedItem
 import io.github.wladyslawpopov.kpage.core.paging.data.effect.PagingListTracker
+import io.github.wladyslawpopov.kpage.core.paging.data.effect.PagingRowSource
+import io.github.wladyslawpopov.kpage.core.paging.data.state.decorate
+import io.github.wladyslawpopov.kpage.core.paging.data.state.pagedListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -12,7 +15,8 @@ class PagingListTrackerTest {
 
     private val events = RecordingEvents()
     private val tracker = PagingListTracker(events)
-    private val rows60 = List(60) { "row_$it" }
+    private val rows60 = PagingRowSource.of(List(60) { "row_$it" })
+    private val noRows = PagingRowSource.of(emptyList())
 
     private fun IntRange.rows() = toList()
 
@@ -48,7 +52,7 @@ class PagingListTrackerTest {
     @Test
     fun an_empty_list_is_shown_without_rows_and_again_with_them() {
         tracker.onStart()
-        tracker.onLayout(emptyList(), emptyList())
+        tracker.onLayout(noRows, emptyList())
         tracker.onLayout(rows60, (0..9).rows())
 
         assertEquals(listOf<IntRange?>(null, 0..9), events.shown)
@@ -66,15 +70,15 @@ class PagingListTrackerTest {
     }
 
     @Test
-    fun a_configuration_change_is_not_hiding_but_stops_showing() {
+    fun decorated_rows_are_read_by_their_server_positions() {
+        val rows = pagedListOf<String>(60).decorate<String, String> {
+            header("H")
+            header("H2")
+        }
         tracker.onStart()
-        tracker.onLayout(emptyList(), emptyList())
-        tracker.onStop(isConfigurationChange = true)
-        tracker.onLayout(rows60, (0..9).rows())
+        tracker.onLayout(rows, (0..11).rows())
 
-        assertEquals(0, events.hidden)
-        assertEquals(listOf<IntRange?>(null), events.shown, "No second onShown while the host is stopped")
-        assertEquals(listOf(0..9), events.changed)
+        assertEquals(listOf<IntRange?>(0..9), events.shown)
     }
 
     @Test
@@ -98,13 +102,13 @@ class PagingListTrackerTest {
     @Test
     fun visible_rows_in_any_order_and_out_of_bounds() {
         tracker.onStart()
-        tracker.onLayout(List(10) { "row_$it" }, listOf(7, 3, 99, -1, 5))
+        tracker.onLayout(PagingRowSource.of(List(10) { "row_$it" }), listOf(7, 3, 99, -1, 5))
 
         assertEquals(listOf<IntRange?>(3..7), events.shown)
     }
 
     // Two decorations, then the server rows 0..57.
-    private fun indexedRows() = List(60) { IndexedRow(if (it < 2) null else it - 2) }
+    private fun indexedRows() = PagingRowSource.of(List(60) { IndexedRow(if (it < 2) null else it - 2) })
 
     private class RecordingEvents : PagingEvents {
         val shown = mutableListOf<IntRange?>()

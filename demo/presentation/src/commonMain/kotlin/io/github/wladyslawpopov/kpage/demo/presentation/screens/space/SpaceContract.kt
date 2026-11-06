@@ -19,8 +19,6 @@ data class SpaceState(
     val searchText: String = "",
     val layout: SpaceLayout = SpaceLayout.LIST,
     val list: PaginatorUiState<SpaceQuery, SpaceImage, Nothing> = PaginatorUiState(SpaceQuery()),
-    // The skeleton's text; removed with the real UI.
-    val text: AppStringKey = AppStringKey.Placeholder.SPACE,
 ) : PageScreenState<SpaceState> {
     val isFiltered: Boolean
         get() = with(list.query) { center != null || yearStart != null || yearEnd != null }
