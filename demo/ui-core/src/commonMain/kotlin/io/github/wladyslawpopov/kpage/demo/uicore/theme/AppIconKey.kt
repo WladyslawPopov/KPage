@@ -4,6 +4,7 @@ package io.github.wladyslawpopov.kpage.demo.uicore.theme
 enum class AppIconKey {
     BACK,
     CLOSE, REFRESH, SUCCESS, WARNING, FAIL, INFO, NO_INTERNET, NOTHING_FOUND, NO_IMAGE,
+    FAVORITE, FAVORITE_OFF, LAYOUT_LIST, LAYOUT_GRID,
     SPACE, CHAT, LAB, CACHE, SETTINGS
 }
 

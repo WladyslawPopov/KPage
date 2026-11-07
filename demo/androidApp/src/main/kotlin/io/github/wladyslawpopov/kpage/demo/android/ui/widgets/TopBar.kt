@@ -1,5 +1,6 @@
 package io.github.wladyslawpopov.kpage.demo.android.ui.widgets
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,7 +17,11 @@ import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppTypographyKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(state: TopBarState, onBack: () -> Unit) {
+fun TopBar(
+    state: TopBarState,
+    onBack: () -> Unit,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
     TopAppBar(
         title = { Text(state.title.asString(), style = AppTypographyKey.TITLE.style()) },
         navigationIcon = {
@@ -26,5 +31,6 @@ fun TopBar(state: TopBarState, onBack: () -> Unit) {
                 }
             }
         },
+        actions = actions,
     )
 }

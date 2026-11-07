@@ -2,12 +2,16 @@ package io.github.wladyslawpopov.kpage.demo.android.theme
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -129,6 +133,10 @@ fun AppIconKey.vector(): ImageVector = when (this) {
     AppIconKey.NO_INTERNET -> Icons.Filled.Warning
     AppIconKey.NOTHING_FOUND -> Icons.Filled.Search
     AppIconKey.NO_IMAGE -> Icons.Filled.BrokenImage
+    AppIconKey.FAVORITE -> Icons.Filled.Favorite
+    AppIconKey.FAVORITE_OFF -> Icons.Filled.FavoriteBorder
+    AppIconKey.LAYOUT_LIST -> Icons.AutoMirrored.Filled.ViewList
+    AppIconKey.LAYOUT_GRID -> Icons.Filled.GridView
     AppIconKey.SPACE -> Icons.Filled.Star
     AppIconKey.CHAT -> Icons.Filled.Email
     AppIconKey.LAB -> Icons.Filled.Build
