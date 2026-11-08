@@ -35,7 +35,7 @@ import io.github.wladyslawpopov.kpage.demo.android.ui.page.PageLayout
 import io.github.wladyslawpopov.kpage.demo.android.ui.paging.PagedGrid
 import io.github.wladyslawpopov.kpage.demo.android.ui.paging.rememberCanHideBars
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.RemoteImage
-import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.TopBar
+import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.SearchTopBar
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceLayout
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.SpaceComponent
@@ -58,9 +58,12 @@ fun SpaceScreen(component: SpaceComponent) {
         page = state.page,
         onPageIntent = component::onPageIntent,
         hideBottomBarOnScroll = canHideBars,
-        // A tab root: the back button is never shown.
         header = {
-            TopBar(state.topBar, onBack = {}) {
+            SearchTopBar(
+                state = state.topBar,
+                text = state.searchText,
+                onTextChange = { component.onIntent(SpaceIntent.SearchChanged(it)) },
+            ) {
                 // Shows the layout a tap switches to.
                 IconButton(onClick = { component.onIntent(SpaceIntent.ToggleLayout) }) {
                     Icon((if (isGrid) AppIconKey.LAYOUT_LIST else AppIconKey.LAYOUT_GRID).vector(), contentDescription = null)

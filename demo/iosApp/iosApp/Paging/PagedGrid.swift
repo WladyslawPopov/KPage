@@ -45,6 +45,8 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, ItemView: View, Place
             .padding(.horizontal, spacing)
             .padding(.top, spacing)
         }
+        // The user's scroll hides the keyboard, as in system apps; the typed text stays.
+        .scrollDismissesKeyboard(.immediately)
         .onScrollTargetVisibilityChange(idType: Int.self, threshold: 0.01) { ids in
             visible = Set(ids)
             report()

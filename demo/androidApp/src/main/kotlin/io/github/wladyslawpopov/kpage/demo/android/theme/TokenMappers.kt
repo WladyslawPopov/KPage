@@ -134,6 +134,7 @@ fun AppIconKey.vector(): ImageVector = when (this) {
     AppIconKey.NO_INTERNET -> Icons.Filled.Warning
     AppIconKey.NOTHING_FOUND -> Icons.Filled.Search
     AppIconKey.NO_IMAGE -> Icons.Filled.BrokenImage
+    AppIconKey.SEARCH -> Icons.Filled.Search
     AppIconKey.FAVORITE -> Icons.Filled.Favorite
     AppIconKey.FAVORITE_OFF -> Icons.Filled.FavoriteBorder
     AppIconKey.LAYOUT_LIST -> Icons.AutoMirrored.Filled.ViewList

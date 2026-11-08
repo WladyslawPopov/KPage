@@ -128,6 +128,7 @@ extension AppIconKey {
         case .noInternet: return "wifi.slash"
         case .nothingFound: return "magnifyingglass"
         case .noImage: return "photo"
+        case .search: return "magnifyingglass"
         case .favorite: return "heart.fill"
         case .favoriteOff: return "heart"
         case .layoutList: return "list.bullet"

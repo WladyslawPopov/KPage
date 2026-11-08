@@ -13,6 +13,7 @@ import io.github.wladyslawpopov.kpage.demo.presentation.page.PageIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.paginator.PaginatorEngine
 import io.github.wladyslawpopov.kpage.demo.presentation.paginator.PaginatorIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.paginator.PaginatorUiState
+import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
@@ -114,14 +115,23 @@ internal class SpaceEngine(
         }
     }
 
-    // The page shows what the list has no content for: a loader before the first data, "nothing found".
+    // The page shows what the list has no content for: a loader before the first data, "nothing found"
+    // with a way back when a search or a filter is set.
     private fun setList(list: PaginatorUiState<SpaceQuery, SpaceImage, Nothing>) {
         updateState { state ->
             state.copy(
                 list = list,
                 page = state.page.copy(
                     isLoading = list.loadState is LoadState.INITIAL,
-                    empty = if (list.isEmptyResult) PageEmptyState() else null,
+                    empty = when {
+                        !list.isEmptyResult -> null
+                        list.query != SpaceQuery() -> PageEmptyState(
+                            actionText = AppStringKey.Core.RESET,
+                            action = PageIntent.Reset,
+                        )
+
+                        else -> PageEmptyState()
+                    },
                 ),
             )
         }

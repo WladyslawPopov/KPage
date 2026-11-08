@@ -10,6 +10,9 @@
     <string name="core_network_error">Network error</string>
     <string name="core_server_error">Server error</string>
     <string name="core_nothing_found">Nothing found</string>
+    <string name="core_reset">Reset</string>
+    <string name="core_search">Search</string>
+    <string name="core_clear">Clear</string>
 
     <string name="tabs_space">Space</string>
     <string name="tabs_chat">Chat</string>

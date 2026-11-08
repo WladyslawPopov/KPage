@@ -5,7 +5,26 @@ struct SpaceScreen: View {
     let component: SpaceComponent
     let state: SpaceState
 
+    // The field keeps the typed text itself: the state comes back from Kotlin a moment later, and a
+    // late echo must not overwrite a fast typist.
+    @State private var query: String
+    @State private var isSearching = false
+    @State private var isSearchHidden = false
+    @State private var fullTopInset: CGFloat = 0
+
+    init(component: SpaceComponent, state: SpaceState) {
+        self.component = component
+        self.state = state
+        _query = State(initialValue: state.searchText)
+    }
+
     private var isGrid: Bool { state.layout == .grid }
+
+    // The system search field scrolls away with the list; then its button goes to the toolbar.
+    private var showsSearchButton: Bool { isSearchHidden && !isSearching }
+
+    /// The height the navigation bar loses when the search field is gone.
+    private let searchFieldHeight: CGFloat = 52
 
     var body: some View {
         PageLayout(page: state.page, onPageIntent: { component.onPageIntent(intent: $0) }) {
@@ -19,9 +38,30 @@ struct SpaceScreen: View {
                 card(image)
             }
         }
+        // The content starts where the navigation bar ends. The bar is tallest at rest and shrinks while
+        // scrolling: the search field goes first, then the title. The field is gone once the bar has
+        // lost its height.
+        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { top in
+            fullTopInset = max(fullTopInset, top)
+            withAnimation(.easeInOut(duration: 0.25)) {
+                isSearchHidden = fullTopInset - top >= searchFieldHeight
+            }
+        }
         .navigationTitle(state.topBar.title.text)
+        // The system search field; its search key only hides the keyboard, the list follows the text.
+        .searchable(text: $query, isPresented: $isSearching, prompt: AppStringKeyCore.search.text)
+        .onChange(of: query) { _, text in component.onIntent(intent: SpaceIntentSearchChanged(text: text)) }
+        // The text cleared from outside (the Reset button of the empty state).
+        .onChange(of: state.searchText) { _, text in if text.isEmpty { query = "" } }
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                if showsSearchButton {
+                    Button { isSearching = true } label: {
+                        Image(systemName: AppIconKey.search.sfSymbol)
+                    }
+                    .accessibilityLabel(AppStringKeyCore.search.text)
+                    .transition(.opacity.combined(with: .scale))
+                }
                 // Shows the layout a tap switches to.
                 Button { component.onIntent(intent: SpaceIntentToggleLayout.shared) } label: {
                     Image(systemName: (isGrid ? AppIconKey.layoutList : AppIconKey.layoutGrid).sfSymbol)

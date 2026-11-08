@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import io.github.wladyslawpopov.kpage.demo.shared.resources.Res
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_back
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_cancel
+import io.github.wladyslawpopov.kpage.demo.shared.resources.core_clear
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_close
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_network_error
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_no_internet_title
@@ -11,7 +12,9 @@ import io.github.wladyslawpopov.kpage.demo.shared.resources.core_nothing_found
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_ok
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_oops_title
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_refresh
+import io.github.wladyslawpopov.kpage.demo.shared.resources.core_reset
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_retry
+import io.github.wladyslawpopov.kpage.demo.shared.resources.core_search
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_server_error
 import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_cache
 import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_chat
@@ -42,6 +45,9 @@ fun AppStringKey.resource(): StringResource = when (this) {
         AppStringKey.Core.NETWORK_ERROR -> Res.string.core_network_error
         AppStringKey.Core.SERVER_ERROR -> Res.string.core_server_error
         AppStringKey.Core.NOTHING_FOUND -> Res.string.core_nothing_found
+        AppStringKey.Core.RESET -> Res.string.core_reset
+        AppStringKey.Core.SEARCH -> Res.string.core_search
+        AppStringKey.Core.CLEAR -> Res.string.core_clear
     }
 
     is AppStringKey.Tabs -> when (this) {
