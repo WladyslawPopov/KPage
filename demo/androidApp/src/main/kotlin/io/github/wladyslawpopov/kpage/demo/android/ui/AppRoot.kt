@@ -45,8 +45,8 @@ import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
 
 /**
- * The shell of the app. The pages run under translucent strips over the system bars and under the tab
- * bar; they pad their content by [LocalPageTopPadding] and [LocalPageBottomPadding]. A page may scroll
+ * The shell of the app. The pages run under the transparent status bar, under a translucent strip
+ * over the system navigation bar and under the tab bar; they pad their content by [LocalPageTopPadding] and [LocalPageBottomPadding]. A page may scroll
  * the tab bar away through [LocalTabBarScrollBehavior].
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,12 +130,9 @@ fun AppRoot() {
                 }
             }
         }
-        // Drawn over the pages: the content shows through both strips.
+        // Drawn over the pages: the content shows through it. The status bar has no strip.
         if (systemNavBar > 0.dp && !isImeVisible) {
             SystemBarStrip(systemNavBar, Modifier.align(Alignment.BottomCenter))
-        }
-        if (statusBar > 0.dp) {
-            SystemBarStrip(statusBar, Modifier.align(Alignment.TopCenter))
         }
     }
 }

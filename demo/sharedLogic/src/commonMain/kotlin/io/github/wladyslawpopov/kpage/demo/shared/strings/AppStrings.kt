@@ -6,6 +6,7 @@ import io.github.wladyslawpopov.kpage.demo.shared.resources.core_back
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_cancel
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_clear
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_close
+import io.github.wladyslawpopov.kpage.demo.shared.resources.core_filters
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_network_error
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_no_internet_title
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_nothing_found
@@ -22,6 +23,24 @@ import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_coming_s
 import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_lab
 import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_settings
 import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_space
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_any
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_afrc
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_arc
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_grc
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_gsfc
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_hq
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_jpl
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_jsc
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_ksc
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_larc
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_lrc
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_msfc
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_ssc
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_from
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_search_hint
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_show
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_to
 import io.github.wladyslawpopov.kpage.demo.shared.resources.tabs_cache
 import io.github.wladyslawpopov.kpage.demo.shared.resources.tabs_chat
 import io.github.wladyslawpopov.kpage.demo.shared.resources.tabs_lab
@@ -48,6 +67,7 @@ fun AppStringKey.resource(): StringResource = when (this) {
         AppStringKey.Core.RESET -> Res.string.core_reset
         AppStringKey.Core.SEARCH -> Res.string.core_search
         AppStringKey.Core.CLEAR -> Res.string.core_clear
+        AppStringKey.Core.FILTERS -> Res.string.core_filters
     }
 
     is AppStringKey.Tabs -> when (this) {
@@ -56,6 +76,27 @@ fun AppStringKey.resource(): StringResource = when (this) {
         AppStringKey.Tabs.LAB -> Res.string.tabs_lab
         AppStringKey.Tabs.CACHE -> Res.string.tabs_cache
         AppStringKey.Tabs.SETTINGS -> Res.string.tabs_settings
+    }
+
+    is AppStringKey.Space -> when (this) {
+        AppStringKey.Space.SEARCH_HINT -> Res.string.space_search_hint
+        AppStringKey.Space.CENTER -> Res.string.space_center
+        AppStringKey.Space.FROM -> Res.string.space_from
+        AppStringKey.Space.TO -> Res.string.space_to
+        AppStringKey.Space.ANY -> Res.string.space_any
+        AppStringKey.Space.SHOW -> Res.string.space_show
+        AppStringKey.Space.CENTER_AFRC -> Res.string.space_center_afrc
+        AppStringKey.Space.CENTER_ARC -> Res.string.space_center_arc
+        AppStringKey.Space.CENTER_GRC -> Res.string.space_center_grc
+        AppStringKey.Space.CENTER_GSFC -> Res.string.space_center_gsfc
+        AppStringKey.Space.CENTER_HQ -> Res.string.space_center_hq
+        AppStringKey.Space.CENTER_JPL -> Res.string.space_center_jpl
+        AppStringKey.Space.CENTER_JSC -> Res.string.space_center_jsc
+        AppStringKey.Space.CENTER_KSC -> Res.string.space_center_ksc
+        AppStringKey.Space.CENTER_LARC -> Res.string.space_center_larc
+        AppStringKey.Space.CENTER_LRC -> Res.string.space_center_lrc
+        AppStringKey.Space.CENTER_MSFC -> Res.string.space_center_msfc
+        AppStringKey.Space.CENTER_SSC -> Res.string.space_center_ssc
     }
 
     is AppStringKey.Placeholder -> when (this) {

@@ -129,6 +129,8 @@ extension AppIconKey {
         case .nothingFound: return "magnifyingglass"
         case .noImage: return "photo"
         case .search: return "magnifyingglass"
+        case .filter: return "line.3.horizontal.decrease"
+        case .dropdown: return "chevron.up.chevron.down"
         case .favorite: return "heart.fill"
         case .favoriteOff: return "heart"
         case .layoutList: return "list.bullet"

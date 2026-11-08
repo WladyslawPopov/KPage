@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.Dp
 import io.github.wladyslawpopov.kpage.demo.android.theme.color
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 
-/** How far from the top a page keeps its header: under the strip over the status bar. */
+/** How far from the top a page keeps its header: under the status bar. */
 val LocalPageTopPadding = compositionLocalOf<Dp> {
     error("LocalPageTopPadding is provided by AppRoot")
 }
@@ -39,7 +39,11 @@ val LocalTabBarScrollBehavior = staticCompositionLocalOf<BottomAppBarScrollBehav
 @Composable
 fun barColor(): Color = AppColorKey.Container.ELEVATED.color().copy(alpha = BAR_ALPHA)
 
-/** A translucent strip over a system bar; it takes the taps so they do not reach the content under it. */
+/** The highlight behind a button, the title or the search field of a bar that has no background of its own. */
+@Composable
+fun barItemColor(): Color = AppColorKey.Container.ELEVATED.color().copy(alpha = ITEM_ALPHA)
+
+/** A translucent strip over the system navigation bar; it takes the taps so they do not reach the content under it. */
 @Composable
 fun SystemBarStrip(height: Dp, modifier: Modifier = Modifier) {
     Box(
@@ -52,3 +56,4 @@ fun SystemBarStrip(height: Dp, modifier: Modifier = Modifier) {
 }
 
 private const val BAR_ALPHA = 0.95f
+private const val ITEM_ALPHA = 0.8f

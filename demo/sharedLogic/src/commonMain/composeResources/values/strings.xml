@@ -13,12 +13,32 @@
     <string name="core_reset">Reset</string>
     <string name="core_search">Search</string>
     <string name="core_clear">Clear</string>
+    <string name="core_filters">Filters</string>
 
     <string name="tabs_space">Space</string>
     <string name="tabs_chat">Chat</string>
     <string name="tabs_lab">Lab</string>
     <string name="tabs_cache">Cache</string>
     <string name="tabs_settings">Settings</string>
+
+    <string name="space_search_hint">Title, location or photographer</string>
+    <string name="space_center">NASA center</string>
+    <string name="space_from">From</string>
+    <string name="space_to">To</string>
+    <string name="space_any">Any</string>
+    <string name="space_show">Show</string>
+    <string name="space_center_afrc">Armstrong Flight Research Center</string>
+    <string name="space_center_arc">Ames Research Center</string>
+    <string name="space_center_grc">Glenn Research Center</string>
+    <string name="space_center_gsfc">Goddard Space Flight Center</string>
+    <string name="space_center_hq">NASA Headquarters</string>
+    <string name="space_center_jpl">Jet Propulsion Laboratory</string>
+    <string name="space_center_jsc">Johnson Space Center</string>
+    <string name="space_center_ksc">Kennedy Space Center</string>
+    <string name="space_center_larc">Langley Research Center</string>
+    <string name="space_center_lrc">Lewis Research Center</string>
+    <string name="space_center_msfc">Marshall Space Flight Center</string>
+    <string name="space_center_ssc">Stennis Space Center</string>
 
     <string name="placeholder_space">Hello, NASA</string>
     <string name="placeholder_chat">Hello, Chat</string>

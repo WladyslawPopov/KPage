@@ -10,6 +10,7 @@ struct SpaceScreen: View {
     @State private var query: String
     @State private var isSearching = false
     @State private var isSearchHidden = false
+    @State private var isFiltersShown = false
     @State private var fullTopInset: CGFloat = 0
 
     init(component: SpaceComponent, state: SpaceState) {
@@ -38,6 +39,14 @@ struct SpaceScreen: View {
                 card(image)
             }
         }
+        // The chips are inside the area the geometry below measures, so they do not count as a bar.
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if state.isFiltered {
+                SpaceFilterChips(query: state.list.query) { component.onIntent(intent: $0) }
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: state.isFiltered)
         // The content starts where the navigation bar ends. The bar is tallest at rest and shrinks while
         // scrolling: the search field goes first, then the title. The field is gone once the bar has
         // lost its height.
@@ -49,10 +58,13 @@ struct SpaceScreen: View {
         }
         .navigationTitle(state.topBar.title.text)
         // The system search field; its search key only hides the keyboard, the list follows the text.
-        .searchable(text: $query, isPresented: $isSearching, prompt: AppStringKeyCore.search.text)
+        .searchable(text: $query, isPresented: $isSearching, prompt: AppStringKeySpace.searchHint.text)
         .onChange(of: query) { _, text in component.onIntent(intent: SpaceIntentSearchChanged(text: text)) }
         // The text cleared from outside (the Reset button of the empty state).
         .onChange(of: state.searchText) { _, text in if text.isEmpty { query = "" } }
+        .sheet(isPresented: $isFiltersShown) {
+            SpaceFiltersSheet(state: state) { component.onIntent(intent: $0) }
+        }
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 if showsSearchButton {
@@ -62,6 +74,10 @@ struct SpaceScreen: View {
                     .accessibilityLabel(AppStringKeyCore.search.text)
                     .transition(.opacity.combined(with: .scale))
                 }
+                Button { isFiltersShown = true } label: {
+                    Image(systemName: AppIconKey.filter.sfSymbol)
+                }
+                .accessibilityLabel(AppStringKeyCore.filters.text)
                 // Shows the layout a tap switches to.
                 Button { component.onIntent(intent: SpaceIntentToggleLayout.shared) } label: {
                     Image(systemName: (isGrid ? AppIconKey.layoutList : AppIconKey.layoutGrid).sfSymbol)

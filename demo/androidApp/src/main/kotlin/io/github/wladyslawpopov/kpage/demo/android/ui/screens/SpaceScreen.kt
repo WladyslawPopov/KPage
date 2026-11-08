@@ -21,6 +21,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,12 +37,15 @@ import io.github.wladyslawpopov.kpage.demo.android.theme.vector
 import io.github.wladyslawpopov.kpage.demo.android.ui.page.PageLayout
 import io.github.wladyslawpopov.kpage.demo.android.ui.paging.PagedGrid
 import io.github.wladyslawpopov.kpage.demo.android.ui.paging.rememberCanHideBars
+import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.BarIconButton
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.RemoteImage
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.SearchTopBar
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceLayout
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.SpaceComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.SpaceIntent
+import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
+import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppIconKey
@@ -54,6 +60,10 @@ fun SpaceScreen(component: SpaceComponent) {
     }
     val gridState = rememberLazyGridState()
     val canHideBars by rememberCanHideBars(gridState)
+    var isFiltersShown by rememberSaveable { mutableStateOf(false) }
+    if (isFiltersShown) {
+        SpaceFiltersSheet(state = state, onIntent = component::onIntent, onDismiss = { isFiltersShown = false })
+    }
     PageLayout(
         page = state.page,
         onPageIntent = component::onPageIntent,
@@ -62,13 +72,18 @@ fun SpaceScreen(component: SpaceComponent) {
             SearchTopBar(
                 state = state.topBar,
                 text = state.searchText,
+                hint = AppStringKey.Space.SEARCH_HINT,
                 onTextChange = { component.onIntent(SpaceIntent.SearchChanged(it)) },
             ) {
+                BarIconButton(onClick = { isFiltersShown = true }) {
+                    Icon(AppIconKey.FILTER.vector(), contentDescription = AppStringKey.Core.FILTERS.asString())
+                }
                 // Shows the layout a tap switches to.
-                IconButton(onClick = { component.onIntent(SpaceIntent.ToggleLayout) }) {
+                BarIconButton(onClick = { component.onIntent(SpaceIntent.ToggleLayout) }) {
                     Icon((if (isGrid) AppIconKey.LAYOUT_LIST else AppIconKey.LAYOUT_GRID).vector(), contentDescription = null)
                 }
             }
+            SpaceFilterChips(state.list.query, onIntent = component::onIntent)
         },
     ) { padding ->
         PagedGrid(

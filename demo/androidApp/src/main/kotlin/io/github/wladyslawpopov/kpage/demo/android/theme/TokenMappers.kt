@@ -3,6 +3,7 @@ package io.github.wladyslawpopov.kpage.demo.android.theme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ViewList
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
@@ -11,6 +12,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
@@ -135,6 +137,8 @@ fun AppIconKey.vector(): ImageVector = when (this) {
     AppIconKey.NOTHING_FOUND -> Icons.Filled.Search
     AppIconKey.NO_IMAGE -> Icons.Filled.BrokenImage
     AppIconKey.SEARCH -> Icons.Filled.Search
+    AppIconKey.FILTER -> Icons.Filled.FilterList
+    AppIconKey.DROPDOWN -> Icons.Filled.ArrowDropDown
     AppIconKey.FAVORITE -> Icons.Filled.Favorite
     AppIconKey.FAVORITE_OFF -> Icons.Filled.FavoriteBorder
     AppIconKey.LAYOUT_LIST -> Icons.AutoMirrored.Filled.ViewList
