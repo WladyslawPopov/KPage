@@ -1,4 +1,4 @@
-package io.github.wladyslawpopov.kpage.demo.android.ui.screens
+package io.github.wladyslawpopov.kpage.demo.android.ui.screens.space
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically

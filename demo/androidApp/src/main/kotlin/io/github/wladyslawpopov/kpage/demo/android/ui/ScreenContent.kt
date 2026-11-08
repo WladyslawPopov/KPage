@@ -5,7 +5,7 @@ import io.github.wladyslawpopov.kpage.demo.android.ui.screens.CacheScreen
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.ChatScreen
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.LabScreen
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.SettingsScreen
-import io.github.wladyslawpopov.kpage.demo.android.ui.screens.SpaceScreen
+import io.github.wladyslawpopov.kpage.demo.android.ui.screens.space.SpaceScreen
 import io.github.wladyslawpopov.kpage.demo.presentation.navigation.ScreenComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.cache.CacheComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.ChatComponent
