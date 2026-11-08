@@ -131,6 +131,7 @@ extension AppIconKey {
         case .search: return "magnifyingglass"
         case .filter: return "line.3.horizontal.decrease"
         case .dropdown: return "chevron.up.chevron.down"
+        case .done: return "checkmark"
         case .favorite: return "heart.fill"
         case .favoriteOff: return "heart"
         case .layoutList: return "list.bullet"

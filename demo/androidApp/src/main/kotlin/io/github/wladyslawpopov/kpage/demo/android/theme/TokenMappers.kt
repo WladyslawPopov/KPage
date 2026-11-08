@@ -6,6 +6,7 @@ import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
@@ -139,6 +140,7 @@ fun AppIconKey.vector(): ImageVector = when (this) {
     AppIconKey.SEARCH -> Icons.Filled.Search
     AppIconKey.FILTER -> Icons.Filled.FilterList
     AppIconKey.DROPDOWN -> Icons.Filled.ArrowDropDown
+    AppIconKey.DONE -> Icons.Filled.Check
     AppIconKey.FAVORITE -> Icons.Filled.Favorite
     AppIconKey.FAVORITE_OFF -> Icons.Filled.FavoriteBorder
     AppIconKey.LAYOUT_LIST -> Icons.AutoMirrored.Filled.ViewList

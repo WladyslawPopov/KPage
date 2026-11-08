@@ -13,15 +13,44 @@ import SharedLogic
 /// both (`onAppear` / `onDisappear` and `scenePhase`), the same as the lifecycle owner does for
 /// `PagingEffect` on Android.
 ///
+/// A `header` scrolls with the rows (a search field). When `empty` is set it takes the place of the
+/// rows under the header, so the header, and the keyboard of a field in it, stay while the list is
+/// empty.
+///
 /// Decorations and a reversed list (chats) are not supported yet.
-struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, ItemView: View, PlaceholderView: View>: View {
+struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, HeaderView: View, ItemView: View, PlaceholderView: View>: View {
     let list: PaginatorUiState<Q, T, D>
-    var columns: Int = 1
-    var showPosition: Bool = true
+    let columns: Int
+    let showPosition: Bool
     /// The gap between the cells, at the sides and above the first row.
-    var spacing: CGFloat = AppDimenKeyPadding.small.value
-    @ViewBuilder let placeholder: (_ serverIndex: Int) -> PlaceholderView
-    @ViewBuilder let item: (_ item: T, _ serverIndex: Int) -> ItemView
+    let spacing: CGFloat
+    let empty: PageEmptyState?
+    let onEmptyAction: (PageIntent) -> Void
+    let header: () -> HeaderView
+    let placeholder: (_ serverIndex: Int) -> PlaceholderView
+    let item: (_ item: T, _ serverIndex: Int) -> ItemView
+
+    init(
+        list: PaginatorUiState<Q, T, D>,
+        columns: Int = 1,
+        showPosition: Bool = true,
+        spacing: CGFloat = AppDimenKeyPadding.small.value,
+        empty: PageEmptyState? = nil,
+        onEmptyAction: @escaping (PageIntent) -> Void = { _ in },
+        @ViewBuilder header: @escaping () -> HeaderView,
+        @ViewBuilder placeholder: @escaping (_ serverIndex: Int) -> PlaceholderView,
+        @ViewBuilder item: @escaping (_ item: T, _ serverIndex: Int) -> ItemView
+    ) {
+        self.list = list
+        self.columns = columns
+        self.showPosition = showPosition
+        self.spacing = spacing
+        self.empty = empty
+        self.onEmptyAction = onEmptyAction
+        self.header = header
+        self.placeholder = placeholder
+        self.item = item
+    }
 
     @Environment(\.scenePhase) private var scenePhase
     @State private var isOnScreen = false
@@ -33,17 +62,25 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, ItemView: View, Place
 
     var body: some View {
         ScrollView {
-            LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), spacing: spacing), count: max(columns, 1)),
-                spacing: spacing
-            ) {
-                ForEach(0..<Int(list.rows.rowCount), id: \.self) { index in
-                    cell(list.rows.get(index: Int32(index)))
+            VStack(spacing: 0) {
+                header()
+                if let empty {
+                    PageEmptyBody(empty: empty, onAction: onEmptyAction)
+                        .containerRelativeFrame(.vertical) { height, _ in height * 0.7 }
+                } else {
+                    LazyVGrid(
+                        columns: Array(repeating: GridItem(.flexible(), spacing: spacing), count: max(columns, 1)),
+                        spacing: spacing
+                    ) {
+                        ForEach(0..<Int(list.rows.rowCount), id: \.self) { index in
+                            cell(list.rows.get(index: Int32(index)))
+                        }
+                    }
+                    .scrollTargetLayout()
+                    .padding(.horizontal, spacing)
+                    .padding(.top, spacing)
                 }
             }
-            .scrollTargetLayout()
-            .padding(.horizontal, spacing)
-            .padding(.top, spacing)
         }
         // The user's scroll hides the keyboard, as in system apps; the typed text stays.
         .scrollDismissesKeyboard(.immediately)
@@ -109,5 +146,27 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, ItemView: View, Place
                 .background(.regularMaterial, in: Capsule())
                 .padding(AppDimenKeyPadding.small.value)
         }
+    }
+}
+
+extension PagedGrid where HeaderView == EmptyView {
+    /// A list without a header.
+    init(
+        list: PaginatorUiState<Q, T, D>,
+        columns: Int = 1,
+        showPosition: Bool = true,
+        spacing: CGFloat = AppDimenKeyPadding.small.value,
+        @ViewBuilder placeholder: @escaping (_ serverIndex: Int) -> PlaceholderView,
+        @ViewBuilder item: @escaping (_ item: T, _ serverIndex: Int) -> ItemView
+    ) {
+        self.init(
+            list: list,
+            columns: columns,
+            showPosition: showPosition,
+            spacing: spacing,
+            header: { EmptyView() },
+            placeholder: placeholder,
+            item: item
+        )
     }
 }

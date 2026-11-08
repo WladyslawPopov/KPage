@@ -40,6 +40,7 @@ import io.github.wladyslawpopov.kpage.demo.android.ui.paging.rememberCanHideBars
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.BarIconButton
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.RemoteImage
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.SearchTopBar
+import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.rememberSearchBarState
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceLayout
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.SpaceComponent
@@ -61,6 +62,7 @@ fun SpaceScreen(component: SpaceComponent) {
     val gridState = rememberLazyGridState()
     val canHideBars by rememberCanHideBars(gridState)
     var isFiltersShown by rememberSaveable { mutableStateOf(false) }
+    val searchBar = rememberSearchBarState()
     if (isFiltersShown) {
         SpaceFiltersSheet(state = state, onIntent = component::onIntent, onDismiss = { isFiltersShown = false })
     }
@@ -71,6 +73,7 @@ fun SpaceScreen(component: SpaceComponent) {
         header = {
             SearchTopBar(
                 state = state.topBar,
+                searchBar = searchBar,
                 text = state.searchText,
                 hint = AppStringKey.Space.SEARCH_HINT,
                 onTextChange = { component.onIntent(SpaceIntent.SearchChanged(it)) },
@@ -83,7 +86,13 @@ fun SpaceScreen(component: SpaceComponent) {
                     Icon((if (isGrid) AppIconKey.LAYOUT_LIST else AppIconKey.LAYOUT_GRID).vector(), contentDescription = null)
                 }
             }
-            SpaceFilterChips(state.list.query, onIntent = component::onIntent)
+            SpaceFilterChips(
+                state = state,
+                isSearchOpen = searchBar.isOpen,
+                onOpenSearch = searchBar::open,
+                onOpenFilters = { isFiltersShown = true },
+                onIntent = component::onIntent,
+            )
         },
     ) { padding ->
         PagedGrid(

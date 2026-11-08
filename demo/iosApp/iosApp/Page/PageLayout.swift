@@ -9,11 +9,13 @@ import SharedLogic
 struct PageLayout<Content: View>: View {
     let page: PageState
     let onPageIntent: (PageIntent) -> Void
+    /// False when the content draws the empty state itself, for example inside its own scroll view.
+    var showsEmpty: Bool = true
     @ViewBuilder let content: () -> Content
 
     var body: some View {
         Group {
-            if let empty = page.empty {
+            if showsEmpty, let empty = page.empty {
                 PageEmptyContent(empty: empty, onAction: onPageIntent)
             } else {
                 content()

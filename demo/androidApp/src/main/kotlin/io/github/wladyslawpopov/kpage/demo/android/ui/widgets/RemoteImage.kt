@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -15,8 +17,11 @@ import androidx.compose.ui.layout.ContentScale
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
 import coil3.request.crossfade
 import io.github.wladyslawpopov.kpage.demo.android.theme.color
 import io.github.wladyslawpopov.kpage.demo.android.theme.dp
@@ -41,7 +46,8 @@ fun createImageLoader(context: PlatformContext): ImageLoader =
 
 /**
  * An image from the network over a quiet background. A missing [url] or a failed load shows the
- * "no image" icon. Light enough for lazy lists: no subcomposition per state.
+ * "no image" icon. A failed load is tried again [MAX_RETRIES] times, without the caches: the failed
+ * try may have left a broken file there. Light enough for lazy lists: no subcomposition per state.
  */
 @Composable
 fun RemoteImage(
@@ -51,16 +57,32 @@ fun RemoteImage(
     contentScale: ContentScale = ContentScale.Crop,
 ) {
     var failed by remember(url) { mutableStateOf(url == null) }
+    var attempt by remember(url) { mutableIntStateOf(0) }
+    val context = LocalPlatformContext.current
     Box(modifier.background(AppColorKey.Container.SECONDARY.color()), contentAlignment = Alignment.Center) {
         if (url != null) {
-            AsyncImage(
-                model = url,
-                contentDescription = contentDescription,
-                contentScale = contentScale,
-                onSuccess = { failed = false },
-                onError = { failed = true },
-                modifier = Modifier.matchParentSize(),
-            )
+            val request = remember(url, attempt) {
+                ImageRequest.Builder(context)
+                    .data(url)
+                    .apply {
+                        if (attempt > 0) {
+                            diskCachePolicy(CachePolicy.WRITE_ONLY)
+                            memoryCachePolicy(CachePolicy.WRITE_ONLY)
+                        }
+                    }
+                    .build()
+            }
+            // A new composition per try, so the request runs again.
+            key(attempt) {
+                AsyncImage(
+                    model = request,
+                    contentDescription = contentDescription,
+                    contentScale = contentScale,
+                    onSuccess = { failed = false },
+                    onError = { if (attempt < MAX_RETRIES) attempt++ else failed = true },
+                    modifier = Modifier.matchParentSize(),
+                )
+            }
         }
         if (failed) {
             Icon(
@@ -73,5 +95,6 @@ fun RemoteImage(
     }
 }
 
+private const val MAX_RETRIES = 2
 private const val MEMORY_SHARE = 0.25
 private const val DISK_BYTES = 100L * 1024 * 1024

@@ -41,7 +41,20 @@ private struct TabsContent: View {
                 .tag(tab)
             }
         }
+        .modifier(MinimizeTabBarOnScroll())
         .onAppear { navigator.setAppActive(scenePhase == .active) }
         .onChange(of: scenePhase) { _, phase in navigator.setAppActive(phase == .active) }
+    }
+}
+
+/// The tab bar folds into one button while a list is scrolled down and comes back when it is tapped,
+/// as in system apps. Only iOS 26 has it; before it the bar stays as it is.
+private struct MinimizeTabBarOnScroll: ViewModifier {
+    @ViewBuilder func body(content: Content) -> some View {
+        if #available(iOS 26, *) {
+            content.tabBarMinimizeBehavior(.onScrollDown)
+        } else {
+            content
+        }
     }
 }

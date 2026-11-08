@@ -102,15 +102,25 @@ struct PageEmptyContent: View {
 
     var body: some View {
         ScrollView {
-            ContentUnavailableView {
-                Label(empty.title.text, systemImage: empty.icon.sfSymbol)
-            } actions: {
-                if let action = empty.action, let actionText = empty.actionText {
-                    Button(actionText.text) { onAction(action) }
-                        .buttonStyle(.borderedProminent)
-                }
+            PageEmptyBody(empty: empty, onAction: onAction)
+                .containerRelativeFrame(.vertical)
+        }
+    }
+}
+
+/// The message of an empty page, for a list that draws it inside its own scroll view.
+struct PageEmptyBody: View {
+    let empty: PageEmptyState
+    let onAction: (PageIntent) -> Void
+
+    var body: some View {
+        ContentUnavailableView {
+            Label(empty.title.text, systemImage: empty.icon.sfSymbol)
+        } actions: {
+            if let action = empty.action, let actionText = empty.actionText {
+                Button(actionText.text) { onAction(action) }
+                    .buttonStyle(.borderedProminent)
             }
-            .containerRelativeFrame(.vertical)
         }
     }
 }

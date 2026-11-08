@@ -5,7 +5,7 @@ sealed interface AppStringKey {
     enum class Core : AppStringKey {
         OK, CANCEL, RETRY, REFRESH, CLOSE, BACK,
         OOPS_TITLE, NO_INTERNET_TITLE, NETWORK_ERROR, SERVER_ERROR, NOTHING_FOUND,
-        RESET, SEARCH, CLEAR, FILTERS,
+        RESET, SEARCH, CLEAR, FILTERS, DONE,
     }
 
     enum class Tabs : AppStringKey { SPACE, CHAT, LAB, CACHE, SETTINGS }

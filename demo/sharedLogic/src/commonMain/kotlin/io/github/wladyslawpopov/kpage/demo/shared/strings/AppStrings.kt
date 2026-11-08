@@ -6,6 +6,7 @@ import io.github.wladyslawpopov.kpage.demo.shared.resources.core_back
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_cancel
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_clear
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_close
+import io.github.wladyslawpopov.kpage.demo.shared.resources.core_done
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_filters
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_network_error
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_no_internet_title
@@ -68,6 +69,7 @@ fun AppStringKey.resource(): StringResource = when (this) {
         AppStringKey.Core.SEARCH -> Res.string.core_search
         AppStringKey.Core.CLEAR -> Res.string.core_clear
         AppStringKey.Core.FILTERS -> Res.string.core_filters
+        AppStringKey.Core.DONE -> Res.string.core_done
     }
 
     is AppStringKey.Tabs -> when (this) {

@@ -43,9 +43,8 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.coil.compose)
-    // Coil's network fetcher runs on Ktor and needs an engine.
-    implementation(libs.coil.network.ktor3)
-    implementation(libs.ktor.client.android)
+    // Coil's network fetcher on OkHttp: it handles a cancelled request without handing the decoder half a file.
+    implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.activity.compose)

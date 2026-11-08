@@ -8,10 +8,10 @@ struct SpaceScreen: View {
     // The field keeps the typed text itself: the state comes back from Kotlin a moment later, and a
     // late echo must not overwrite a fast typist.
     @State private var query: String
-    @State private var isSearching = false
-    @State private var isSearchHidden = false
     @State private var isFiltersShown = false
-    @State private var fullTopInset: CGFloat = 0
+    @State private var isSearchFieldVisible = true
+    // The search mode: a real field and its buttons replace the navigation bar.
+    @State private var isSearchMode = false
 
     init(component: SpaceComponent, state: SpaceState) {
         self.component = component
@@ -21,44 +21,63 @@ struct SpaceScreen: View {
 
     private var isGrid: Bool { state.layout == .grid }
 
-    // The system search field scrolls away with the list; then its button goes to the toolbar.
-    private var showsSearchButton: Bool { isSearchHidden && !isSearching }
+    private var searchText: String { query.trimmingCharacters(in: .whitespacesAndNewlines) }
 
-    /// The height the navigation bar loses when the search field is gone.
-    private let searchFieldHeight: CGFloat = 52
+    // The search field scrolls away with the list. Then a button in the toolbar, or a chip with the
+    // text when something is typed, takes its place.
+    private var isSearchAway: Bool { !isSearchFieldVisible && !isSearchMode }
+    private var showsSearchButton: Bool { isSearchAway && searchText.isEmpty }
+    private var showsSearchChip: Bool { isSearchAway && !searchText.isEmpty }
+    private var showsChips: Bool { state.isFiltered || showsSearchChip }
 
     var body: some View {
-        PageLayout(page: state.page, onPageIntent: { component.onPageIntent(intent: $0) }) {
+        // The empty state is drawn by the list, under the search field, so the field stays.
+        PageLayout(page: state.page, onPageIntent: { component.onPageIntent(intent: $0) }, showsEmpty: false) {
             PagedGrid(
                 list: state.list,
                 columns: isGrid ? 2 : 1,
                 // List rows keep their own padding and a divider.
                 spacing: isGrid ? AppDimenKeyPadding.medium.value : AppDimenKeyPadding.none.value,
+                empty: state.page.empty,
+                onEmptyAction: { component.onPageIntent(intent: $0) },
+                header: {
+                    // Gone while the search mode is open; back when it ends.
+                    if !isSearchMode {
+                        SpaceSearchField(text: query, onOpen: openSearch, onClear: { query = "" })
+                            .onScrollVisibilityChange(threshold: 0.1) { visible in
+                                withAnimation(.easeInOut(duration: 0.25)) { isSearchFieldVisible = visible }
+                            }
+                    }
+                },
                 placeholder: { _ in card(nil) }
             ) { image, _ in
                 card(image)
             }
         }
-        // The chips are inside the area the geometry below measures, so they do not count as a bar.
+        // The search bar takes the place of the navigation bar, which is hidden meanwhile; the chips are under it.
         .safeAreaInset(edge: .top, spacing: 0) {
-            if state.isFiltered {
-                SpaceFilterChips(query: state.list.query) { component.onIntent(intent: $0) }
+            VStack(spacing: 0) {
+                if isSearchMode {
+                    SpaceSearchBar(text: $query, onClose: closeSearch)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
+                if showsChips {
+                    SpaceFilterChips(
+                        query: state.list.query,
+                        searchText: showsSearchChip ? searchText : nil,
+                        onOpenSearch: openSearch,
+                        onClearSearch: { query = "" },
+                        onOpenFilters: { isFiltersShown = true },
+                        onIntent: { component.onIntent(intent: $0) }
+                    )
                     .transition(.move(edge: .top).combined(with: .opacity))
+                }
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: state.isFiltered)
-        // The content starts where the navigation bar ends. The bar is tallest at rest and shrinks while
-        // scrolling: the search field goes first, then the title. The field is gone once the bar has
-        // lost its height.
-        .onGeometryChange(for: CGFloat.self) { $0.safeAreaInsets.top } action: { top in
-            fullTopInset = max(fullTopInset, top)
-            withAnimation(.easeInOut(duration: 0.25)) {
-                isSearchHidden = fullTopInset - top >= searchFieldHeight
-            }
-        }
+        .toolbar(isSearchMode ? .hidden : .visible, for: .navigationBar)
+        .animation(.easeInOut(duration: 0.25), value: showsChips)
+        .animation(.easeInOut(duration: 0.25), value: isSearchMode)
         .navigationTitle(state.topBar.title.text)
-        // The system search field; its search key only hides the keyboard, the list follows the text.
-        .searchable(text: $query, isPresented: $isSearching, prompt: AppStringKeySpace.searchHint.text)
         .onChange(of: query) { _, text in component.onIntent(intent: SpaceIntentSearchChanged(text: text)) }
         // The text cleared from outside (the Reset button of the empty state).
         .onChange(of: state.searchText) { _, text in if text.isEmpty { query = "" } }
@@ -68,7 +87,7 @@ struct SpaceScreen: View {
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
                 if showsSearchButton {
-                    Button { isSearching = true } label: {
+                    Button(action: openSearch) {
                         Image(systemName: AppIconKey.search.sfSymbol)
                     }
                     .accessibilityLabel(AppStringKeyCore.search.text)
@@ -85,6 +104,10 @@ struct SpaceScreen: View {
             }
         }
     }
+
+    private func openSearch() { isSearchMode = true }
+
+    private func closeSearch() { isSearchMode = false }
 
     @ViewBuilder private func card(_ image: SpaceImage?) -> some View {
         let onFavorite = {
