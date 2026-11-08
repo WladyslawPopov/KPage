@@ -2,7 +2,9 @@ package io.github.wladyslawpopov.kpage.demo.presentation.screens.space
 
 import io.github.wladyslawpopov.kpage.core.paging.data.state.LoadState
 import io.github.wladyslawpopov.kpage.demo.domain.favorites.FavoritesRepository
+import io.github.wladyslawpopov.kpage.demo.domain.settings.SettingsRepository
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
+import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceLayout
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceQuery
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceRepository
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentTasks
@@ -25,6 +27,7 @@ internal class SpaceEngine(
     private val tasks: ComponentTasks,
     private val repository: SpaceRepository,
     private val favorites: FavoritesRepository,
+    private val settings: SettingsRepository,
     private val states: Flow<SpaceState>,
     private val getState: () -> SpaceState,
     private val updateState: ((SpaceState) -> SpaceState) -> Unit,
@@ -47,6 +50,10 @@ internal class SpaceEngine(
             }
         }
         tasks.launchMain { followSearchText() }
+        tasks.launchMain {
+            val layout = settings.spaceLayout()
+            updateState { it.copy(layout = layout) }
+        }
     }
 
     fun onIntent(intent: SpaceIntent) {
@@ -60,9 +67,7 @@ internal class SpaceEngine(
                 )
             )
 
-            SpaceIntent.ToggleLayout -> updateState {
-                it.copy(layout = if (it.layout == SpaceLayout.LIST) SpaceLayout.GRID else SpaceLayout.LIST)
-            }
+            SpaceIntent.ToggleLayout -> toggleLayout()
 
             is SpaceIntent.SetFavorite -> setFavorite(intent)
         }
@@ -90,6 +95,13 @@ internal class SpaceEngine(
             .map { it.trim() }
             .distinctUntilChanged()
             .collect { text -> setQuery(getState().list.query.copy(text = text)) }
+    }
+
+    // The screen switches at once; the choice is saved for the next launch.
+    private fun toggleLayout() {
+        val layout = if (getState().layout == SpaceLayout.LIST) SpaceLayout.GRID else SpaceLayout.LIST
+        updateState { it.copy(layout = layout) }
+        tasks.launchMain { settings.setSpaceLayout(layout) }
     }
 
     // The database first, then the cache of the lists: they all show the new mark without a refresh.

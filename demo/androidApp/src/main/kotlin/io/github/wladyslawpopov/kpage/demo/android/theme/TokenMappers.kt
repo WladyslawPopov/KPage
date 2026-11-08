@@ -36,7 +36,8 @@ fun AppColorKey.color(): Color {
     return when (this) {
         is AppColorKey.Text -> when (this) {
             AppColorKey.Text.PRIMARY -> scheme.onBackground
-            AppColorKey.Text.SECONDARY -> scheme.onSurfaceVariant
+            // The primary text dimmed, as the secondary label on iOS; onSurfaceVariant is too close to it.
+            AppColorKey.Text.SECONDARY -> scheme.onBackground.copy(alpha = SECONDARY_TEXT_ALPHA)
             AppColorKey.Text.MUTED -> scheme.outline
             AppColorKey.Text.ACCENT -> scheme.primary
             AppColorKey.Text.ON_ACCENT -> scheme.onPrimary
@@ -143,3 +144,5 @@ fun AppIconKey.vector(): ImageVector = when (this) {
     AppIconKey.CACHE -> Icons.Filled.Refresh
     AppIconKey.SETTINGS -> Icons.Filled.Settings
 }
+
+private const val SECONDARY_TEXT_ALPHA = 0.6f

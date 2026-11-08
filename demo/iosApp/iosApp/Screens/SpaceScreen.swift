@@ -12,6 +12,8 @@ struct SpaceScreen: View {
             PagedGrid(
                 list: state.list,
                 columns: isGrid ? 2 : 1,
+                // List rows keep their own padding and a divider.
+                spacing: isGrid ? AppDimenKeyPadding.medium.value : AppDimenKeyPadding.none.value,
                 placeholder: { _ in card(nil) }
             ) { image, _ in
                 card(image)
@@ -40,13 +42,25 @@ struct SpaceScreen: View {
     }
 }
 
-/// A list card; a nil image is the placeholder of the same size.
+/// A list card with a divider under the texts; a nil image is the placeholder of the same size.
 private struct ImageRow: View {
     let image: SpaceImage?
     let onFavorite: () -> Void
 
+    private let thumbnail: CGFloat = 72
+    private let gap = AppDimenKeyPadding.medium.value
+    private let start = AppDimenKeyPadding.large.value
+
     var body: some View {
-        HStack(spacing: AppDimenKeyPadding.medium.value) {
+        VStack(spacing: 0) {
+            row
+            // From the start of the texts to the end of the screen.
+            Divider().padding(.leading, start + thumbnail + gap)
+        }
+    }
+
+    private var row: some View {
+        HStack(spacing: gap) {
             Group {
                 if let image {
                     RemoteImage(url: image.previewUrl)
@@ -54,11 +68,11 @@ private struct ImageRow: View {
                     AppColorKeyContainer.secondary.color
                 }
             }
-            .frame(width: 72, height: 72)
+            .frame(width: thumbnail, height: thumbnail)
             .clipShape(RoundedRectangle(cornerRadius: AppDimenKeyCornerRadius.medium.value))
 
             VStack(alignment: .leading, spacing: AppDimenKeyPadding.extraSmall.value) {
-                ImageTexts(image: image, details: image.map { [$0.date, $0.center].compactMap { $0 }.joined(separator: " · ") })
+                ImageTexts(image: image)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -67,7 +81,9 @@ private struct ImageRow: View {
                 .opacity(image == nil ? 0 : 1)
                 .disabled(image == nil)
         }
-        .padding(.leading, AppDimenKeyPadding.small.value)
+        .padding(.leading, start)
+        .padding(.trailing, AppDimenKeyPadding.extraSmall.value)
+        .padding(.vertical, AppDimenKeyPadding.small.value)
     }
 }
 
@@ -92,23 +108,23 @@ private struct ImageTile: View {
                 }
                 .clipShape(RoundedRectangle(cornerRadius: AppDimenKeyCornerRadius.medium.value))
 
-            ImageTexts(image: image, details: image?.date)
+            ImageTexts(image: image)
         }
     }
 }
 
-/// The title in two lines and the details under it; grey bars for a placeholder.
+/// The title in two lines and "date · center" under it; grey bars for a placeholder.
 private struct ImageTexts: View {
     let image: SpaceImage?
-    let details: String?
 
     var body: some View {
         if let image {
             Text(image.title)
                 .font(AppTypographyKey.body.font)
+                .fontWeight(.semibold)
                 .foregroundStyle(AppColorKeyText.primary.color)
                 .lineLimit(2, reservesSpace: true)
-            Text(details ?? "")
+            Text([image.date, image.center].compactMap { $0 }.joined(separator: " · "))
                 .font(AppTypographyKey.caption.font)
                 .foregroundStyle(AppColorKeyText.secondary.color)
                 .lineLimit(1)

@@ -18,6 +18,8 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, ItemView: View, Place
     let list: PaginatorUiState<Q, T, D>
     var columns: Int = 1
     var showPosition: Bool = true
+    /// The gap between the cells, at the sides and above the first row.
+    var spacing: CGFloat = AppDimenKeyPadding.small.value
     @ViewBuilder let placeholder: (_ serverIndex: Int) -> PlaceholderView
     @ViewBuilder let item: (_ item: T, _ serverIndex: Int) -> ItemView
 
@@ -28,8 +30,6 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, ItemView: View, Place
     @State private var visible: Set<Int> = []
 
     private var isShown: Bool { isOnScreen && scenePhase == .active }
-
-    private let spacing = AppDimenKeyPadding.small.value
 
     var body: some View {
         ScrollView {
@@ -43,6 +43,7 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, ItemView: View, Place
             }
             .scrollTargetLayout()
             .padding(.horizontal, spacing)
+            .padding(.top, spacing)
         }
         .onScrollTargetVisibilityChange(idType: Int.self, threshold: 0.01) { ids in
             visible = Set(ids)

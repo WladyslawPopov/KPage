@@ -1,6 +1,7 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.space
 
 import io.github.wladyslawpopov.kpage.demo.domain.favorites.FavoritesRepository
+import io.github.wladyslawpopov.kpage.demo.domain.settings.SettingsRepository
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceRepository
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentContext
 import io.github.wladyslawpopov.kpage.demo.presentation.component.StateOwner
@@ -16,12 +17,14 @@ internal class DefaultSpaceComponent(
     private val navigator: AppNavigator,
     repository: SpaceRepository,
     favorites: FavoritesRepository,
+    settings: SettingsRepository,
 ) : PageComponent<SpaceState, SpaceIntent>(context, SpaceState()), SpaceComponent {
 
     private val engine = SpaceEngine(
         tasks = this,
         repository = repository,
         favorites = favorites,
+        settings = settings,
         states = state,
         getState = { currentState },
         updateState = ::updateState,

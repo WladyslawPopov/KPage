@@ -2,6 +2,7 @@ package io.github.wladyslawpopov.kpage.demo.presentation.screens.space
 
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceCenter
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
+import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceLayout
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceQuery
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageScreenState
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageState
@@ -25,8 +26,6 @@ data class SpaceState(
 
     override fun withPage(page: PageState) = copy(page = page)
 }
-
-enum class SpaceLayout { LIST, GRID }
 
 sealed interface SpaceIntent {
     /** The text of the search field changed. */

@@ -34,5 +34,5 @@ val dataModule = module {
     single<FavoritesRepository> { FavoritesRepositoryImpl(get(), get(), get()) }
     single<ChatRepository> { ChatRepositoryImpl() }
     single<LabRepository> { LabRepositoryImpl() }
-    single<SettingsRepository> { SettingsRepositoryImpl() }
+    single<SettingsRepository> { SettingsRepositoryImpl(get()) }
 }

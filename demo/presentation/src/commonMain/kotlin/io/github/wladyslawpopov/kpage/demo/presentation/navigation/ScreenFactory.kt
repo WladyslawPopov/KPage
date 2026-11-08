@@ -13,7 +13,7 @@ import org.koin.core.component.get
 class ScreenFactory : KoinComponent {
     fun create(route: Route, context: ComponentContext, navigator: AppNavigator): ScreenComponent =
         when (route) {
-            Route.Space -> DefaultSpaceComponent(context, navigator, get(), get())
+            Route.Space -> DefaultSpaceComponent(context, navigator, get(), get(), get())
             Route.Chat -> DefaultChatComponent(context, navigator, get())
             Route.Lab -> DefaultLabComponent(context, navigator, get())
             Route.Cache -> DefaultCacheComponent(context, navigator, get())

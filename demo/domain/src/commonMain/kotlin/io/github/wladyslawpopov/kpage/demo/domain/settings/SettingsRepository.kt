@@ -1,4 +1,10 @@
 package io.github.wladyslawpopov.kpage.demo.domain.settings
 
-/** Data of the Settings tab. */
-interface SettingsRepository
+import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceLayout
+
+/** The user's choices, kept on the device between launches. */
+interface SettingsRepository {
+    suspend fun spaceLayout(): SpaceLayout
+
+    suspend fun setSpaceLayout(layout: SpaceLayout)
+}

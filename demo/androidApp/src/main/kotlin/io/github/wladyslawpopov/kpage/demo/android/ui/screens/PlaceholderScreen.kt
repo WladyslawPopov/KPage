@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import io.github.wladyslawpopov.kpage.demo.android.theme.color
 import io.github.wladyslawpopov.kpage.demo.android.theme.dp
 import io.github.wladyslawpopov.kpage.demo.android.theme.style
+import io.github.wladyslawpopov.kpage.demo.android.ui.LocalPageTopPadding
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.TopBar
 import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
 import io.github.wladyslawpopov.kpage.demo.uicore.model.TopBarState
@@ -23,7 +24,12 @@ import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppTypographyKey
 /** Layout of the empty screens of the skeleton. */
 @Composable
 fun PlaceholderScreen(topBar: TopBarState, text: AppStringKey) {
-    Column(Modifier.fillMaxSize().background(AppColorKey.Container.BACKGROUND.color())) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(AppColorKey.Container.BACKGROUND.color())
+            .padding(top = LocalPageTopPadding.current),
+    ) {
         // The skeleton screens are tab roots: the back button is never shown.
         TopBar(topBar, onBack = {})
         Box(

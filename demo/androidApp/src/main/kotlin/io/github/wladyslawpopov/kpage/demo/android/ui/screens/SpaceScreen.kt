@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -22,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.wladyslawpopov.kpage.demo.android.theme.color
@@ -30,12 +33,13 @@ import io.github.wladyslawpopov.kpage.demo.android.theme.style
 import io.github.wladyslawpopov.kpage.demo.android.theme.vector
 import io.github.wladyslawpopov.kpage.demo.android.ui.page.PageLayout
 import io.github.wladyslawpopov.kpage.demo.android.ui.paging.PagedGrid
+import io.github.wladyslawpopov.kpage.demo.android.ui.paging.rememberCanHideBars
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.RemoteImage
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.TopBar
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
+import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceLayout
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.SpaceComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.SpaceIntent
-import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.SpaceLayout
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppIconKey
@@ -48,9 +52,12 @@ fun SpaceScreen(component: SpaceComponent) {
     val onFavorite = { image: SpaceImage ->
         component.onIntent(SpaceIntent.SetFavorite(image.id, !image.isFavorite))
     }
+    val gridState = rememberLazyGridState()
+    val canHideBars by rememberCanHideBars(gridState)
     PageLayout(
         page = state.page,
         onPageIntent = component::onPageIntent,
+        hideBottomBarOnScroll = canHideBars,
         // A tab root: the back button is never shown.
         header = {
             TopBar(state.topBar, onBack = {}) {
@@ -65,8 +72,10 @@ fun SpaceScreen(component: SpaceComponent) {
             list = state.list,
             keyOf = { it.id },
             columns = if (isGrid) GRID_COLUMNS else 1,
+            gridState = gridState,
             contentPadding = padding,
-            modifier = Modifier.padding(horizontal = AppDimenKey.Padding.SMALL.dp()),
+            // List rows keep their own padding and a divider.
+            spacing = if (isGrid) AppDimenKey.Padding.MEDIUM else AppDimenKey.Padding.NONE,
             placeholderContent = { if (isGrid) ImageTile(null) {} else ImageRow(null) {} },
             itemContent = { image, _ ->
                 if (isGrid) ImageTile(image) { onFavorite(image) } else ImageRow(image) { onFavorite(image) }
@@ -75,27 +84,39 @@ fun SpaceScreen(component: SpaceComponent) {
     }
 }
 
-/** A list card; a null [image] is the placeholder of the same size. */
+/** A list card with a divider under the texts; a null [image] is the placeholder of the same size. */
 @Composable
 private fun ImageRow(image: SpaceImage?, onFavorite: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(AppDimenKey.Padding.MEDIUM.dp()),
-        modifier = Modifier.fillMaxWidth().padding(start = AppDimenKey.Padding.SMALL.dp()),
-    ) {
-        val thumbnail = Modifier.size(THUMBNAIL_SIZE).clip(RoundedCornerShape(AppDimenKey.CornerRadius.MEDIUM.dp()))
-        if (image == null) {
-            Box(thumbnail.background(AppColorKey.Container.SECONDARY.color()))
-        } else {
-            RemoteImage(url = image.previewUrl, contentDescription = null, modifier = thumbnail)
+    val gap = AppDimenKey.Padding.MEDIUM.dp()
+    val start = AppDimenKey.Padding.LARGE.dp()
+    Column(Modifier.fillMaxWidth()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(gap),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = start, end = AppDimenKey.Padding.EXTRA_SMALL.dp())
+                .padding(vertical = AppDimenKey.Padding.SMALL.dp()),
+        ) {
+            val thumbnail = Modifier.size(THUMBNAIL_SIZE).clip(RoundedCornerShape(AppDimenKey.CornerRadius.MEDIUM.dp()))
+            if (image == null) {
+                Box(thumbnail.background(AppColorKey.Container.SECONDARY.color()))
+            } else {
+                RemoteImage(url = image.previewUrl, contentDescription = null, modifier = thumbnail)
+            }
+            Column(Modifier.weight(1f)) {
+                ImageTexts(image)
+            }
+            // Keeps the height and the text width of a placeholder equal to a card.
+            Box(Modifier.size(HEART_SIZE), contentAlignment = Alignment.Center) {
+                if (image != null) Heart(image.isFavorite, onFavorite)
+            }
         }
-        Column(Modifier.weight(1f)) {
-            ImageTexts(image)
-        }
-        // Keeps the height and the text width of a placeholder equal to a card.
-        Box(Modifier.size(HEART_SIZE), contentAlignment = Alignment.Center) {
-            if (image != null) Heart(image.isFavorite, onFavorite)
-        }
+        // From the start of the texts to the end of the screen.
+        HorizontalDivider(
+            color = AppColorKey.Border.DEFAULT.color(),
+            modifier = Modifier.padding(start = start + THUMBNAIL_SIZE + gap),
+        )
     }
 }
 
@@ -121,17 +142,14 @@ private fun ImageTile(image: SpaceImage?, onFavorite: () -> Unit) {
             }
         }
         Column(Modifier.padding(vertical = AppDimenKey.Padding.EXTRA_SMALL.dp())) {
-            ImageTexts(image, details = image?.date)
+            ImageTexts(image)
         }
     }
 }
 
-/** The title in two lines and the details under it; grey bars for a placeholder. */
+/** The title in two lines and "date · center" under it; grey bars for a placeholder. */
 @Composable
-private fun ImageTexts(
-    image: SpaceImage?,
-    details: String? = image?.let { listOfNotNull(it.date, it.center).joinToString(" · ") },
-) {
+private fun ImageTexts(image: SpaceImage?) {
     if (image == null) {
         TextBar(AppTypographyKey.BODY, lines = 2, widthFraction = 0.9f)
         TextBar(AppTypographyKey.CAPTION, lines = 1, widthFraction = 0.5f)
@@ -140,13 +158,14 @@ private fun ImageTexts(
     Text(
         text = image.title,
         style = AppTypographyKey.BODY.style(),
+        fontWeight = FontWeight.SemiBold,
         color = AppColorKey.Text.PRIMARY.color(),
         maxLines = 2,
         minLines = 2,
         overflow = TextOverflow.Ellipsis,
     )
     Text(
-        text = details.orEmpty(),
+        text = listOfNotNull(image.date, image.center).joinToString(" · "),
         style = AppTypographyKey.CAPTION.style(),
         color = AppColorKey.Text.SECONDARY.color(),
         maxLines = 1,
