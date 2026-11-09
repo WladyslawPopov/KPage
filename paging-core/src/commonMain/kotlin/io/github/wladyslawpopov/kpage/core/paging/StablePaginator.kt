@@ -4,7 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import io.github.wladyslawpopov.kpage.cache.PagingDatabase
 import io.github.wladyslawpopov.kpage.core.paging.common.dbDispatcher
-import io.github.wladyslawpopov.kpage.core.paging.data.RETURN_GRACE
+import io.github.wladyslawpopov.kpage.core.paging.data.cache.CacheJson
 import io.github.wladyslawpopov.kpage.core.paging.data.cache.LiveCacheKeys
 import io.github.wladyslawpopov.kpage.core.paging.data.cache.evictOldLists
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.PagerPayload
@@ -22,7 +22,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,10 +37,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.json.Json
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.time.Duration.Companion.milliseconds
-
 
 
 /**
@@ -113,10 +109,6 @@ class StablePaginator<T : Any>(
 
     private sealed interface Event {
         class Visible(val pages: IntRange) : Event
-        // pages is null when the list has no rows.
-        class Shown(val pages: IntRange?) : Event
-        data object Hidden : Event
-        class HiddenConfirmed(val token: Long) : Event
         data object Refresh : Event
         class Run(val block: suspend () -> Unit) : Event
         class Loaded<T>(
@@ -135,11 +127,6 @@ class StablePaginator<T : Any>(
     private var activeRefresh: Refresh<T>? = null
     private val jobs = mutableMapOf<Int, Job>()
     private var error: Throwable? = null
-    private var shownOnce = false
-    private var hidden = false
-    // A hide counts only after RETURN_GRACE; a show before that cancels it (fast tab switches).
-    private var hideToken = 0L
-    private var hideTimer: Job? = null
     private var tick = 0L
     private val localEdits = mutableMapOf<String, Long>()
 
@@ -161,9 +148,7 @@ class StablePaginator<T : Any>(
     // Completed once this list is registered in the cache and old lists are evicted.
     private val initialized = CompletableDeferred<Unit>()
 
-    private val _state = MutableStateFlow(
-        PagingState(PagedList.empty<T>(), 0, LoadState.IDLE, isRestored = false)
-    )
+    private val _state = MutableStateFlow(PagingState.initial<T>())
 
     /**
      * The paginated list, its total count and the load state. Items and total count come from one
@@ -212,12 +197,7 @@ class StablePaginator<T : Any>(
         db.evictOldLists()
     }
 
-    private val jsonSerializer = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-        encodeDefaults = true
-        coerceInputValues = true
-    }
+    private val jsonSerializer = CacheJson
 
     // In-memory cache to store parsed objects and avoid redundant JSON deserialization
     private var parsedCache = emptyMap<String, T>()
@@ -271,12 +251,10 @@ class StablePaginator<T : Any>(
             } finally {
                 initialized.complete(Unit)
             }
+            // The one renewal the paginator starts by itself: the window at the top. What the cache has is
+            // shown at once and replaced when the pages arrive; after this only the app asks for a refresh.
             guarded {
-                // A list without cache is not shown by the UI (no page to report), so it loads itself.
-                if (error == null && readCache().totalCount == 0) {
-                    shownOnce = true
-                    startRefresh()
-                }
+                if (error == null) startRefresh()
             }
             publishLoadState()
             for (event in events) {
@@ -308,19 +286,9 @@ class StablePaginator<T : Any>(
         send(Event.Visible(pages))
     }
 
-    override fun onShown(visible: IntRange?) {
-        val pages = visible?.let(::pagesOf)
-        lastSentPages = pages
-        send(Event.Shown(pages))
-    }
-
     private fun pagesOf(visible: IntRange): IntRange {
         val first = maxOf(visible.first, 0) / pageSize
         return first..maxOf(first, visible.last / pageSize)
-    }
-
-    override fun onHidden() {
-        send(Event.Hidden)
     }
 
     override fun refresh() {
@@ -341,36 +309,6 @@ class StablePaginator<T : Any>(
                 followAnchor()
             }
 
-            is Event.Shown -> {
-                cancelHide()
-                val pages = event.pages
-                if (pages == null) {
-                    // A list without rows: only an empty one is refreshed. One that is not read into
-                    // the UI yet waits for its rows, which bring their own onShown.
-                    if (readCache().totalCount != 0) return
-                    moveAnchor(0)
-                } else {
-                    anchor = pages.first
-                    anchorEnd = pages.last
-                }
-                // A refresh of this very window that is still running is not restarted.
-                val running = activeRefresh?.let { window().containsAll(it.pages) } == true
-                // Server data changes while the list is away, so the first show and every return refresh it.
-                if ((!shownOnce || hidden) && !running) startRefresh() else followAnchor()
-                shownOnce = true
-                hidden = false
-            }
-
-            Event.Hidden -> {
-                cancelHide()
-                val token = hideToken
-                hideTimer = paginatorScope.launch {
-                    delay(RETURN_GRACE)
-                    send(Event.HiddenConfirmed(token))
-                }
-            }
-
-            is Event.HiddenConfirmed -> if (event.token == hideToken) hidden = true
             Event.Refresh -> startRefresh()
 
             is Event.Run -> event.block()
@@ -380,12 +318,6 @@ class StablePaginator<T : Any>(
                 onLoaded(event as Event.Loaded<T>)
             }
         }
-    }
-
-    private fun cancelHide() {
-        hideToken++
-        hideTimer?.cancel()
-        hideTimer = null
     }
 
     // Runs a failure of any event through the same path.

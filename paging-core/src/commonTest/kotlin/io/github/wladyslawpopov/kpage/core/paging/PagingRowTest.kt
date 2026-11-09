@@ -17,6 +17,14 @@ class PagingRowTest {
     private fun <T : Any, D : Any> PagingRows<T, D>.all() = List(rowCount) { this[it] }
 
     @Test
+    fun empty_rows_have_no_rows_and_equal_the_rows_of_an_empty_list() {
+        val rows = PagingRows.empty<String>()
+
+        assertEquals(0, rows.rowCount)
+        assertEquals(rows, PagedList<String>(size = 0, loaded = emptyMap()).decorate<String, String> {})
+    }
+
+    @Test
     fun header_insert_and_footer_are_merged_with_server_positions() {
         val items = PagedList(size = 4, loaded = mapOf(0 to "a", 1 to "b", 3 to "d"))
 

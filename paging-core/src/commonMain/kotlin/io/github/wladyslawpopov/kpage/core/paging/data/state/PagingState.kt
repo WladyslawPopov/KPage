@@ -17,4 +17,14 @@ data class PagingState<T : Any>(
     val totalCount: Int,
     val loadState: LoadState,
     val isRestored: Boolean,
-)
+) {
+    companion object {
+        /**
+         * The state before the paginator has delivered anything: no items, the first data is on its way
+         * ([LoadState.INITIAL]), nothing read from the database yet. A paginator starts with it, and a screen
+         * that mirrors a paginator can use it as its own initial value.
+         */
+        fun <T : Any> initial(): PagingState<T> =
+            PagingState(PagedList.empty(), totalCount = 0, loadState = LoadState.INITIAL, isRestored = false)
+    }
+}

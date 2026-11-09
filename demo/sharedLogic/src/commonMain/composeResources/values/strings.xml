@@ -15,6 +15,7 @@
     <string name="core_clear">Clear</string>
     <string name="core_filters">Filters</string>
     <string name="core_done">Done</string>
+    <string name="core_copied">Copied</string>
 
     <string name="tabs_space">Space</string>
     <string name="tabs_chat">Chat</string>
@@ -28,6 +29,20 @@
     <string name="space_to">To</string>
     <string name="space_any">Any</string>
     <string name="space_show">Show</string>
+    <string name="space_details">Details</string>
+    <string name="space_keyword">Keyword</string>
+    <string name="space_keywords">Keywords</string>
+    <string name="space_album">Album</string>
+    <string name="space_albums">Albums</string>
+    <string name="space_image">Image</string>
+    <string name="space_author">Author</string>
+    <string name="space_photographer">Photographer</string>
+    <string name="space_location">Location</string>
+    <string name="space_date">Date</string>
+    <string name="space_format">Format</string>
+    <string name="space_resolution">Resolution</string>
+    <string name="space_file_size">File size</string>
+    <string name="space_nasa_id">NASA ID</string>
     <string name="space_center_afrc">Armstrong Flight Research Center</string>
     <string name="space_center_arc">Ames Research Center</string>
     <string name="space_center_grc">Glenn Research Center</string>

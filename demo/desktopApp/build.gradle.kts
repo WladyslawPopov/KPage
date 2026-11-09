@@ -10,7 +10,6 @@ kotlin { jvmToolchain(21) }
 
 dependencies {
     implementation(project(":sharedLogic"))
-    implementation(libs.kpage.compose)
 
     implementation(compose.desktop.currentOs)
     implementation(libs.compose.material3)

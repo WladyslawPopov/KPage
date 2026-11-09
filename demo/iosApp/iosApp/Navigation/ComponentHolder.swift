@@ -26,8 +26,19 @@ final class ComponentHolder {
     /// The routes of every tab above its root.
     func snapshotPaths() -> [AppTab: [Route]] { paths.mapValues { $0.map(\.route) } }
 
+    /// Opens the route on top of the tab. A route is the identity of its screen: one already in the
+    /// stack moves to the top with its component, so the same screen is never open twice.
     func push(tab: AppTab, route: Route) {
-        paths[tab, default: []].append(create(route: route))
+        // Kotlin `equals` is `isEqual` of the object; the Route protocol itself has no equality in Swift.
+        func isSame(_ other: Route) -> Bool { (other as? NSObject)?.isEqual(route) == true }
+        if let root = roots[tab], isSame(root.route) { return }
+        var path = paths[tab] ?? []
+        if let index = path.firstIndex(where: { isSame($0.route) }) {
+            path.append(path.remove(at: index))
+        } else {
+            path.append(create(route: route))
+        }
+        paths[tab] = path
     }
 
     /// Removes and destroys the top entry of the path; false when the path is empty.

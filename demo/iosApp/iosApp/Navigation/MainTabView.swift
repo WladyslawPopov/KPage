@@ -33,10 +33,12 @@ private struct TabsContent: View {
             ForEach(AppTab.entries, id: \.self) { tab in
                 NavigationStack(path: navigator.path(for: tab)) {
                     if let root = navigator.roots[tab] {
+                        // Inside the stack, on its root: placed on the stack itself it is not found, and a
+                        // pushed entry shows the system "no destination" sign instead of its screen.
                         ScreenHost(entry: root)
+                            .navigationDestination(for: StackEntry.self) { ScreenHost(entry: $0) }
                     }
                 }
-                .navigationDestination(for: StackEntry.self) { ScreenHost(entry: $0) }
                 .tabItem { Label(tab.title.text, systemImage: tab.icon.sfSymbol) }
                 .tag(tab)
             }

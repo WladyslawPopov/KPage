@@ -8,6 +8,8 @@ import SharedLogic
 struct RemoteImage: View {
     let url: String?
     var contentMode: ContentMode = .fill
+    /// Under the image and around it when it does not fill the frame.
+    var background: Color = AppColorKeyContainer.secondary.color
 
     @State private var attempt = 0
 
@@ -30,7 +32,7 @@ struct RemoteImage: View {
         .id(attempt)
         .onChange(of: url) { _, _ in attempt = 0 }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppColorKeyContainer.secondary.color)
+        .background(background)
         .clipped()
     }
 

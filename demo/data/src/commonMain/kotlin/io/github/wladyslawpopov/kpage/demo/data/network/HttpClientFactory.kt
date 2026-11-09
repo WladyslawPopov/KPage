@@ -7,6 +7,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.network.sockets.SocketTimeoutException
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.HttpTimeout
@@ -28,6 +29,16 @@ internal fun createHttpClient(engine: HttpClientEngine, json: Json): HttpClient 
         connectTimeoutMillis = 10_000
         requestTimeoutMillis = 20_000
         socketTimeoutMillis = 20_000
+    }
+    // The network is often not up yet when the app is back from sleep, and is up when the first try has failed.
+    // So a failure of the network (no connection, a timeout) is repeated once after a pause. The plugin sees the
+    // raw failure, before the validator below turns it into a domain error. A server answer, even an error one,
+    // is not repeated; only reads are sent, so a repeat is safe.
+    install(HttpRequestRetry) {
+        maxRetries = 1
+        retryOnExceptionIf { _, cause -> cause.toDomainError() is NetworkException }
+        retryIf { _, _ -> false }
+        constantDelay(millis = 1_000, randomizationMs = 0)
     }
     HttpResponseValidator {
         handleResponseExceptionWithRequest { cause, _ ->

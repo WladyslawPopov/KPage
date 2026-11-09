@@ -3,6 +3,8 @@ package io.github.wladyslawpopov.kpage.demo.presentation.paginator
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.Paginator
 import io.github.wladyslawpopov.kpage.core.paging.data.state.DecorationScope
 import io.github.wladyslawpopov.kpage.core.paging.data.state.LoadState
+import io.github.wladyslawpopov.kpage.core.paging.data.state.PagingRows
+import io.github.wladyslawpopov.kpage.core.paging.data.state.PagingState
 import io.github.wladyslawpopov.kpage.core.paging.data.state.decorate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -84,8 +86,8 @@ class PaginatorEngine<Q : Any, T : Any, D : Any>(
         updateState(
             getState().copy(
                 events = newPaginator,
-                paging = emptyPaging(),
-                rows = emptyRows()
+                paging = PagingState.initial(),
+                rows = PagingRows.empty()
             )
         )
     }

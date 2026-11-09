@@ -111,6 +111,7 @@ fun rememberSearchBarState(): SearchBarState = rememberSaveable(saver = SearchBa
  * @param hint The placeholder of the empty field: what can be typed.
  * @param text The text of the screen state; the bar shows what is typed, so it uses [text] only to
  * learn that it was cleared from outside.
+ * @param onBack The back button, shown while the search is closed when [state] allows going back.
  * @param actions Shown while the search is closed.
  */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -121,6 +122,7 @@ fun SearchTopBar(
     text: String,
     hint: AppStringKey,
     onTextChange: (String) -> Unit,
+    onBack: () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     val isOpen = searchBar.isOpen
@@ -162,6 +164,13 @@ fun SearchTopBar(
                             .background(barItemColor(), CircleShape)
                             .padding(horizontal = AppDimenKey.Padding.LARGE.dp(), vertical = AppDimenKey.Padding.SMALL.dp()),
                     )
+                }
+            }
+        },
+        navigationIcon = {
+            if (state.canGoBack && !isOpen) {
+                BarIconButton(onClick = onBack, modifier = Modifier.padding(start = AppDimenKey.Padding.SMALL.dp())) {
+                    Icon(AppIconKey.BACK.vector(), contentDescription = AppStringKey.Core.BACK.asString())
                 }
             }
         },

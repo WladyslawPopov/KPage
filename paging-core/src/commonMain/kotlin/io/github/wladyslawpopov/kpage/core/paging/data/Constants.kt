@@ -1,7 +1,5 @@
 package io.github.wladyslawpopov.kpage.core.paging.data
 
-import kotlin.time.Duration.Companion.milliseconds
-
 /** Number of lists (`queryKey`s) kept in one database until the app sets another with `setMaxLists`. */
 const val DEFAULT_MAX_LISTS = 100
 
@@ -20,11 +18,5 @@ internal const val LEGACY_DATABASE_NAME = "PagingDataBase"
 /** SQLite sidecar files that belong to a database file. */
 internal val SQLITE_SIDECAR_SUFFIXES = listOf("-wal", "-shm", "-journal")
 
-
-/**
- * A hide followed by a show within this time is not leaving the list (fast tab switches). Nobody
- * can open an item, change it and come back that fast, so a real return is always refreshed.
- */
-internal val RETURN_GRACE = 500.milliseconds
 
 const val PAGE_SIZE = 60

@@ -34,6 +34,7 @@ internal data class NasaItemDataDto(
     val photographer: String? = null,
     val location: String? = null,
     @SerialName("secondary_creator") val secondaryCreator: String? = null,
+    val album: List<String> = emptyList(),
 )
 
 @Serializable

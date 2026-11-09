@@ -3,7 +3,9 @@ package io.github.wladyslawpopov.kpage.core.paging
 import io.github.wladyslawpopov.kpage.core.paging.data.TestPaginatorFactory
 import io.github.wladyslawpopov.kpage.core.paging.data.TestPaginatorFactory.ITEM_TYPE
 import io.github.wladyslawpopov.kpage.core.paging.data.TestPaginatorFactory.QUERY_KEY
+import io.github.wladyslawpopov.kpage.core.paging.data.FakeItem
 import io.github.wladyslawpopov.kpage.core.paging.data.cache.clearCache
+import io.github.wladyslawpopov.kpage.core.paging.data.cache.updateItem
 import io.github.wladyslawpopov.kpage.core.paging.data.existingPages
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -53,5 +55,18 @@ class PagingCacheTest {
         )
         assertEquals(3L, database.listingEntryQueries.countEntries(QUERY_KEY).executeAsOne())
         assertNotNull(database.queryMetaQueries.selectByKey(QUERY_KEY).executeAsOneOrNull())
+    }
+
+    @Test
+    fun test_update_item_without_paginator_changes_cached_item_only() = runTest {
+        val database = TestPaginatorFactory.createInMemoryDriver()
+        TestPaginatorFactory.prePopulateDatabase(database, pages = 1, pageSize = 3)
+
+        val updated = database.updateItem(FakeItem.serializer(), "id_1") { it.copy(title = "Edited") }
+
+        assertEquals(FakeItem("id_1", "Edited"), updated)
+        val json = database.itemRawQueries.selectById(ITEM_TYPE, "id_1").executeAsOne().json
+        assertTrue("Edited" in json)
+        assertNull(database.updateItem(FakeItem.serializer(), "missing") { it.copy(title = "Edited") })
     }
 }

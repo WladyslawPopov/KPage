@@ -2,10 +2,13 @@ package io.github.wladyslawpopov.kpage.demo.android.theme
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
@@ -16,10 +19,15 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -128,6 +136,7 @@ fun AppTypographyKey.style(): TextStyle {
 
 fun AppIconKey.vector(): ImageVector = when (this) {
     AppIconKey.BACK -> Icons.AutoMirrored.Filled.ArrowBack
+    AppIconKey.FORWARD -> Icons.AutoMirrored.Filled.KeyboardArrowRight
     AppIconKey.CLOSE -> Icons.Filled.Close
     AppIconKey.REFRESH -> Icons.Filled.Refresh
     AppIconKey.SUCCESS -> Icons.Filled.CheckCircle
@@ -145,6 +154,13 @@ fun AppIconKey.vector(): ImageVector = when (this) {
     AppIconKey.FAVORITE_OFF -> Icons.Filled.FavoriteBorder
     AppIconKey.LAYOUT_LIST -> Icons.AutoMirrored.Filled.ViewList
     AppIconKey.LAYOUT_GRID -> Icons.Filled.GridView
+    AppIconKey.AUTHOR -> Icons.Filled.Person
+    AppIconKey.PHOTOGRAPHER -> Icons.Filled.PhotoCamera
+    AppIconKey.LOCATION -> Icons.Filled.Place
+    AppIconKey.KEYWORD -> Icons.Filled.Tag
+    AppIconKey.ALBUM -> Icons.Filled.PhotoLibrary
+    AppIconKey.CENTER -> Icons.Filled.Business
+    AppIconKey.DATE -> Icons.Filled.CalendarToday
     AppIconKey.SPACE -> Icons.Filled.Star
     AppIconKey.CHAT -> Icons.Filled.Email
     AppIconKey.LAB -> Icons.Filled.Build

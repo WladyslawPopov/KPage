@@ -5,6 +5,8 @@ import io.github.wladyslawpopov.kpage.core.paging.common.dbDispatcher
 import io.github.wladyslawpopov.kpage.core.paging.data.DEFAULT_MAX_LISTS
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.Json
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
@@ -61,6 +63,29 @@ suspend fun PagingDatabase.setMaxLists(count: Int, dispatcher: CoroutineDispatch
 suspend fun PagingDatabase.maxLists(dispatcher: CoroutineDispatcher = dbDispatcher()): Int =
     withContext(dispatcher) { readMaxLists() }
 
+/**
+ * Changes the cached item with [transform] in one step, without a paginator: for example, a details
+ * screen changed it on the server. The change reaches every list of this item type, the open ones
+ * too. Unlike [Paginator.updateItem][io.github.wladyslawpopov.kpage.core.paging.data.paginator.Paginator.updateItem],
+ * a load that started before the edit may bring the old version back until its list is refreshed.
+ * Returns the new item, or null if the item is not cached.
+ */
+suspend fun <T : Any> PagingDatabase.updateItem(
+    serializer: KSerializer<T>,
+    id: String,
+    dispatcher: CoroutineDispatcher = dbDispatcher(),
+    transform: (T) -> T,
+): T? = withContext(dispatcher) {
+    val itemType = serializer.descriptor.serialName
+    transactionWithResult {
+        val raw = itemRawQueries.selectById(itemType, id).executeAsOneOrNull()
+        val current = raw?.let { CacheJson.decodeFromString(serializer, it.json) }
+        current?.let(transform)?.also { next ->
+            itemRawQueries.updateJson(CacheJson.encodeToString(serializer, next), itemType, id)
+        }
+    }
+}
+
 suspend fun PagingDatabase.cacheStats(dispatcher: CoroutineDispatcher = dbDispatcher()): PagingCacheStats =
     withContext(dispatcher) {
     transactionWithResult {
@@ -70,6 +95,14 @@ suspend fun PagingDatabase.cacheStats(dispatcher: CoroutineDispatcher = dbDispat
             dataBytes = itemRawQueries.dataSize().executeAsOne(),
         )
     }
+}
+
+/** How items are stored in the cache; the paginators and the functions above share it. */
+internal val CacheJson = Json {
+    ignoreUnknownKeys = true
+    isLenient = true
+    encodeDefaults = true
+    coerceInputValues = true
 }
 
 internal fun PagingDatabase.readMaxLists(): Int =

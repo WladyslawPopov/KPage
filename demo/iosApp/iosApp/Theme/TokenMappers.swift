@@ -119,6 +119,7 @@ extension AppIconKey {
     var sfSymbol: String {
         switch self {
         case .back: return "chevron.left"
+        case .forward: return "chevron.right"
         case .close: return "xmark"
         case .refresh: return "arrow.clockwise"
         case .success: return "checkmark.circle"
@@ -136,6 +137,13 @@ extension AppIconKey {
         case .favoriteOff: return "heart"
         case .layoutList: return "list.bullet"
         case .layoutGrid: return "square.grid.2x2"
+        case .author: return "person"
+        case .photographer: return "camera"
+        case .location: return "mappin.and.ellipse"
+        case .keyword: return "tag"
+        case .album: return "photo.on.rectangle"
+        case .center: return "building.2"
+        case .date: return "calendar"
         case .space: return "sparkles"
         case .chat: return "bubble.left.and.bubble.right"
         case .lab: return "flask"

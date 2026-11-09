@@ -29,6 +29,11 @@ internal class NasaImagesRemote(private val client: HttpClient) {
         parameter("center", request.center)
         parameter("year_start", request.yearStart)
         parameter("year_end", request.yearEnd)
+        parameter("keywords", request.keywords.forFilter())
+        parameter("photographer", request.photographer.forFilter())
+        parameter("secondary_creator", request.secondaryCreator.forFilter())
+        parameter("location", request.location.forFilter())
+        parameter("album", request.album.forFilter())
         parameter("page", request.page)
         parameter("page_size", request.pageSize)
     }
@@ -36,6 +41,12 @@ internal class NasaImagesRemote(private val client: HttpClient) {
     /** The item by its id, or null if there is none. */
     suspend fun item(nasaId: String): NasaItemDto? =
         get { parameter("nasa_id", nasaId) }.collection.items.firstOrNull()
+
+    /**
+     * NASA answers 400 to an exact filter with an apostrophe in it, while the same value without it finds
+     * the same images (the apostrophe is not indexed). The text search `q` has no such problem.
+     */
+    private fun String?.forFilter(): String? = this?.replace("'", "")
 
     private suspend fun get(block: HttpRequestBuilder.() -> Unit): NasaSearchDto {
         val response = client.get(SEARCH_URL) {

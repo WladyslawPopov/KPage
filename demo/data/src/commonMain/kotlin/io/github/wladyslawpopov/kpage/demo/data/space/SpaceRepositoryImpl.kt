@@ -4,11 +4,14 @@ import io.github.wladyslawpopov.kpage.cache.PagingDatabase
 import io.github.wladyslawpopov.kpage.core.paging.StablePaginator
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.PagerPayload
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.Paginator
+import io.github.wladyslawpopov.kpage.core.paging.data.cache.updateItem
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.PaginatorConfig
 import io.github.wladyslawpopov.kpage.demo.data.favorites.FavoritesStore
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
+import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImageDetails
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceQuery
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceRepository
+import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceTagKind
 import kotlinx.coroutines.CoroutineScope
 
 internal class SpaceRepositoryImpl(
@@ -29,13 +32,30 @@ internal class SpaceRepositoryImpl(
             scope = scope,
         )
 
+    override suspend fun details(id: String): SpaceImageDetails? {
+        val item = remote.item(id) ?: return null
+        val isFavorite = item.nasaId?.let { it in favorites.favoriteIds(listOf(it)) } ?: false
+        return item.toSpaceImageDetails(isFavorite)
+    }
+
+    override suspend fun updateImage(id: String, transform: (SpaceImage) -> SpaceImage) {
+        db.updateItem(SpaceImage.serializer(), id, transform = transform)
+    }
+
     private suspend fun loadPage(query: SpaceQuery, page: Int): PagerPayload<SpaceImage> {
+        val tag = query.tag
+        fun tagValue(kind: SpaceTagKind) = tag?.value?.takeIf { tag.kind == kind }
         val collection = remote.search(
             NasaSearchRequest(
                 text = query.text,
                 center = query.center?.name,
                 yearStart = query.yearStart,
                 yearEnd = query.yearEnd,
+                keywords = tagValue(SpaceTagKind.KEYWORD),
+                photographer = tagValue(SpaceTagKind.PHOTOGRAPHER),
+                secondaryCreator = tagValue(SpaceTagKind.CREATOR),
+                location = tagValue(SpaceTagKind.LOCATION),
+                album = tagValue(SpaceTagKind.ALBUM),
                 page = page,
                 pageSize = PAGE_SIZE,
             )
@@ -52,7 +72,8 @@ internal class SpaceRepositoryImpl(
     }
 
     private fun SpaceQuery.cacheKey() =
-        "space|q=${text.trim()}|center=${center?.name.orEmpty()}|from=${yearStart ?: ""}|to=${yearEnd ?: ""}"
+        "space|q=${text.trim()}|center=${center?.name.orEmpty()}|from=${yearStart ?: ""}|to=${yearEnd ?: ""}" +
+            tag?.let { "|${it.kind.name.lowercase()}=${it.value}" }.orEmpty()
 
     private companion object {
         /** Divides [MAX_RESULTS], so the last allowed page is full and never crosses the limit. */

@@ -17,4 +17,3 @@ dependencyResolutionManagement {
 }
 
 include(":paging-core")
-include(":paging-compose")

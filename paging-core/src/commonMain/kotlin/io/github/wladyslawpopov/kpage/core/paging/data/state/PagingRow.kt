@@ -166,6 +166,11 @@ class PagingRows<out T : Any, out D : Any> internal constructor(
         }
         return low
     }
+
+    companion object {
+        /** No rows at all: the rows of [PagingState.initial], or of a list that is empty. */
+        fun <T : Any> empty(): PagingRows<T, Nothing> = PagedList.empty<T>().rows()
+    }
 }
 
 private class DecorationBuilder<T : Any, D : Any>(override val items: PagedList<T>) : DecorationScope<T, D> {

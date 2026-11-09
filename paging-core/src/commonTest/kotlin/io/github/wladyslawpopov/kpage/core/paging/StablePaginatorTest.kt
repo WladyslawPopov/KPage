@@ -24,9 +24,9 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 /**
- * Loading, refresh and showing. The server is held back page by page, so every test controls when
- * answers arrive. The paginator and the database run on the test dispatcher: "wait" means
- * `advanceUntilIdle()` (it also runs out the 500 ms hide grace), so the tests do not depend on time.
+ * Loading and refresh. The server is held back page by page, so every test controls when answers
+ * arrive. The paginator and the database run on the test dispatcher: "wait" means
+ * `advanceUntilIdle()`, so the tests do not depend on time.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class StablePaginatorTest {
@@ -86,6 +86,23 @@ class StablePaginatorTest {
         }
     }
 
+    /**
+     * A paginator over a cache of ten pages whose refresh at creation failed: the cache is intact, as
+     * after a start without network, and the test goes on from there. (A refresh that succeeded would
+     * replace the top of the cache and drop the pages far from it.) What the test set on the server
+     * stays for what comes next.
+     */
+    private fun TestScope.createOverCache(server: GatedServer, total: Int = 100): StablePaginator<FakeItem> {
+        seedPages(0 until 10, total)
+        val failAll = server.failAll
+        server.failAll = true
+        val paginator = create(server)
+        awaitState(paginator) { it.loadState is LoadState.ERROR }
+        server.failAll = failAll
+        server.clearRequests()
+        return paginator
+    }
+
     /** Runs everything that can run (held pages stay held), then checks the state. */
     private fun TestScope.awaitState(
         paginator: StablePaginator<FakeItem> = pg,
@@ -103,8 +120,6 @@ class StablePaginatorTest {
 
     /** Every event sent before has been handled; "nothing happened" can be checked now. */
     private fun TestScope.barrier() = advanceUntilIdle()
-
-    private fun StablePaginator<FakeItem>.show(first: Int, last: Int = first) = onShown(first..last)
 
     private fun StablePaginator<FakeItem>.scrollTo(first: Int, last: Int = first) = onVisibleRangeChanged(first..last)
 
@@ -137,7 +152,7 @@ class StablePaginatorTest {
         awaitSettled()
 
         // Rows 0..25 are on screen: pages 0..2 are visible, page 3 is the prefetch.
-        pg.show(0, 25)
+        pg.scrollTo(0, 25)
         val state = awaitState { it.isSettled() }
 
         assertEquals((0 until 40).toList(), state.items.loadedIndices)
@@ -177,15 +192,14 @@ class StablePaginatorTest {
 
     @Test
     fun refresh_in_the_middle_replaces_exactly_the_window_atomically() = runTest {
-        seedPages(0 until 10, total = 100)
         val server = GatedServer(ids(95), PAGE).apply { hold(4, 5, 6) }
-        create(server)
-        awaitRestored()
+        createOverCache(server)
 
         val seen = mutableListOf<PagingState<FakeItem>>()
         val collector = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { pg.state.collect { seen += it } }
 
-        pg.show(50)
+        pg.scrollTo(50)
+        pg.refresh()
         awaitState { it.loadState == LoadState.REFRESH }
         // While the window loads, the old data stays on screen.
         assertTrue(pg.state.value.items[45].isOld())
@@ -210,12 +224,11 @@ class StablePaginatorTest {
 
     @Test
     fun refresh_with_a_failing_page_keeps_the_cache_and_reports_an_error() = runTest {
-        seedPages(0 until 10, total = 100)
         val server = GatedServer(ids(100), PAGE).apply { failing += 5 }
-        create(server)
-        awaitRestored()
+        createOverCache(server)
 
-        pg.show(50)
+        pg.scrollTo(50)
+        pg.refresh()
         val failed = awaitState { it.loadState is LoadState.ERROR }
 
         assertEquals(100, failed.items.loadedCount)
@@ -230,10 +243,8 @@ class StablePaginatorTest {
 
     @Test
     fun retrying_after_a_network_error_keeps_the_position_and_the_cache() = runTest {
-        seedPages(0 until 10, total = 100)
         val server = GatedServer(ids(100), PAGE).apply { failAll = true }
-        create(server)
-        awaitRestored()
+        createOverCache(server)
         pg.scrollTo(50)
 
         pg.refresh()
@@ -251,12 +262,11 @@ class StablePaginatorTest {
 
     @Test
     fun scrolling_out_of_the_window_during_refresh_cancels_it() = runTest {
-        seedPages(0 until 10, total = 100)
         val server = GatedServer(ids(100), PAGE).apply { hold(4, 5, 6) }
-        create(server)
-        awaitRestored()
+        createOverCache(server)
 
-        pg.show(50)
+        pg.scrollTo(50)
+        pg.refresh()
         awaitState { it.loadState == LoadState.REFRESH }
         pg.scrollTo(80)
         server.release(4, 5, 6)
@@ -268,12 +278,11 @@ class StablePaginatorTest {
 
     @Test
     fun a_shorter_list_moves_the_refresh_to_its_new_end_even_if_pages_past_the_end_fail() = runTest {
-        seedPages(0 until 10, total = 100)
         val server = GatedServer(ids(35), PAGE).apply { failing += 9; hold(8) }
-        create(server)
-        awaitRestored()
+        createOverCache(server)
 
-        pg.show(90)
+        pg.scrollTo(90)
+        pg.refresh()
         // Page 9 is past the new end and fails; page 8 (empty, total 35) reveals the new end.
         barrier()
         assertTrue(server.requests.containsAll(listOf(8, 9)))
@@ -287,13 +296,12 @@ class StablePaginatorTest {
 
     @Test
     fun a_failure_of_a_page_past_the_exact_total_does_not_fail_the_refresh() = runTest {
-        seedPages(0 until 10, total = 100)
         // The list has 45 items now; page 5 (50..59) is past the end and the server answers 404.
         val server = GatedServer(ids(45), PAGE).apply { failing += 5 }
-        create(server)
-        awaitRestored()
+        createOverCache(server)
 
-        pg.show(40)
+        pg.scrollTo(40)
+        pg.refresh()
         val state = awaitState { it.totalCount == 45 && it.isSettled() }
 
         assertEquals(LoadState.END, state.loadState)
@@ -302,10 +310,8 @@ class StablePaginatorTest {
 
     @Test
     fun removal_on_the_server_then_refresh_leaves_no_holes() = runTest {
-        seedPages(0 until 10, total = 100)
         val server = GatedServer(ids(100) - "id_45" - "id_46", PAGE)
-        create(server)
-        awaitRestored()
+        createOverCache(server)
 
         pg.scrollTo(50)
         pg.refresh()
@@ -316,68 +322,43 @@ class StablePaginatorTest {
         assertEquals(listOf(4L, 5L, 6L), db.existingPages(PAGE), "Shifted pages outside the window are dropped")
     }
 
-    // ---- Showing and returning ----
+    // ---- Creating ----
 
     @Test
-    fun the_first_show_refreshes_around_the_restored_anchor_not_from_zero() = runTest {
+    fun the_state_before_anything_arrives_is_the_initial_one() = runTest {
         seedPages(0 until 10, total = 100)
-        val server = GatedServer(ids(100), PAGE)
-        create(server)
-        awaitRestored()
+        create(GatedServer(ids(100), PAGE).apply { hold(0, 1) })
 
-        pg.show(70)
-        awaitState { it.items[75].isNew() && it.isSettled() }
-
-        assertEquals(listOf(6, 7, 8), server.requests.sorted())
+        // Nothing has run yet: not even the cache is read.
+        assertEquals(PagingState.initial<FakeItem>(), pg.state.value)
     }
 
     @Test
-    fun returning_to_the_list_refreshes_it() = runTest {
+    fun creating_over_a_cache_shows_it_at_once_and_refreshes_the_top() = runTest {
         seedPages(0 until 10, total = 100)
-        val server = GatedServer(ids(100), PAGE)
+        val server = GatedServer(ids(100), PAGE).apply { hold(0, 1) }
         create(server)
-        awaitRestored()
 
-        pg.show(20)
-        awaitState { it.items[20].isNew() && it.isSettled() }
-        server.clearRequests()
-        server.version = "Newer"
+        awaitState { it.loadState == LoadState.REFRESH }
+        assertTrue(pg.state.value.items[0].isOld(), "The cache is on screen while the top is renewed")
+        assertEquals(100, pg.state.value.totalCount)
 
-        pg.onHidden()
-        barrier() // longer than the hide grace
-        pg.show(20)
-        awaitState { it.items[20]?.title?.startsWith("Newer") == true && it.isSettled() }
+        server.release(0, 1)
+        awaitState { it.items[0].isNew() && it.isSettled() }
 
-        assertEquals(listOf(1, 2, 3), server.requests.sorted())
+        assertEquals(listOf(0, 1), server.requests.sorted())
+        assertEquals(listOf(0L, 1L), db.existingPages(PAGE), "The window at the top replaced the deep cache")
     }
 
     @Test
-    fun a_fast_hide_and_show_like_a_tab_switch_does_not_refresh() = runTest {
-        seedPages(0 until 10, total = 100)
-        val server = GatedServer(ids(100), PAGE)
-        create(server)
-        awaitRestored()
-        pg.show(20)
-        awaitSettled()
-        server.clearRequests()
-
-        pg.onHidden()
-        pg.show(20)
-        barrier()
-
-        assertTrue(server.requests.isEmpty())
-        assertTrue(pg.state.value.isSettled())
-    }
-
-    @Test
-    fun an_empty_cache_loads_by_itself_and_the_first_show_does_not_repeat_it() = runTest {
+    fun an_empty_cache_loads_by_itself_and_scrolling_to_the_top_does_not_repeat_it() = runTest {
         val server = GatedServer(ids(100), PAGE).apply { hold(0, 1) }
         create(server)
 
         awaitState { it.loadState == LoadState.INITIAL }
         server.release(0, 1)
         awaitState { it.items.isLoaded(19) && it.isSettled() }
-        pg.show(0)
+        pg.scrollTo(0)
         barrier()
 
         assertEquals(listOf(0, 1), server.requests.sorted())
@@ -385,38 +366,37 @@ class StablePaginatorTest {
     }
 
     @Test
-    fun returning_to_an_empty_list_refreshes_it() = runTest {
+    fun the_paginator_does_not_renew_the_list_by_itself_after_the_first_refresh() = runTest {
+        val server = GatedServer(ids(100), PAGE)
+        create(server)
+        awaitSettled()
+        server.clearRequests()
+        server.version = "Newer" // the server has changed, but nobody asked
+
+        pg.scrollTo(0, 5)
+        pg.scrollTo(2, 8)
+        barrier()
+
+        assertTrue(server.requests.isEmpty())
+        assertEquals("New id_0", pg.state.value.items[0]?.title)
+    }
+
+    @Test
+    fun an_empty_list_is_renewed_only_by_refresh() = runTest {
         val server = GatedServer(emptyList(), PAGE)
         create(server)
         awaitState { it.loadState == LoadState.END }
-        pg.onShown(null)
-        barrier()
 
-        // Something appeared on the server while the user was away.
+        // Something appeared on the server: the paginator finds out only when it is asked.
         server.ids = ids(5)
-        pg.onHidden()
         barrier()
-        pg.onShown(null)
+        assertEquals(0, pg.state.value.totalCount)
+
+        pg.refresh()
         val state = awaitState { it.isSettled() }
 
         assertEquals(5, state.totalCount)
         assertEquals((0 until 5).toList(), state.items.loadedIndices)
-    }
-
-    @Test
-    fun a_list_shown_before_its_cache_reached_the_ui_waits_for_its_rows() = runTest {
-        seedPages(0 until 10, total = 100)
-        val server = GatedServer(ids(100), PAGE)
-        create(server)
-
-        // The UI has no rows yet: nothing is requested; the rows then bring the real first show.
-        pg.onShown(null)
-        barrier()
-        assertTrue(server.requests.isEmpty())
-
-        pg.show(70)
-        awaitSettled()
-        assertEquals(listOf(6, 7, 8), server.requests.sorted())
     }
 
     @Test
@@ -449,12 +429,9 @@ class StablePaginatorTest {
         val server = GatedServer(ids(100), PAGE).apply { failAll = true }
         create(server)
 
-        val restored = awaitRestored()
-        assertEquals(100, restored.totalCount)
-        assertEquals(100, restored.items.loadedCount)
-
-        pg.show(50)
         val failed = awaitState { it.loadState is LoadState.ERROR }
+
+        assertEquals(100, failed.totalCount)
         assertEquals(100, failed.items.loadedCount)
     }
 
@@ -481,16 +458,13 @@ class StablePaginatorTest {
 
     @Test
     fun two_live_paginators_of_the_same_list_keep_their_own_pages() = runTest {
-        seedPages(0 until 10, total = 100)
         val server = GatedServer(ids(100), PAGE)
         val first = create(server)
-        awaitRestored()
-        first.show(0)
         awaitSettled()
 
         // The same list opened on a second screen, far below.
         val second = create(server)
-        second.show(80)
+        second.scrollTo(80)
         awaitState(second) { it.items.isLoaded(85) && it.isSettled() }
 
         val state = awaitState(first) { it.isSettled() }
@@ -501,12 +475,11 @@ class StablePaginatorTest {
 
     @Test
     fun updateItem_during_a_refresh_is_not_overwritten_by_an_older_answer() = runTest {
-        seedPages(0 until 10, total = 100)
         val server = GatedServer(ids(100), PAGE).apply { hold(4, 5, 6) }
-        create(server)
-        awaitRestored()
+        createOverCache(server)
 
-        pg.show(50)
+        pg.scrollTo(50)
+        pg.refresh()
         awaitState { it.loadState == LoadState.REFRESH }
         pg.updateItem("id_50") { it.copy(title = "Edited") }
         server.release(4, 5, 6)

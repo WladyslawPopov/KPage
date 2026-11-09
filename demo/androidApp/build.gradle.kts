@@ -37,7 +37,6 @@ android {
 
 dependencies {
     implementation(project(":sharedLogic"))
-    implementation(libs.kpage.compose)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)

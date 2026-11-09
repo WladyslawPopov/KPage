@@ -1,6 +1,20 @@
 import SwiftUI
 import SharedLogic
 
+extension UiText {
+    /// The text of a `UiText`: strings from the catalog, a file size in the units of the system.
+    /// (Not `text`: `UiTextPlain` and `UiTextKeyWith` already have a property of that name.)
+    var string: String {
+        switch self {
+        case let value as UiTextPlain: return value.text
+        case let value as UiTextKey: return value.key.text
+        case let value as UiTextKeyWith: return "\(value.key.text) \(value.text)"
+        case let value as UiTextFileSize: return ByteCountFormatter.string(fromByteCount: value.bytes, countStyle: .file)
+        default: return ""
+        }
+    }
+}
+
 extension AppStringKey {
     /// The text of an interface string, read from `Localizable.xcstrings` when it is shown, so the
     /// system language applies. A missing string shows its key.

@@ -6,6 +6,7 @@ import io.github.wladyslawpopov.kpage.demo.shared.resources.core_back
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_cancel
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_clear
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_close
+import io.github.wladyslawpopov.kpage.demo.shared.resources.core_copied
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_done
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_filters
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_network_error
@@ -24,7 +25,10 @@ import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_coming_s
 import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_lab
 import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_settings
 import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_space
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_album
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_albums
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_any
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_author
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_afrc
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_arc
@@ -38,7 +42,18 @@ import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_larc
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_lrc
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_msfc
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_center_ssc
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_date
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_details
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_file_size
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_format
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_from
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_image
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_keyword
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_keywords
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_location
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_nasa_id
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_photographer
+import io.github.wladyslawpopov.kpage.demo.shared.resources.space_resolution
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_search_hint
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_show
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_to
@@ -70,6 +85,7 @@ fun AppStringKey.resource(): StringResource = when (this) {
         AppStringKey.Core.CLEAR -> Res.string.core_clear
         AppStringKey.Core.FILTERS -> Res.string.core_filters
         AppStringKey.Core.DONE -> Res.string.core_done
+        AppStringKey.Core.COPIED -> Res.string.core_copied
     }
 
     is AppStringKey.Tabs -> when (this) {
@@ -87,6 +103,20 @@ fun AppStringKey.resource(): StringResource = when (this) {
         AppStringKey.Space.TO -> Res.string.space_to
         AppStringKey.Space.ANY -> Res.string.space_any
         AppStringKey.Space.SHOW -> Res.string.space_show
+        AppStringKey.Space.DETAILS -> Res.string.space_details
+        AppStringKey.Space.KEYWORD -> Res.string.space_keyword
+        AppStringKey.Space.KEYWORDS -> Res.string.space_keywords
+        AppStringKey.Space.ALBUM -> Res.string.space_album
+        AppStringKey.Space.ALBUMS -> Res.string.space_albums
+        AppStringKey.Space.IMAGE -> Res.string.space_image
+        AppStringKey.Space.AUTHOR -> Res.string.space_author
+        AppStringKey.Space.PHOTOGRAPHER -> Res.string.space_photographer
+        AppStringKey.Space.LOCATION -> Res.string.space_location
+        AppStringKey.Space.DATE -> Res.string.space_date
+        AppStringKey.Space.FORMAT -> Res.string.space_format
+        AppStringKey.Space.RESOLUTION -> Res.string.space_resolution
+        AppStringKey.Space.FILE_SIZE -> Res.string.space_file_size
+        AppStringKey.Space.NASA_ID -> Res.string.space_nasa_id
         AppStringKey.Space.CENTER_AFRC -> Res.string.space_center_afrc
         AppStringKey.Space.CENTER_ARC -> Res.string.space_center_arc
         AppStringKey.Space.CENTER_GRC -> Res.string.space_center_grc

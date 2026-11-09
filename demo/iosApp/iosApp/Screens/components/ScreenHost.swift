@@ -10,6 +10,8 @@ struct ScreenHost: View {
         switch entry.component {
         case let c as SpaceComponent:
             StateHost(observer: observer(c)) { (state: SpaceState) in SpaceScreen(component: c, state: state) }
+        case let c as SpaceDetailsComponent:
+            StateHost(observer: observer(c)) { (state: SpaceDetailsState) in SpaceDetailsScreen(component: c, state: state) }
         case let c as ChatComponent:
             StateHost(observer: observer(c)) { (state: ChatState) in ChatScreen(component: c, state: state) }
         case let c as LabComponent:

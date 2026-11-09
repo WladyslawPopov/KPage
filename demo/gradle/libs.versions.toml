@@ -24,7 +24,6 @@ android-targetSdk = "37"
 [libraries]
 # KPage (substituted by includeBuild(".."))
 kpage-core = { module = "io.github.wladyslawpopov:paging-core", version.ref = "kpage" }
-kpage-compose = { module = "io.github.wladyslawpopov:paging-compose", version.ref = "kpage" }
 
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }

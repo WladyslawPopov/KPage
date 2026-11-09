@@ -8,9 +8,12 @@ import kotlinx.coroutines.flow.StateFlow
  * A paginated list backed by the local cache.
  *
  * - Read the list: [state].
- * - Report the UI (usually done by `PagingEffect` from paging-compose or by `PagingListTracker`): [onVisibleRangeChanged], [onShown], [onHidden].
- *   Without these events a list with a cache loads nothing and shows the cache as it is.
- * - Renew data from the server: [refresh], always where the user is.
+ * - Report the scroll of the UI (a `PagingListTracker` turns the visible rows into positions): [onVisibleRangeChanged]. The paginator keeps the pages around the visible ones loaded; without the
+ *   events it shows what it has.
+ * - Renew data from the server: [refresh], always where the user is. The paginator renews the list once
+ *   when it is created and never by itself after that: when to renew (a pull, a retry, a change of
+ *   the query) is the app's decision.
+ * - Change one item without the server: [updateItem]; the app sees it at once in every list.
  * - Work with one item: [getItemById] (read), [updateItem] (write). Removing is a server operation
  *   followed by [refresh].
  */

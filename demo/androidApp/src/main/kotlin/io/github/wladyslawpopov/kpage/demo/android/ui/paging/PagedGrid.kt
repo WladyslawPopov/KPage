@@ -30,7 +30,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
-import io.github.wladyslawpopov.kpage.core.paging.data.effect.PagingEffect
 import io.github.wladyslawpopov.kpage.core.paging.data.state.PagingRow
 import io.github.wladyslawpopov.kpage.core.paging.data.state.PagingRows
 import io.github.wladyslawpopov.kpage.demo.android.theme.color
@@ -43,7 +42,7 @@ import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppTypographyKey
 
 /**
  * The lazy grid of a paged list: one column is a list, more make a grid. It reports what is on
- * screen to the paginator through [PagingEffect]; the paginator alone decides what to load.
+ * screen to the paginator through [TrackVisibleRows]; the paginator alone decides what to load.
  *
  * Row keys come from `PagingRows.keys`: the item's own key, with the position added only to an item
  * that briefly repeats after a server shift, so rows stay stable and keys never collide.
@@ -76,7 +75,7 @@ fun <T : Any, D : Any> PagedGrid(
     val rows = list.rows
     val keys = remember(rows) { rows.keys(keyOf, decorationKeyOf) }
 
-    list.events?.let { PagingEffect(gridState, rows, it) }
+    list.events?.let { TrackVisibleRows(gridState, rows, it) }
 
     val gap = spacing.dp()
     val direction = LocalLayoutDirection.current

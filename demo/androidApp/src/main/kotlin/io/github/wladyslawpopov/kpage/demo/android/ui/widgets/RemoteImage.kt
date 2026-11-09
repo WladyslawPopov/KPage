@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import coil3.ImageLoader
 import coil3.PlatformContext
@@ -48,6 +49,8 @@ fun createImageLoader(context: PlatformContext): ImageLoader =
  * An image from the network over a quiet background. A missing [url] or a failed load shows the
  * "no image" icon. A failed load is tried again [MAX_RETRIES] times, without the caches: the failed
  * try may have left a broken file there. Light enough for lazy lists: no subcomposition per state.
+ *
+ * @param background Under the image and around it when it does not fill the frame.
  */
 @Composable
 fun RemoteImage(
@@ -55,11 +58,12 @@ fun RemoteImage(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     contentScale: ContentScale = ContentScale.Crop,
+    background: Color = AppColorKey.Container.SECONDARY.color(),
 ) {
     var failed by remember(url) { mutableStateOf(url == null) }
     var attempt by remember(url) { mutableIntStateOf(0) }
     val context = LocalPlatformContext.current
-    Box(modifier.background(AppColorKey.Container.SECONDARY.color()), contentAlignment = Alignment.Center) {
+    Box(modifier.background(background), contentAlignment = Alignment.Center) {
         if (url != null) {
             val request = remember(url, attempt) {
                 ImageRequest.Builder(context)

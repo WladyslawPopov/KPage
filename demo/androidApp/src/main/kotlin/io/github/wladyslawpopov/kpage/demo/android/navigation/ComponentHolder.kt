@@ -29,8 +29,17 @@ class ComponentHolder(
     fun paths(): Map<AppTab, List<Route>> =
         stacks.mapValues { (_, stack) -> stack.drop(1).map { it.route } }
 
+    /**
+     * Opens [route] on top of [tab]. A route is the identity of its screen: one already in the stack
+     * moves to the top with its component, so the same screen is never open twice.
+     */
     fun push(tab: AppTab, route: Route) {
-        stacks.getValue(tab).add(create(route))
+        val stack = stacks.getValue(tab)
+        when (val index = stack.indexOfFirst { it.route == route }) {
+            -1 -> stack.add(create(route))
+            0 -> Unit // The root stays the root.
+            else -> stack.add(stack.removeAt(index))
+        }
     }
 
     /** Removes and destroys the top entry of [tab]; false when only the root is left. */

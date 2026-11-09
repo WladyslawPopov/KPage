@@ -2,16 +2,13 @@ import SwiftUI
 import SharedLogic
 
 /// The lazy grid of a paged list: one column is a list, more make a grid. It reports what is on
-/// screen to the paginator through `PagingListTracker`; the paginator alone decides what to load.
+/// screen to the paginator through `PagingListTracker`; the paginator alone decides what to load. Whether
+/// the list is on screen is not reported: the app decides when to renew the data, not the list.
 ///
 /// The rows (`PagingRows`) are as long as the total count and stay in Kotlin: they cross by
 /// reference, the rows on screen are read one by one, and the tracker gets the same rows with the
 /// visible indexes. Rows are identified by their position, since SwiftUI reads the identity of
 /// every row on each update and a position costs nothing.
-///
-/// The list is shown to the paginator while it is on screen and the app is active; the system tells
-/// both (`onAppear` / `onDisappear` and `scenePhase`), the same as the lifecycle owner does for
-/// `PagingEffect` on Android.
 ///
 /// A `header` scrolls with the rows (a search field). When `empty` is set it takes the place of the
 /// rows under the header, so the header, and the keyboard of a field in it, stay while the list is
@@ -52,13 +49,9 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, HeaderView: View, Ite
         self.item = item
     }
 
-    @Environment(\.scenePhase) private var scenePhase
-    @State private var isOnScreen = false
     @State private var tracker: PagingListTracker?
     @State private var trackedEvents: ObjectIdentifier?
     @State private var visible: Set<Int> = []
-
-    private var isShown: Bool { isOnScreen && scenePhase == .active }
 
     var body: some View {
         ScrollView {
@@ -91,14 +84,7 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, HeaderView: View, Ite
         .overlay(alignment: .bottomLeading) {
             if showPosition { positionBadge }
         }
-        .onAppear {
-            isOnScreen = true
-            followEvents()
-        }
-        .onDisappear { isOnScreen = false }
-        .onChange(of: isShown) { _, shown in
-            if shown { tracker?.onStart() } else { tracker?.onStop() }
-        }
+        .onAppear { followEvents() }
         .onChange(of: list) { _, _ in followEvents() }
     }
 
@@ -114,15 +100,13 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, HeaderView: View, Ite
         }
     }
 
-    /// A new paginator (a new query) gets a new tracker and its own `onShown`.
+    /// A new paginator (a new query) gets a new tracker, which reports the visible rows to it from the start.
     private func followEvents() {
         let events = list.events
         let id = events.map { ObjectIdentifier($0 as AnyObject) }
         if id != trackedEvents {
-            tracker?.onStop()
             tracker = events.map { PagingListTracker(events: $0) }
             trackedEvents = id
-            if isShown { tracker?.onStart() }
         }
         report()
     }
