@@ -26,6 +26,7 @@ extension AppStringKey {
         switch self {
         case let key as AppStringKeyCore: return "core_" + key.name.lowercased()
         case let key as AppStringKeyTabs: return "tabs_" + key.name.lowercased()
+        case let key as AppStringKeyFavorites: return "favorites_" + key.name.lowercased()
         case let key as AppStringKeySpace: return "space_" + key.name.lowercased()
         case let key as AppStringKeyPlaceholder: return "placeholder_" + key.name.lowercased()
         default: return String(describing: self)

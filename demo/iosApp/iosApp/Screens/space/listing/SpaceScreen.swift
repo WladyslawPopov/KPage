@@ -116,7 +116,7 @@ struct SpaceScreen: View {
             if isGrid {
                 ImageTile(image: image, onFavorite: onFavorite)
             } else {
-                ImageRow(image: image, onFavorite: onFavorite)
+                ImageRow(image: image) { Heart(isFavorite: $0.isFavorite, onClick: onFavorite) }
             }
         }
         // A tap on the card opens it; the heart is a button of its own and keeps its taps.

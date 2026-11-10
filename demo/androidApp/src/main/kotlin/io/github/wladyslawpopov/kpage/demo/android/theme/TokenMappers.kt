@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -152,6 +153,7 @@ fun AppIconKey.vector(): ImageVector = when (this) {
     AppIconKey.DONE -> Icons.Filled.Check
     AppIconKey.FAVORITE -> Icons.Filled.Favorite
     AppIconKey.FAVORITE_OFF -> Icons.Filled.FavoriteBorder
+    AppIconKey.TRASH -> Icons.Filled.Delete
     AppIconKey.LAYOUT_LIST -> Icons.AutoMirrored.Filled.ViewList
     AppIconKey.LAYOUT_GRID -> Icons.Filled.GridView
     AppIconKey.AUTHOR -> Icons.Filled.Person
@@ -164,7 +166,6 @@ fun AppIconKey.vector(): ImageVector = when (this) {
     AppIconKey.SPACE -> Icons.Filled.Star
     AppIconKey.CHAT -> Icons.Filled.Email
     AppIconKey.LAB -> Icons.Filled.Build
-    AppIconKey.CACHE -> Icons.Filled.Refresh
     AppIconKey.SETTINGS -> Icons.Filled.Settings
 }
 

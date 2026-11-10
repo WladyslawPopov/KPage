@@ -17,8 +17,9 @@ sealed interface Route {
     /** The details of the image with the NASA id [id]. */
     @Serializable data class SpaceDetails(val id: String) : Route
 
+    @Serializable data object Favorites : Route
+
     @Serializable data object Chat : Route
     @Serializable data object Lab : Route
-    @Serializable data object Cache : Route
     @Serializable data object Settings : Route
 }

@@ -8,7 +8,10 @@ sealed interface AppStringKey {
         RESET, SEARCH, CLEAR, FILTERS, DONE, COPIED,
     }
 
-    enum class Tabs : AppStringKey { SPACE, CHAT, LAB, CACHE, SETTINGS }
+    enum class Tabs : AppStringKey { SPACE, FAVORITES, CHAT, LAB, SETTINGS }
+
+    /** Texts of the Favorites screen: the selection bar and the confirmation of a removal. */
+    enum class Favorites : AppStringKey { EMPTY, SELECTED, REMOVE, REMOVE_TITLE, REMOVE_MESSAGE }
 
     /** Texts of the Space screens: the search hint, the filters, the details; one name per NASA center. */
     enum class Space : AppStringKey {
@@ -20,5 +23,5 @@ sealed interface AppStringKey {
     }
 
     /** Texts of the empty screens of the skeleton; removed with the real screens. */
-    enum class Placeholder : AppStringKey { SPACE, CHAT, LAB, CACHE, SETTINGS, COMING_SOON }
+    enum class Placeholder : AppStringKey { SPACE, CHAT, LAB, SETTINGS, COMING_SOON }
 }

@@ -135,6 +135,7 @@ extension AppIconKey {
         case .done: return "checkmark"
         case .favorite: return "heart.fill"
         case .favoriteOff: return "heart"
+        case .trash: return "trash"
         case .layoutList: return "list.bullet"
         case .layoutGrid: return "square.grid.2x2"
         case .author: return "person"
@@ -147,7 +148,6 @@ extension AppIconKey {
         case .space: return "sparkles"
         case .chat: return "bubble.left.and.bubble.right"
         case .lab: return "flask"
-        case .cache: return "externaldrive"
         case .settings: return "gearshape"
         default: return "questionmark"
         }

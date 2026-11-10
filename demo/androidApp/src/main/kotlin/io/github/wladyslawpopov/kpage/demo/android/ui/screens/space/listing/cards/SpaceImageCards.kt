@@ -1,7 +1,9 @@
 package io.github.wladyslawpopov.kpage.demo.android.ui.screens.space.listing.cards
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,12 +37,34 @@ import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppTypographyKey
 
-/** A list card with a divider under the texts; a null [image] is the placeholder of the same size. */
+/**
+ * A list card with a divider under the texts; a null [image] is the placeholder of the same size.
+ *
+ * @param onLongClick A long press, with a haptic response; none by default.
+ * @param trailing The end of the card, in a slot as big as a button: a heart, a checkbox.
+ */
 @Composable
-internal fun ImageRow(image: SpaceImage?, onClick: () -> Unit, onFavorite: () -> Unit) {
+internal fun ImageRow(
+    image: SpaceImage?,
+    onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
+    trailing: @Composable (SpaceImage) -> Unit = {},
+) {
     val gap = AppDimenKey.Padding.MEDIUM.dp()
     val start = AppDimenKey.Padding.LARGE.dp()
-    Column(Modifier.fillMaxWidth().clickable(enabled = image != null, onClick = onClick)) {
+    val haptics = LocalHapticFeedback.current
+    Column(
+        Modifier.fillMaxWidth().combinedClickable(
+            enabled = image != null,
+            onClick = onClick,
+            onLongClick = onLongClick?.let { action ->
+                {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    action()
+                }
+            },
+        ),
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(gap),
@@ -57,8 +83,8 @@ internal fun ImageRow(image: SpaceImage?, onClick: () -> Unit, onFavorite: () ->
                 ImageTexts(image)
             }
             // Keeps the height and the text width of a placeholder equal to a card.
-            Box(Modifier.size(HEART_SIZE), contentAlignment = Alignment.Center) {
-                if (image != null) Heart(image.isFavorite, onFavorite)
+            Box(Modifier.size(TRAILING_SIZE), contentAlignment = Alignment.Center) {
+                if (image != null) trailing(image)
             }
         }
         // From the start of the texts to the end of the screen.
@@ -142,4 +168,4 @@ private fun TextBar(typography: AppTypographyKey, lines: Int, widthFraction: Flo
 }
 
 private val THUMBNAIL_SIZE = 72.dp
-private val HEART_SIZE = 48.dp
+private val TRAILING_SIZE = 48.dp

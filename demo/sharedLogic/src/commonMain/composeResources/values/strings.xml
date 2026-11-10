@@ -18,10 +18,16 @@
     <string name="core_copied">Copied</string>
 
     <string name="tabs_space">Space</string>
+    <string name="tabs_favorites">Favorites</string>
     <string name="tabs_chat">Chat</string>
     <string name="tabs_lab">Lab</string>
-    <string name="tabs_cache">Cache</string>
     <string name="tabs_settings">Settings</string>
+
+    <string name="favorites_empty">No favorites yet</string>
+    <string name="favorites_selected">Selected</string>
+    <string name="favorites_remove">Remove</string>
+    <string name="favorites_remove_title">Remove from favorites?</string>
+    <string name="favorites_remove_message">The images stay in Space; only the favorite marks are removed.</string>
 
     <string name="space_search_hint">Title, location or photographer</string>
     <string name="space_center">NASA center</string>
@@ -59,7 +65,6 @@
     <string name="placeholder_space">Hello, NASA</string>
     <string name="placeholder_chat">Hello, Chat</string>
     <string name="placeholder_lab">Hello, Lab</string>
-    <string name="placeholder_cache">Hello, Cache</string>
     <string name="placeholder_settings">Hello, Settings</string>
     <string name="placeholder_coming_soon">Coming soon</string>
 </resources>

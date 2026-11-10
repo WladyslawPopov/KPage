@@ -19,7 +19,11 @@ import io.github.wladyslawpopov.kpage.demo.shared.resources.core_reset
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_retry
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_search
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_server_error
-import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_cache
+import io.github.wladyslawpopov.kpage.demo.shared.resources.favorites_empty
+import io.github.wladyslawpopov.kpage.demo.shared.resources.favorites_remove
+import io.github.wladyslawpopov.kpage.demo.shared.resources.favorites_remove_message
+import io.github.wladyslawpopov.kpage.demo.shared.resources.favorites_remove_title
+import io.github.wladyslawpopov.kpage.demo.shared.resources.favorites_selected
 import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_chat
 import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_coming_soon
 import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_lab
@@ -57,8 +61,8 @@ import io.github.wladyslawpopov.kpage.demo.shared.resources.space_resolution
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_search_hint
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_show
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_to
-import io.github.wladyslawpopov.kpage.demo.shared.resources.tabs_cache
 import io.github.wladyslawpopov.kpage.demo.shared.resources.tabs_chat
+import io.github.wladyslawpopov.kpage.demo.shared.resources.tabs_favorites
 import io.github.wladyslawpopov.kpage.demo.shared.resources.tabs_lab
 import io.github.wladyslawpopov.kpage.demo.shared.resources.tabs_settings
 import io.github.wladyslawpopov.kpage.demo.shared.resources.tabs_space
@@ -90,10 +94,18 @@ fun AppStringKey.resource(): StringResource = when (this) {
 
     is AppStringKey.Tabs -> when (this) {
         AppStringKey.Tabs.SPACE -> Res.string.tabs_space
+        AppStringKey.Tabs.FAVORITES -> Res.string.tabs_favorites
         AppStringKey.Tabs.CHAT -> Res.string.tabs_chat
         AppStringKey.Tabs.LAB -> Res.string.tabs_lab
-        AppStringKey.Tabs.CACHE -> Res.string.tabs_cache
         AppStringKey.Tabs.SETTINGS -> Res.string.tabs_settings
+    }
+
+    is AppStringKey.Favorites -> when (this) {
+        AppStringKey.Favorites.EMPTY -> Res.string.favorites_empty
+        AppStringKey.Favorites.SELECTED -> Res.string.favorites_selected
+        AppStringKey.Favorites.REMOVE -> Res.string.favorites_remove
+        AppStringKey.Favorites.REMOVE_TITLE -> Res.string.favorites_remove_title
+        AppStringKey.Favorites.REMOVE_MESSAGE -> Res.string.favorites_remove_message
     }
 
     is AppStringKey.Space -> when (this) {
@@ -135,7 +147,6 @@ fun AppStringKey.resource(): StringResource = when (this) {
         AppStringKey.Placeholder.SPACE -> Res.string.placeholder_space
         AppStringKey.Placeholder.CHAT -> Res.string.placeholder_chat
         AppStringKey.Placeholder.LAB -> Res.string.placeholder_lab
-        AppStringKey.Placeholder.CACHE -> Res.string.placeholder_cache
         AppStringKey.Placeholder.SETTINGS -> Res.string.placeholder_settings
         AppStringKey.Placeholder.COMING_SOON -> Res.string.placeholder_coming_soon
     }

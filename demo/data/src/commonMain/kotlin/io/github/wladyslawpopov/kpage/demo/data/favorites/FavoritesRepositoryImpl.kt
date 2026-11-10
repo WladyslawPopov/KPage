@@ -13,7 +13,10 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
@@ -35,6 +38,9 @@ internal class FavoritesRepositoryImpl(
     // The images fetched since the app started: a refresh of the list asks NASA only for the new ones.
     private val fetched = MutableStateFlow(emptyMap<String, SpaceImage>())
     private val syncLock = Mutex()
+    private val changed = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+    override val changes: Flow<Unit> = changed
 
     override fun favorites(scope: CoroutineScope): Paginator<SpaceImage> =
         StablePaginator(
@@ -47,8 +53,15 @@ internal class FavoritesRepositoryImpl(
             scope = scope,
         )
 
-    override suspend fun setFavorite(id: String, isFavorite: Boolean) =
+    override suspend fun setFavorite(id: String, isFavorite: Boolean) {
         if (isFavorite) store.add(id) else store.remove(id)
+        changed.tryEmit(Unit)
+    }
+
+    override suspend fun removeFavorites(ids: Collection<String>) {
+        store.removeAll(ids)
+        changed.tryEmit(Unit)
+    }
 
     private suspend fun loadPage(page: Int): PagerPayload<SpaceImage> {
         sync()

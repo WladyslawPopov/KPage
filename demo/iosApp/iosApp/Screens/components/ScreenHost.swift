@@ -12,12 +12,12 @@ struct ScreenHost: View {
             StateHost(observer: observer(c)) { (state: SpaceState) in SpaceScreen(component: c, state: state) }
         case let c as SpaceDetailsComponent:
             StateHost(observer: observer(c)) { (state: SpaceDetailsState) in SpaceDetailsScreen(component: c, state: state) }
+        case let c as FavoritesComponent:
+            StateHost(observer: observer(c)) { (state: FavoritesState) in FavoritesScreen(component: c, state: state) }
         case let c as ChatComponent:
             StateHost(observer: observer(c)) { (state: ChatState) in ChatScreen(component: c, state: state) }
         case let c as LabComponent:
             StateHost(observer: observer(c)) { (state: LabState) in LabScreen(component: c, state: state) }
-        case let c as CacheComponent:
-            StateHost(observer: observer(c)) { (state: CacheState) in CacheScreen(component: c, state: state) }
         case let c as SettingsComponent:
             StateHost(observer: observer(c)) { (state: SettingsState) in SettingsScreen(component: c, state: state) }
         default:

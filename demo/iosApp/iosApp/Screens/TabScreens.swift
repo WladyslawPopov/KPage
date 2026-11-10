@@ -15,13 +15,6 @@ struct LabScreen: View {
     var body: some View { PlaceholderScreen(topBar: state.topBar, text: state.text) }
 }
 
-struct CacheScreen: View {
-    let component: CacheComponent
-    let state: CacheState
-
-    var body: some View { PlaceholderScreen(topBar: state.topBar, text: state.text) }
-}
-
 struct SettingsScreen: View {
     let component: SettingsComponent
     let state: SettingsState

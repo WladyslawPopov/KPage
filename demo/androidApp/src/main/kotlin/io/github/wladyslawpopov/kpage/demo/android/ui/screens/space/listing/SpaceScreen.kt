@@ -12,6 +12,7 @@ import io.github.wladyslawpopov.kpage.demo.android.theme.vector
 import io.github.wladyslawpopov.kpage.demo.android.ui.page.PageLayout
 import io.github.wladyslawpopov.kpage.demo.android.ui.paging.PagedGrid
 import io.github.wladyslawpopov.kpage.demo.android.ui.paging.rememberCanHideBars
+import io.github.wladyslawpopov.kpage.demo.android.ui.screens.space.common.Heart
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.space.listing.cards.ImageRow
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.space.listing.cards.ImageTile
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.space.listing.filters.SpaceFilterChips
@@ -82,12 +83,12 @@ fun SpaceScreen(component: SpaceComponent) {
             contentPadding = padding,
             // List rows keep their own padding and a divider.
             spacing = if (isGrid) AppDimenKey.Padding.MEDIUM else AppDimenKey.Padding.NONE,
-            placeholderContent = { if (isGrid) ImageTile(null, {}, {}) else ImageRow(null, {}, {}) },
+            placeholderContent = { if (isGrid) ImageTile(null, {}, {}) else ImageRow(null, {}) },
             itemContent = { image, _ ->
                 if (isGrid) {
                     ImageTile(image, onClick = { onOpen(image) }, onFavorite = { onFavorite(image) })
                 } else {
-                    ImageRow(image, onClick = { onOpen(image) }, onFavorite = { onFavorite(image) })
+                    ImageRow(image, onClick = { onOpen(image) }) { Heart(it.isFavorite, onClick = { onFavorite(image) }) }
                 }
             },
         )

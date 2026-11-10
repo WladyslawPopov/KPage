@@ -2,13 +2,20 @@ import SwiftUI
 import SharedLogic
 
 /// A list card with a divider under the texts; a nil image is the placeholder of the same size.
-struct ImageRow: View {
+/// `trailing` is the end of the card, in a slot as big as a button: a heart, a check mark.
+struct ImageRow<Trailing: View>: View {
     let image: SpaceImage?
-    let onFavorite: () -> Void
+    let trailing: (SpaceImage) -> Trailing
 
     private let thumbnail: CGFloat = 72
     private let gap = AppDimenKeyPadding.medium.value
     private let start = AppDimenKeyPadding.large.value
+    private let trailingSize: CGFloat = 44
+
+    init(image: SpaceImage?, @ViewBuilder trailing: @escaping (SpaceImage) -> Trailing) {
+        self.image = image
+        self.trailing = trailing
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -35,14 +42,22 @@ struct ImageRow: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            // Keeps the text width of a placeholder equal to a card.
-            Heart(isFavorite: image?.isFavorite ?? false, onClick: onFavorite)
-                .opacity(image == nil ? 0 : 1)
-                .disabled(image == nil)
+            // The slot is there for a placeholder too, so its text width equals a card's.
+            Group {
+                if let image { trailing(image) }
+            }
+            .frame(width: trailingSize, height: trailingSize)
         }
         .padding(.leading, start)
         .padding(.trailing, AppDimenKeyPadding.extraSmall.value)
         .padding(.vertical, AppDimenKeyPadding.small.value)
+    }
+}
+
+extension ImageRow where Trailing == EmptyView {
+    /// A card without an end view; the placeholder.
+    init(image: SpaceImage?) {
+        self.init(image: image) { _ in EmptyView() }
     }
 }
 
