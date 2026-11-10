@@ -29,6 +29,29 @@
     <string name="favorites_remove_title">Remove from favorites?</string>
     <string name="favorites_remove_message">The images stay in Space; only the favorite marks are removed.</string>
 
+    <string name="chat_empty">No chats yet</string>
+    <string name="chat_create">Create a chat</string>
+    <string name="chat_create_title">New chat</string>
+    <string name="chat_title_hint">Chat name</string>
+    <string name="chat_interlocutor_hint">Interlocutor's name</string>
+    <string name="chat_selected">Selected</string>
+    <string name="chat_delete">Delete</string>
+    <string name="chat_delete_title">Delete the chats?</string>
+    <string name="chat_delete_message">The messages of these chats are deleted too.</string>
+    <string name="chat_delete_chat">Delete chat</string>
+    <string name="chat_delete_chat_title">Delete this chat?</string>
+    <string name="chat_delete_chat_message">All its messages are deleted too.</string>
+    <string name="chat_actions">Actions</string>
+    <string name="chat_message_hint">Message</string>
+    <string name="chat_send_failed">Not sent</string>
+    <string name="chat_retry">Send again</string>
+    <string name="chat_copy">Copy</string>
+    <string name="chat_today">Today</string>
+    <string name="chat_not_found">The chat was deleted</string>
+    <string name="chat_scenario_chatty">Mock: quick replies</string>
+    <string name="chat_scenario_historian">Mock: long history</string>
+    <string name="chat_scenario_flaky">Mock: some sends fail</string>
+
     <string name="space_search_hint">Title, location or photographer</string>
     <string name="space_center">NASA center</string>
     <string name="space_from">From</string>

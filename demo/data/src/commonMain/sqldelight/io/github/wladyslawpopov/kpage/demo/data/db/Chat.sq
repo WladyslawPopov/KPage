@@ -1,0 +1,31 @@
+-- The chats of the fake server. A new message moves its chat to the top through updated_ts.
+CREATE TABLE chat (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    interlocutor TEXT NOT NULL,
+    scenario TEXT NOT NULL,
+    seed INTEGER NOT NULL,
+    last_message TEXT NOT NULL,
+    updated_ts INTEGER NOT NULL
+);
+
+insert:
+INSERT INTO chat(title, interlocutor, scenario, seed, last_message, updated_ts) VALUES (?, ?, ?, ?, ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+count:
+SELECT COUNT(*) FROM chat;
+
+selectPage:
+SELECT * FROM chat ORDER BY updated_ts DESC, id DESC LIMIT :limit OFFSET :offset;
+
+selectById:
+SELECT * FROM chat WHERE id = ?;
+
+touch:
+UPDATE chat SET last_message = ?, updated_ts = ? WHERE id = ?;
+
+delete:
+DELETE FROM chat WHERE id = ?;

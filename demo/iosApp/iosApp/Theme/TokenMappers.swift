@@ -145,6 +145,12 @@ extension AppIconKey {
         case .album: return "photo.on.rectangle"
         case .center: return "building.2"
         case .date: return "calendar"
+        case .add: return "plus"
+        case .send: return "arrow.up.circle.fill"
+        case .attach: return "paperclip"
+        // COPY: `copy` is taken by NSObject, so Kotlin exports it as `theCopy`.
+        case .theCopy: return "doc.on.doc"
+        case .more: return "ellipsis.circle"
         case .space: return "sparkles"
         case .chat: return "bubble.left.and.bubble.right"
         case .lab: return "flask"

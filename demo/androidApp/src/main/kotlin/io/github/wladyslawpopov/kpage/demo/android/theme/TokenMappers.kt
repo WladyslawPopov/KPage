@@ -3,6 +3,11 @@ package io.github.wladyslawpopov.kpage.demo.android.theme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.BrokenImage
@@ -163,6 +168,11 @@ fun AppIconKey.vector(): ImageVector = when (this) {
     AppIconKey.ALBUM -> Icons.Filled.PhotoLibrary
     AppIconKey.CENTER -> Icons.Filled.Business
     AppIconKey.DATE -> Icons.Filled.CalendarToday
+    AppIconKey.ADD -> Icons.Filled.Add
+    AppIconKey.SEND -> Icons.AutoMirrored.Filled.Send
+    AppIconKey.ATTACH -> Icons.Filled.AttachFile
+    AppIconKey.COPY -> Icons.Filled.ContentCopy
+    AppIconKey.MORE -> Icons.Filled.MoreVert
     AppIconKey.SPACE -> Icons.Filled.Star
     AppIconKey.CHAT -> Icons.Filled.Email
     AppIconKey.LAB -> Icons.Filled.Build

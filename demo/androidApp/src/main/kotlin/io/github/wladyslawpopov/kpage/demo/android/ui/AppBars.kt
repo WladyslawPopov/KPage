@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.BottomAppBarScrollBehavior
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -29,6 +31,22 @@ val LocalPageTopPadding = compositionLocalOf<Dp> {
  */
 val LocalPageBottomPadding = compositionLocalOf<Dp> {
     error("LocalPageBottomPadding is provided by AppRoot")
+}
+
+/** How many screens on display ask to hide the tab bar; see [HideTabBar]. */
+val LocalTabBarHiders = staticCompositionLocalOf<MutableIntState?> { null }
+
+/**
+ * Hides the tab bar while the calling screen is on display, as a chat does. Counted, so a screen
+ * that leaves during a transition does not show the bar under the one that arrives.
+ */
+@Composable
+fun HideTabBar() {
+    val hiders = LocalTabBarHiders.current ?: return
+    DisposableEffect(hiders) {
+        hiders.intValue++
+        onDispose { hiders.intValue-- }
+    }
 }
 
 /** The scroll behavior of the tab bar; null when the bar is hidden or a page already took it. */

@@ -20,6 +20,10 @@ sealed interface Route {
     @Serializable data object Favorites : Route
 
     @Serializable data object Chat : Route
+
+    /** The chat with the id [chatId]. */
+    @Serializable data class ChatRoom(val chatId: Long) : Route
+
     @Serializable data object Lab : Route
     @Serializable data object Settings : Route
 }

@@ -2,6 +2,28 @@ package io.github.wladyslawpopov.kpage.demo.shared.strings
 
 import androidx.compose.runtime.Composable
 import io.github.wladyslawpopov.kpage.demo.shared.resources.Res
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_actions
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_copy
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_delete_chat
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_delete_chat_message
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_delete_chat_title
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_create
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_create_title
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_delete
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_delete_message
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_delete_title
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_empty
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_interlocutor_hint
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_message_hint
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_not_found
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_retry
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_scenario_chatty
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_scenario_flaky
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_scenario_historian
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_selected
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_send_failed
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_title_hint
+import io.github.wladyslawpopov.kpage.demo.shared.resources.chat_today
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_back
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_cancel
 import io.github.wladyslawpopov.kpage.demo.shared.resources.core_clear
@@ -106,6 +128,31 @@ fun AppStringKey.resource(): StringResource = when (this) {
         AppStringKey.Favorites.REMOVE -> Res.string.favorites_remove
         AppStringKey.Favorites.REMOVE_TITLE -> Res.string.favorites_remove_title
         AppStringKey.Favorites.REMOVE_MESSAGE -> Res.string.favorites_remove_message
+    }
+
+    is AppStringKey.Chat -> when (this) {
+        AppStringKey.Chat.EMPTY -> Res.string.chat_empty
+        AppStringKey.Chat.CREATE -> Res.string.chat_create
+        AppStringKey.Chat.CREATE_TITLE -> Res.string.chat_create_title
+        AppStringKey.Chat.TITLE_HINT -> Res.string.chat_title_hint
+        AppStringKey.Chat.INTERLOCUTOR_HINT -> Res.string.chat_interlocutor_hint
+        AppStringKey.Chat.SELECTED -> Res.string.chat_selected
+        AppStringKey.Chat.DELETE -> Res.string.chat_delete
+        AppStringKey.Chat.DELETE_TITLE -> Res.string.chat_delete_title
+        AppStringKey.Chat.DELETE_MESSAGE -> Res.string.chat_delete_message
+        AppStringKey.Chat.DELETE_CHAT -> Res.string.chat_delete_chat
+        AppStringKey.Chat.DELETE_CHAT_TITLE -> Res.string.chat_delete_chat_title
+        AppStringKey.Chat.DELETE_CHAT_MESSAGE -> Res.string.chat_delete_chat_message
+        AppStringKey.Chat.ACTIONS -> Res.string.chat_actions
+        AppStringKey.Chat.MESSAGE_HINT -> Res.string.chat_message_hint
+        AppStringKey.Chat.SEND_FAILED -> Res.string.chat_send_failed
+        AppStringKey.Chat.RETRY -> Res.string.chat_retry
+        AppStringKey.Chat.COPY -> Res.string.chat_copy
+        AppStringKey.Chat.TODAY -> Res.string.chat_today
+        AppStringKey.Chat.NOT_FOUND -> Res.string.chat_not_found
+        AppStringKey.Chat.SCENARIO_CHATTY -> Res.string.chat_scenario_chatty
+        AppStringKey.Chat.SCENARIO_HISTORIAN -> Res.string.chat_scenario_historian
+        AppStringKey.Chat.SCENARIO_FLAKY -> Res.string.chat_scenario_flaky
     }
 
     is AppStringKey.Space -> when (this) {

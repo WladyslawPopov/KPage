@@ -1,7 +1,8 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.navigation
 
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentContext
-import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.DefaultChatComponent
+import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.listing.DefaultChatsComponent
+import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.room.DefaultChatRoomComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.favorites.DefaultFavoritesComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.lab.DefaultLabComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.settings.DefaultSettingsComponent
@@ -20,7 +21,8 @@ class ScreenFactory : KoinComponent {
 
             is Route.SpaceDetails -> DefaultSpaceDetailsComponent(context, navigator, route.id, get(), get())
             Route.Favorites -> DefaultFavoritesComponent(context, navigator, get(), get())
-            Route.Chat -> DefaultChatComponent(context, navigator, get())
+            Route.Chat -> DefaultChatsComponent(context, navigator, get())
+            is Route.ChatRoom -> DefaultChatRoomComponent(context, navigator, route.chatId, get())
             Route.Lab -> DefaultLabComponent(context, navigator, get())
             Route.Settings -> DefaultSettingsComponent(context, navigator, get())
         }

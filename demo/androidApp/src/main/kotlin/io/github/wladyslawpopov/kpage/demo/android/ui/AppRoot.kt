@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -74,8 +75,10 @@ fun AppRoot() {
     val statusBar = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
     val systemNavBar = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val isImeVisible = WindowInsets.ime.asPaddingValues().calculateBottomPadding() > 0.dp
-    // The keyboard takes the bottom of the screen; the tab bar comes back when it closes.
-    val isTabBarVisible = !isImeVisible
+    // The keyboard takes the bottom of the screen; the tab bar comes back when it closes. A screen may
+    // hide it too (HideTabBar).
+    val tabBarHiders = remember { mutableIntStateOf(0) }
+    val isTabBarVisible = !isImeVisible && tabBarHiders.intValue == 0
 
     // A stable lambda keeps one behavior, so the pages keep their link to it.
     val canScroll by rememberUpdatedState(isTabBarVisible)
@@ -116,6 +119,7 @@ fun AppRoot() {
                 LocalPageTopPadding provides statusBar,
                 LocalPageBottomPadding provides padding.calculateBottomPadding() + AppDimenKey.Padding.SMALL.dp(),
                 LocalTabBarScrollBehavior provides if (isTabBarVisible) tabBarScroll else null,
+                LocalTabBarHiders provides tabBarHiders,
             ) {
                 // Only the selected tab is composed; the others keep their stacks and saved UI state.
                 tabStates.SaveableStateProvider(tab.name) {

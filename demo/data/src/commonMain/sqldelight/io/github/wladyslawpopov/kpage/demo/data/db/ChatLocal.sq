@@ -1,0 +1,48 @@
+-- What the app keeps on the device, not on the server: the messages being sent and the drafts.
+CREATE TABLE chat_outgoing (
+    local_id TEXT NOT NULL PRIMARY KEY,
+    chat_id INTEGER NOT NULL,
+    body TEXT NOT NULL,
+    attachments TEXT NOT NULL,
+    created_ts INTEGER NOT NULL,
+    attempted_ts INTEGER NOT NULL,
+    state TEXT NOT NULL
+);
+
+CREATE TABLE chat_draft (
+    chat_id INTEGER NOT NULL PRIMARY KEY,
+    body TEXT NOT NULL,
+    attachments TEXT NOT NULL,
+    updated_ts INTEGER NOT NULL
+);
+
+insertOutgoing:
+INSERT INTO chat_outgoing(local_id, chat_id, body, attachments, created_ts, attempted_ts, state)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectOutgoing:
+SELECT * FROM chat_outgoing WHERE chat_id = ? ORDER BY attempted_ts, created_ts;
+
+selectOutgoingById:
+SELECT * FROM chat_outgoing WHERE chat_id = ? AND local_id = ?;
+
+setOutgoingState:
+UPDATE chat_outgoing SET state = ? WHERE chat_id = ? AND local_id = ?;
+
+retryOutgoing:
+UPDATE chat_outgoing SET state = ?, attempted_ts = ? WHERE chat_id = ? AND local_id = ?;
+
+deleteOutgoing:
+DELETE FROM chat_outgoing WHERE chat_id = ? AND local_id = ?;
+
+deleteOutgoingByChat:
+DELETE FROM chat_outgoing WHERE chat_id = ?;
+
+selectDraft:
+SELECT * FROM chat_draft WHERE chat_id = ?;
+
+saveDraft:
+INSERT OR REPLACE INTO chat_draft(chat_id, body, attachments, updated_ts) VALUES (?, ?, ?, ?);
+
+deleteDraft:
+DELETE FROM chat_draft WHERE chat_id = ?;

@@ -1,6 +1,7 @@
 package io.github.wladyslawpopov.kpage.demo.data.di
 
 import io.github.wladyslawpopov.kpage.demo.data.chat.ChatRepositoryImpl
+import io.github.wladyslawpopov.kpage.demo.data.chat.ChatServer
 import io.github.wladyslawpopov.kpage.demo.data.database.platformDataModule
 import io.github.wladyslawpopov.kpage.demo.data.favorites.FavoritesRepositoryImpl
 import io.github.wladyslawpopov.kpage.demo.data.favorites.FavoritesStore
@@ -32,7 +33,8 @@ val dataModule = module {
 
     single<SpaceRepository> { SpaceRepositoryImpl(get(), get(), get()) }
     single<FavoritesRepository> { FavoritesRepositoryImpl(get(), get(), get()) }
-    single<ChatRepository> { ChatRepositoryImpl() }
+    single { ChatServer(get(), get(), get()) }
+    single<ChatRepository> { ChatRepositoryImpl(get(), get(), get(), get()) }
     single<LabRepository> { LabRepositoryImpl() }
     single<SettingsRepository> { SettingsRepositoryImpl(get()) }
 }

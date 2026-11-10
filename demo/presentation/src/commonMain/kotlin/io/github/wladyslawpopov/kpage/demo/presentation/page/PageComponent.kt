@@ -54,6 +54,8 @@ abstract class PageComponent<S : PageScreenState<S>, I : Any>(
 
     protected open fun onReset() = Unit
 
+    protected open fun onEmptyAction() = Unit
+
     final override fun onError(error: ScreenError) = updatePage { it.copy(error = error) }
 
     private fun applyPageIntent(intent: PageIntent) {
@@ -72,6 +74,8 @@ abstract class PageComponent<S : PageScreenState<S>, I : Any>(
                 updatePage { it.copy(error = null) }
                 onReset()
             }
+
+            PageIntent.EmptyAction -> onEmptyAction()
         }
     }
 

@@ -15,6 +15,9 @@ sealed interface PageIntent {
 
     /** Return to the initial content (for example, drop the filters). */
     data object Reset : PageIntent
+
+    /** The screen's own action of its empty state (for example, create the first item). */
+    data object EmptyAction : PageIntent
 }
 
 interface PageOwner {

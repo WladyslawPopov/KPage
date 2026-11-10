@@ -13,6 +13,14 @@ sealed interface AppStringKey {
     /** Texts of the Favorites screen: the selection bar and the confirmation of a removal. */
     enum class Favorites : AppStringKey { EMPTY, SELECTED, REMOVE, REMOVE_TITLE, REMOVE_MESSAGE }
 
+    /** Texts of the Chat screens: the list of chats, the creation of a chat, the room; one note per mock scenario. */
+    enum class Chat : AppStringKey {
+        EMPTY, CREATE, CREATE_TITLE, TITLE_HINT, INTERLOCUTOR_HINT, SELECTED,
+        DELETE, DELETE_TITLE, DELETE_MESSAGE, DELETE_CHAT, DELETE_CHAT_TITLE, DELETE_CHAT_MESSAGE, ACTIONS,
+        MESSAGE_HINT, SEND_FAILED, RETRY, COPY, TODAY, NOT_FOUND,
+        SCENARIO_CHATTY, SCENARIO_HISTORIAN, SCENARIO_FLAKY,
+    }
+
     /** Texts of the Space screens: the search hint, the filters, the details; one name per NASA center. */
     enum class Space : AppStringKey {
         SEARCH_HINT, CENTER, FROM, TO, ANY, SHOW,

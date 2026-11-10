@@ -1,0 +1,39 @@
+-- Version 2 adds the chat: a database created by version 1 has only the favorites.
+CREATE TABLE chat (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    interlocutor TEXT NOT NULL,
+    scenario TEXT NOT NULL,
+    seed INTEGER NOT NULL,
+    last_message TEXT NOT NULL,
+    updated_ts INTEGER NOT NULL
+);
+
+CREATE TABLE chat_message (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_id INTEGER NOT NULL,
+    is_mine INTEGER NOT NULL,
+    body TEXT NOT NULL,
+    attachments TEXT NOT NULL,
+    created_ts INTEGER NOT NULL,
+    client_id TEXT
+);
+
+CREATE INDEX chat_message_chat ON chat_message(chat_id, id);
+
+CREATE TABLE chat_outgoing (
+    local_id TEXT NOT NULL PRIMARY KEY,
+    chat_id INTEGER NOT NULL,
+    body TEXT NOT NULL,
+    attachments TEXT NOT NULL,
+    created_ts INTEGER NOT NULL,
+    attempted_ts INTEGER NOT NULL,
+    state TEXT NOT NULL
+);
+
+CREATE TABLE chat_draft (
+    chat_id INTEGER NOT NULL PRIMARY KEY,
+    body TEXT NOT NULL,
+    attachments TEXT NOT NULL,
+    updated_ts INTEGER NOT NULL
+);

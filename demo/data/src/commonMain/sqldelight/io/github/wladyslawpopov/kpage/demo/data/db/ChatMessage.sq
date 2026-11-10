@@ -1,0 +1,40 @@
+-- The messages of the fake server. The id grows with every insert, so the newest one has the highest.
+-- client_id is the local id of the outgoing message it came from: sending it twice makes one message.
+CREATE TABLE chat_message (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chat_id INTEGER NOT NULL,
+    is_mine INTEGER NOT NULL,
+    body TEXT NOT NULL,
+    attachments TEXT NOT NULL,
+    created_ts INTEGER NOT NULL,
+    client_id TEXT
+);
+
+CREATE INDEX chat_message_chat ON chat_message(chat_id, id);
+
+insert:
+INSERT INTO chat_message(chat_id, is_mine, body, attachments, created_ts, client_id) VALUES (?, ?, ?, ?, ?, ?);
+
+lastInsertId:
+SELECT last_insert_rowid();
+
+count:
+SELECT COUNT(*) FROM chat_message WHERE chat_id = ?;
+
+selectPage:
+SELECT * FROM chat_message WHERE chat_id = ? ORDER BY id DESC LIMIT :limit OFFSET :offset;
+
+selectById:
+SELECT * FROM chat_message WHERE id = ?;
+
+selectByClientId:
+SELECT * FROM chat_message WHERE chat_id = ? AND client_id = ?;
+
+selectNewest:
+SELECT * FROM chat_message WHERE chat_id = ? ORDER BY id DESC LIMIT 1;
+
+delete:
+DELETE FROM chat_message WHERE id = ?;
+
+deleteByChat:
+DELETE FROM chat_message WHERE chat_id = ?;
