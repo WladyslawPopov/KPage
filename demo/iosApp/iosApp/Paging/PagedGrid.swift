@@ -92,6 +92,10 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, HeaderView: View, Dec
             // The user's scroll hides the keyboard, as in system apps; the typed text stays.
             .scrollDismissesKeyboard(.immediately)
             .flipped(reversed)
+            // A list becomes a grid and back: the list starts from its first row. A lazy grid knows only the rows
+            // it has shown, and SwiftUI keeps the scroll offset in points, so it cannot hold a row far away across
+            // another layout. A new identity makes a new scroll view at the top in the same frame.
+            .id(columns)
             .onScrollTargetVisibilityChange(idType: Int.self, threshold: 0.01) { ids in
                 visible = Set(ids)
                 report()

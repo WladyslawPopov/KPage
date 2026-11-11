@@ -17,7 +17,7 @@ Targets: **Android**, **iOS** (`iosArm64`, `iosSimulatorArm64`), **JVM / Desktop
 
 ## See it in action
 
-The [demo app](demo/) on KPage, Android on the left and iOS on the right.
+Short clips of the [demo app](demo/) on KPage, Android on the left and iOS on the right. The details and longer videos of every screen are in the [demo README](demo/README.md#screens).
 
 <table>
   <tr>
@@ -26,7 +26,7 @@ The [demo app](demo/) on KPage, Android on the left and iOS on the right.
   </tr>
 </table>
 
-**Browse.** A 10 000-row list with placeholders: scroll anywhere, rotate the device, switch the theme and the language, search, filter, follow a tag from the details and add a favorite. The list and the position stay where the user left them.
+**Working with the listing.**
 
 <table>
   <tr>
@@ -35,7 +35,7 @@ The [demo app](demo/) on KPage, Android on the left and iOS on the right.
   </tr>
 </table>
 
-**One change, every list.** A heart set on the details screen shows at once in the list and in Favorites; removing it in Favorites clears it in the list. One `updateItem` call, no manual syncing.
+**Working with favorites.**
 
 <table>
   <tr>
@@ -44,7 +44,7 @@ The [demo app](demo/) on KPage, Android on the left and iOS on the right.
   </tr>
 </table>
 
-**Chat.** A reversed list with date rows, local messages that turn into server messages without blinking, a failed send with a retry, and older messages loading as you scroll.
+**Working with the chat.**
 
 > **See it working:** [`demo/`](demo/) is a complete Android + iOS app on this library (NASA image search, favorites, a chat with a mock server, settings) with shared logic and fully native UI. [Jump to the demo](#demo).
 
