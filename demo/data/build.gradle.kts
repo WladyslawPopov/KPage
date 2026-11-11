@@ -49,6 +49,11 @@ kotlin {
             implementation(libs.ktor.client.java)
             implementation(libs.sqldelight.jvm)
         }
-        commonTest.dependencies { implementation(libs.kotlin.test) }
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ktor.client.mock)
+            implementation(libs.multiplatform.settings.test)
+        }
     }
 }
