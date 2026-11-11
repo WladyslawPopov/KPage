@@ -2,8 +2,8 @@
 
 The logic of the demo lives in shared Kotlin (`domain`, `data`, `presentation`), so it is tested once
 and runs on every platform that has tests: **106 tests on the JVM, 92 on the iOS simulator** (the
-JVM also runs the tests that need a JDBC database). The UI of the platforms (Compose, SwiftUI) is
-not covered yet; see [What is not covered](#what-is-not-covered).
+JVM also runs the tests that need a JDBC database). The UI of each platform is checked by hand; see
+[Still to cover](#still-to-cover).
 
 ```bash
 cd demo
@@ -48,16 +48,14 @@ CI runs both (`.github/workflows/tests.yml`). The tests of the library itself ar
 | `SettingsEngineTest` (4) | choices go to the repository; clearing the cache asks first |
 | `SpaceDisplayTest` (5), `NavigationSnapshotCodecTest` (2) | display models of Space; saving and restoring the navigation |
 
-## What is not covered
+## Still to cover
 
-Said plainly, so the numbers above are not read as more than they are:
-
-- **UI.** No Compose or SwiftUI tests, no screenshots.
-- **On-device checks.** Gestures, keyboard, the photo picker and the like are checked by hand.
+- **UI tests** for Compose and SwiftUI, and screenshot tests. Today the UI is checked by hand on devices.
+- **Instrumented tests and benchmarks.**
+- **Repositories:** `SpaceRepositoryImpl`, `ChatRepositoryImpl` (local outgoing messages and drafts in the
+  database), `CacheRepositoryImpl`.
+- **Engines:** `SpaceDetailsEngine`, `ChatInfoEngine`, `LabEngine`, and the components that connect the
+  engines to navigation.
 - **Platform code:** the `actual` implementations (system language, time zone, database drivers).
-- **Repositories not tested yet:** `SpaceRepositoryImpl`, `ChatRepositoryImpl` (local outgoing messages
-  and drafts in the database), `CacheRepositoryImpl`.
-- **Engines not tested yet:** `SpaceDetailsEngine`, `ChatInfoEngine`, `LabEngine`, and the components
-  that connect the engines to navigation.
-- **Real network.** NASA is replaced by `MockEngine`; no test talks to the real API.
-- **Benchmarks and instrumented tests.**
+
+NASA is replaced by `MockEngine` in the tests, so they run fast and offline.

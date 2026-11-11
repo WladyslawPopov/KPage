@@ -73,7 +73,7 @@ fun <T : Any, D : Any> PagedGrid(
     itemContent: @Composable (item: T, serverIndex: Int) -> Unit,
 ) {
     val rows = list.rows
-    val keys = remember(rows) { rows.keys(keyOf, decorationKeyOf) }
+    val keys = remember(rows) { rows.keys(decorationKeyOf, keyOf) }
 
     list.events?.let { TrackVisibleRows(gridState, rows, it) }
 

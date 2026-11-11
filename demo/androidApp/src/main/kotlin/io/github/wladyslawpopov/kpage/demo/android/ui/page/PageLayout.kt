@@ -83,7 +83,7 @@ fun PageLayout(
                     page.error?.let { error ->
                         PageErrorBanner(
                             error = error,
-                            canRetry = page.isRefreshEnabled && !page.isLoading,
+                            canRetry = !page.isLoading,
                             onClose = { onPageIntent(PageIntent.ClearError) },
                             onRetry = { onPageIntent(PageIntent.Refresh) },
                             modifier = Modifier.padding(AppDimenKey.Padding.SMALL.dp()),

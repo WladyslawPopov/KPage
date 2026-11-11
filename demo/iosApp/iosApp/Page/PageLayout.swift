@@ -28,7 +28,7 @@ struct PageLayout<Content: View>: View {
             if let error = page.error {
                 PageErrorBanner(
                     error: error,
-                    canRetry: page.isRefreshEnabled && !page.isLoading,
+                    canRetry: !page.isLoading,
                     onClose: { onPageIntent(PageIntentClearError.shared) },
                     onRetry: { onPageIntent(PageIntentRefresh.shared) }
                 )

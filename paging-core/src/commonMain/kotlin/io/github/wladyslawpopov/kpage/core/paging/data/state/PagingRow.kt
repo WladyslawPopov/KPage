@@ -99,10 +99,11 @@ class PagingRows<out T : Any, out D : Any> internal constructor(
      *
      * Keys made here are strings; give [itemKey] a key a Bundle can save too (a string or a number).
      * Build it once per rows (`remember(rows) { rows.keys { it.id } }`): it walks the loaded items.
+     * [itemKey] is the last parameter, so the trailing lambda is the item key.
      */
     fun keys(
-        itemKey: (T) -> Any,
         decorationKey: ((decoration: D, beforeIndex: Int) -> Any)? = null,
+        itemKey: (T) -> Any,
     ): (index: Int) -> Any {
         val seen = HashSet<Any>()
         val repeats = items.loadedIndices.filterTo(HashSet()) { index -> !seen.add(itemKey(items[index]!!)) }

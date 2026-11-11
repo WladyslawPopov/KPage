@@ -17,7 +17,10 @@ data class PageEmptyState(
     val action: PageIntent? = PageIntent.Refresh,
 )
 
-/** What every page shows besides its content. */
+/**
+ * What every page shows besides its content. [isRefreshEnabled] is only the pull-to-refresh gesture: the retry
+ * of the error banner works on every page.
+ */
 data class PageState(
     val error: ScreenError? = null,
     val isLoading: Boolean = false,

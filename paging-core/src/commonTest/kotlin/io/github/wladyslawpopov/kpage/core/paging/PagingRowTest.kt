@@ -130,11 +130,21 @@ class PagingRowTest {
             header("H2")
         }
 
-        val key = rows.keys(itemKey = { it })
+        val key = rows.keys { it }
 
         assertEquals(
             listOf("decoration:0:0", "decoration:0:1", "a", "b", "a#2", "slot:3"),
             List(rows.rowCount) { key(it) },
         )
+    }
+
+    @Test
+    fun a_decoration_key_replaces_the_default_one() {
+        val items = PagedList(size = 1, loaded = mapOf(0 to "a"))
+        val rows = items.decorate<String, String> { header("H") }
+
+        val key = rows.keys(decorationKey = { decoration, _ -> "d_$decoration" }) { it }
+
+        assertEquals(listOf("d_H", "a"), List(rows.rowCount) { key(it) })
     }
 }
