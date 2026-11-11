@@ -90,6 +90,7 @@ fun AppColorKey.color(): Color {
             AppColorKey.Icon.SECONDARY -> scheme.onSurfaceVariant
             AppColorKey.Icon.ACCENT -> scheme.primary
             AppColorKey.Icon.ON_ACCENT -> scheme.onPrimary
+            AppColorKey.Icon.FAVORITE -> Color(0xFFE53935)
         }
 
         is AppColorKey.Overlay -> when (this) {

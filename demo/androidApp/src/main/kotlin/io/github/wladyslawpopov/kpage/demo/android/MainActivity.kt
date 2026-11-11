@@ -5,12 +5,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import coil3.compose.setSingletonImageLoaderFactory
+import io.github.wladyslawpopov.kpage.demo.android.theme.AppLanguageProvider
 import io.github.wladyslawpopov.kpage.demo.android.theme.DemoTheme
 import io.github.wladyslawpopov.kpage.demo.android.ui.AppRoot
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.createImageLoader
+import io.github.wladyslawpopov.kpage.demo.domain.settings.SettingsRepository
+import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
+    private val settings: SettingsRepository by inject()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -18,7 +25,12 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isNavigationBarContrastEnforced = false
         setContent {
             setSingletonImageLoaderFactory(::createImageLoader)
-            DemoTheme { AppRoot() }
+            // The choices of the Settings tab: the app follows the repository's flows.
+            val themeMode by settings.themeMode.collectAsState()
+            val language by settings.language.collectAsState()
+            AppLanguageProvider(language) {
+                DemoTheme(themeMode) { AppRoot() }
+            }
         }
     }
 }

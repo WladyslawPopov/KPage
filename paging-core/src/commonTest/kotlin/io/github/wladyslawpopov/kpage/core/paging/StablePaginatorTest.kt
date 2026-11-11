@@ -8,6 +8,8 @@ import io.github.wladyslawpopov.kpage.core.paging.data.state.LoadState
 import io.github.wladyslawpopov.kpage.core.paging.data.state.PagingState
 import io.github.wladyslawpopov.kpage.core.paging.data.TestPaginatorFactory
 import io.github.wladyslawpopov.kpage.core.paging.data.TestPaginatorFactory.QUERY_KEY
+import io.github.wladyslawpopov.kpage.core.paging.data.cache.clearCache
+import io.github.wladyslawpopov.kpage.core.paging.data.cache.updateItem
 import io.github.wladyslawpopov.kpage.core.paging.data.existingPages
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -497,5 +499,44 @@ class StablePaginatorTest {
 
         assertEquals(null, pg.updateItem("missing") { it.copy(title = "x") })
         assertEquals("New", pg.updateItem("id_3") { it.copy(title = "New") }?.title)
+    }
+
+    // ---- The cache under a live list ----
+
+    @Test
+    fun an_edit_of_the_database_reaches_an_open_list() = runTest {
+        create(GatedServer(ids(10), PAGE))
+        awaitSettled()
+
+        val edited = db.updateItem(FakeItem.serializer(), "id_3", StandardTestDispatcher(testScheduler)) {
+            it.copy(title = "Edited")
+        }
+        barrier()
+
+        assertEquals("Edited", edited?.title)
+        assertEquals("Edited", pg.state.value.items[3]?.title)
+    }
+
+    @Test
+    fun clearing_the_cache_under_a_live_list_empties_it_until_it_is_refreshed() = runTest {
+        val server = GatedServer(ids(100), PAGE)
+        create(server)
+        awaitSettled()
+        assertTrue(pg.state.value.items.isLoaded(0))
+        server.clearRequests()
+
+        db.clearCache(StandardTestDispatcher(testScheduler))
+        barrier()
+
+        // The list reads the cache, so it is empty at once; it does not load again on its own.
+        assertEquals(0, pg.state.value.totalCount)
+        assertFalse(pg.state.value.items.isLoaded(0))
+        assertTrue(server.requests.isEmpty())
+
+        pg.refresh()
+        val state = awaitState { it.isSettled() && it.items.isLoaded(0) }
+
+        assertEquals(100, state.totalCount)
+        assertTrue(state.items[0].isNew())
     }
 }

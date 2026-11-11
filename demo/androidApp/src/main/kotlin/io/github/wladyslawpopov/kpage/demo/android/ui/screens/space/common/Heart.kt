@@ -30,7 +30,7 @@ internal fun Heart(
         Icon(
             imageVector = (if (isFavorite) AppIconKey.FAVORITE else AppIconKey.FAVORITE_OFF).vector(),
             contentDescription = null,
-            tint = if (isFavorite) AppColorKey.Icon.ACCENT.color() else AppColorKey.Icon.SECONDARY.color(),
+            tint = if (isFavorite) AppColorKey.Icon.FAVORITE.color() else AppColorKey.Icon.SECONDARY.color(),
         )
     }
 }

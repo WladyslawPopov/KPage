@@ -11,7 +11,7 @@ sealed interface AppColorKey {
 
     enum class Border : AppColorKey { DEFAULT, ACCENT, FOCUSED }
 
-    enum class Icon : AppColorKey { PRIMARY, SECONDARY, ACCENT, ON_ACCENT }
+    enum class Icon : AppColorKey { PRIMARY, SECONDARY, ACCENT, ON_ACCENT, FAVORITE }
 
     enum class Overlay : AppColorKey { SCRIM, DISABLED }
 }

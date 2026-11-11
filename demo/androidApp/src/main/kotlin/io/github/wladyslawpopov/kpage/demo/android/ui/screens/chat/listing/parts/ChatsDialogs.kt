@@ -12,6 +12,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import io.github.wladyslawpopov.kpage.demo.android.theme.dp
+import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.ConfirmDialog
+import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.DialogCancelButton
 import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
@@ -46,19 +48,19 @@ internal fun CreateChatDialog(onCreate: (title: String, interlocutor: String) ->
                 enabled = title.isNotBlank() && interlocutor.isNotBlank(),
             ) { Text(AppStringKey.Chat.CREATE.asString()) }
         },
-        dismissButton = { TextButton(onClick = onCancel) { Text(AppStringKey.Core.CANCEL.asString()) } },
+        dismissButton = { DialogCancelButton(onCancel) },
     )
 }
 
 /** Asks whether to delete the chats. */
 @Composable
 internal fun DeleteChatsDialog(onConfirm: () -> Unit, onCancel: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = onCancel,
-        title = { Text(AppStringKey.Chat.DELETE_TITLE.asString()) },
-        text = { Text(AppStringKey.Chat.DELETE_MESSAGE.asString()) },
-        confirmButton = { TextButton(onClick = onConfirm) { Text(AppStringKey.Chat.DELETE.asString()) } },
-        dismissButton = { TextButton(onClick = onCancel) { Text(AppStringKey.Core.CANCEL.asString()) } },
+    ConfirmDialog(
+        title = AppStringKey.Chat.DELETE_TITLE,
+        message = AppStringKey.Chat.DELETE_MESSAGE,
+        confirmText = AppStringKey.Chat.DELETE,
+        onConfirm = onConfirm,
+        onCancel = onCancel,
     )
 }
 

@@ -1,5 +1,6 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.listing
 
+import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
 import io.github.wladyslawpopov.kpage.demo.domain.chat.ChatRepository
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentContext
 import io.github.wladyslawpopov.kpage.demo.presentation.component.StateOwner
@@ -16,11 +17,13 @@ internal class DefaultChatsComponent(
     context: ComponentContext,
     private val navigator: AppNavigator,
     repository: ChatRepository,
+    cache: CacheRepository,
 ) : PageComponent<ChatsState, ChatsIntent>(context, ChatsState()), ChatsComponent {
 
     private val engine = ChatsEngine(
         tasks = this,
         repository = repository,
+        cache = cache,
         getState = { currentState },
         updateState = ::updateState,
         onPageIntent = ::onPageIntent,

@@ -69,4 +69,15 @@ class PagingCacheTest {
         assertTrue("Edited" in json)
         assertNull(database.updateItem(FakeItem.serializer(), "missing") { it.copy(title = "Edited") })
     }
+
+    @Test
+    fun test_update_item_with_unreadable_json_returns_null_and_keeps_it() = runTest {
+        val database = TestPaginatorFactory.createInMemoryDriver()
+        TestPaginatorFactory.prePopulateDatabase(database, pages = 1, pageSize = 3)
+        database.itemRawQueries.updateJson("not json", ITEM_TYPE, "id_1")
+
+        assertNull(database.updateItem(FakeItem.serializer(), "id_1") { it.copy(title = "Edited") })
+
+        assertEquals("not json", database.itemRawQueries.selectById(ITEM_TYPE, "id_1").executeAsOne().json)
+    }
 }

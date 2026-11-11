@@ -12,18 +12,24 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 
 /**
  * Owns the paginator of a paged list: one per query, mirrored into [PaginatorUiState], load errors
  * reported once. The screen keeps the state; the engine reads and writes it through the lambdas.
+ *
+ * @param refreshOn Every event renews the list: the app's own reasons to ask for a refresh that come
+ * from outside the screen, for example a cleared cache that left the list empty.
  */
 class PaginatorEngine<Q : Any, T : Any, D : Any>(
     private val getState: () -> PaginatorUiState<Q, T, D>,
     private val updateState: (PaginatorUiState<Q, T, D>) -> Unit,
     private val onQueryChanged: () -> Unit = {},
     private val onError: (Throwable) -> Unit = {},
+    private val refreshOn: Flow<Unit> = emptyFlow(),
 ) {
     private var paginator: Paginator<T>? = null
     private var lastError: Throwable? = null
@@ -42,26 +48,29 @@ class PaginatorEngine<Q : Any, T : Any, D : Any>(
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun collectPaging(queries: Flow<Q>, create: (Q, CoroutineScope) -> Paginator<T>) {
-        queries
-            .distinctUntilChanged()
-            .flatMapLatest { query ->
-                flow {
-                    coroutineScope {
-                        val newPaginator = create(query, this)
-                        setPaginator(newPaginator)
-                        emitAll(newPaginator.state)
+        coroutineScope {
+            launch { refreshOn.collect { paginator?.refresh() } }
+            queries
+                .distinctUntilChanged()
+                .flatMapLatest { query ->
+                    flow {
+                        coroutineScope {
+                            val newPaginator = create(query, this)
+                            setPaginator(newPaginator)
+                            emitAll(newPaginator.state)
+                        }
                     }
                 }
-            }
-            .collect { paging ->
-                updateState(
-                    getState().copy(
-                        paging = paging,
-                        rows = paging.items.decorate(decorations)
+                .collect { paging ->
+                    updateState(
+                        getState().copy(
+                            paging = paging,
+                            rows = paging.items.decorate(decorations)
+                        )
                     )
-                )
-                reportError(paging.loadState)
-            }
+                    reportError(paging.loadState)
+                }
+        }
     }
 
     /**

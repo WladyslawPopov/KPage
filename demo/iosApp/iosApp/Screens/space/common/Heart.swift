@@ -10,7 +10,7 @@ struct Heart: View {
     var body: some View {
         Button(action: onClick) {
             Image(systemName: (isFavorite ? AppIconKey.favorite : AppIconKey.favoriteOff).sfSymbol)
-                .foregroundStyle(isFavorite ? AppColorKeyIcon.accent.color : AppColorKeyIcon.secondary.color)
+                .foregroundStyle(isFavorite ? AppColorKeyIcon.favorite.color : AppColorKeyIcon.secondary.color)
                 .frame(width: 32, height: 32)
                 .background {
                     if onImage { Circle().fill(.regularMaterial) }

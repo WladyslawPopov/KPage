@@ -78,7 +78,7 @@ class StablePaginator<T : Any>(
     private val serializer: KSerializer<T>,
     queryKey: String,
     private val config: PaginatorConfig = PaginatorConfig(),
-    val getPage: suspend (Int) -> PagerPayload<T>,
+    private val getPage: suspend (Int) -> PagerPayload<T>,
     private val idExtractor: (T) -> String,
     private val db: PagingDatabase,
     scope: CoroutineScope,

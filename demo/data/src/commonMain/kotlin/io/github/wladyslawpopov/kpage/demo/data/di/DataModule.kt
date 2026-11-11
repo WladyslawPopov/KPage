@@ -1,5 +1,6 @@
 package io.github.wladyslawpopov.kpage.demo.data.di
 
+import io.github.wladyslawpopov.kpage.demo.data.cache.CacheRepositoryImpl
 import io.github.wladyslawpopov.kpage.demo.data.chat.ChatRepositoryImpl
 import io.github.wladyslawpopov.kpage.demo.data.chat.ChatServer
 import io.github.wladyslawpopov.kpage.demo.data.database.platformDataModule
@@ -10,8 +11,10 @@ import io.github.wladyslawpopov.kpage.demo.data.mock.MockServer
 import io.github.wladyslawpopov.kpage.demo.data.network.createHttpClient
 import io.github.wladyslawpopov.kpage.demo.data.network.createHttpEngine
 import io.github.wladyslawpopov.kpage.demo.data.settings.SettingsRepositoryImpl
+import io.github.wladyslawpopov.kpage.demo.data.settings.systemLanguageTag
 import io.github.wladyslawpopov.kpage.demo.data.space.NasaImagesRemote
 import io.github.wladyslawpopov.kpage.demo.data.space.SpaceRepositoryImpl
+import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
 import io.github.wladyslawpopov.kpage.demo.domain.chat.ChatRepository
 import io.github.wladyslawpopov.kpage.demo.domain.favorites.FavoritesRepository
 import io.github.wladyslawpopov.kpage.demo.domain.lab.LabRepository
@@ -36,5 +39,6 @@ val dataModule = module {
     single { ChatServer(get(), get(), get()) }
     single<ChatRepository> { ChatRepositoryImpl(get(), get(), get(), get()) }
     single<LabRepository> { LabRepositoryImpl() }
-    single<SettingsRepository> { SettingsRepositoryImpl(get()) }
+    single<SettingsRepository> { SettingsRepositoryImpl(get(), systemLanguageTag()) }
+    single<CacheRepository> { CacheRepositoryImpl(get()) }
 }

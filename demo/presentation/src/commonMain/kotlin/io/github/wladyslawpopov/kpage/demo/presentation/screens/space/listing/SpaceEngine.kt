@@ -1,6 +1,7 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.space.listing
 
 import io.github.wladyslawpopov.kpage.core.paging.data.state.LoadState
+import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
 import io.github.wladyslawpopov.kpage.demo.domain.favorites.FavoritesRepository
 import io.github.wladyslawpopov.kpage.demo.domain.settings.SettingsRepository
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
@@ -35,6 +36,7 @@ internal class SpaceEngine(
     private val repository: SpaceRepository,
     private val favorites: FavoritesRepository,
     private val settings: SettingsRepository,
+    cache: CacheRepository,
     private val states: Flow<SpaceState>,
     private val getState: () -> SpaceState,
     private val updateState: ((SpaceState) -> SpaceState) -> Unit,
@@ -45,6 +47,7 @@ internal class SpaceEngine(
         updateState = ::setList,
         onQueryChanged = { onPageIntent(PageIntent.ClearError) },
         onError = { onPageIntent(PageIntent.OnError(it)) },
+        refreshOn = cache.cleared,
     )
 
     // Hearts are applied one after another, in the order of the taps.

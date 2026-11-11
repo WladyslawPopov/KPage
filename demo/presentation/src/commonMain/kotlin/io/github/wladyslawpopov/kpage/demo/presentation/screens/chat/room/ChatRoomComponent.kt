@@ -1,5 +1,6 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.room
 
+import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
 import io.github.wladyslawpopov.kpage.demo.domain.chat.ChatMessage
 import io.github.wladyslawpopov.kpage.demo.domain.chat.ChatRepository
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentContext
@@ -25,6 +26,7 @@ internal class DefaultChatRoomComponent(
     private val navigator: AppNavigator,
     chatId: Long,
     repository: ChatRepository,
+    cache: CacheRepository,
 ) : PageComponent<ChatRoomState, ChatRoomIntent>(
     context,
     ChatRoomState(list = PaginatorUiState(chatId)),
@@ -43,6 +45,7 @@ internal class DefaultChatRoomComponent(
         tasks = this,
         chatId = chatId,
         repository = repository,
+        cache = cache,
         outgoing = outgoing,
         getState = { currentState },
         updateState = ::updateState,

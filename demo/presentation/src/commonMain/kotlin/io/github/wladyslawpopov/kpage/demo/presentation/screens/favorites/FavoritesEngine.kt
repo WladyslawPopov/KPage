@@ -1,6 +1,7 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.favorites
 
 import io.github.wladyslawpopov.kpage.core.paging.data.state.LoadState
+import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
 import io.github.wladyslawpopov.kpage.demo.domain.favorites.FavoritesRepository
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceRepository
@@ -21,6 +22,7 @@ internal class FavoritesEngine(
     private val tasks: ComponentTasks,
     private val favorites: FavoritesRepository,
     private val space: SpaceRepository,
+    cache: CacheRepository,
     private val getState: () -> FavoritesState,
     private val updateState: ((FavoritesState) -> FavoritesState) -> Unit,
     private val onPageIntent: (PageIntent) -> Unit,
@@ -29,6 +31,7 @@ internal class FavoritesEngine(
         getState = { getState().list },
         updateState = ::setList,
         onError = { onPageIntent(PageIntent.OnError(it)) },
+        refreshOn = cache.cleared,
     )
 
     // Removals are applied one after another, in the order they were confirmed.

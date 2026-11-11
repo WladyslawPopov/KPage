@@ -15,15 +15,15 @@ import org.koin.core.component.get
 class ScreenFactory : KoinComponent {
     fun create(route: Route, context: ComponentContext, navigator: AppNavigator): ScreenComponent =
         when (route) {
-            Route.Space -> DefaultSpaceComponent(context, navigator, get(), get(), get())
+            Route.Space -> DefaultSpaceComponent(context, navigator, get(), get(), get(), get())
             is Route.SpaceResults ->
-                DefaultSpaceComponent(context, navigator, get(), get(), get(), initialQuery = route.query)
+                DefaultSpaceComponent(context, navigator, get(), get(), get(), get(), initialQuery = route.query)
 
             is Route.SpaceDetails -> DefaultSpaceDetailsComponent(context, navigator, route.id, get(), get())
-            Route.Favorites -> DefaultFavoritesComponent(context, navigator, get(), get())
-            Route.Chat -> DefaultChatsComponent(context, navigator, get())
-            is Route.ChatRoom -> DefaultChatRoomComponent(context, navigator, route.chatId, get())
+            Route.Favorites -> DefaultFavoritesComponent(context, navigator, get(), get(), get())
+            Route.Chat -> DefaultChatsComponent(context, navigator, get(), get())
+            is Route.ChatRoom -> DefaultChatRoomComponent(context, navigator, route.chatId, get(), get())
             Route.Lab -> DefaultLabComponent(context, navigator, get())
-            Route.Settings -> DefaultSettingsComponent(context, navigator, get())
+            Route.Settings -> DefaultSettingsComponent(context, navigator, get(), get())
         }
 }

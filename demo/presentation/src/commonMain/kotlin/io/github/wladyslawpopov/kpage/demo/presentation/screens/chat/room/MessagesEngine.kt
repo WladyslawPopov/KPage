@@ -2,6 +2,7 @@ package io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.room
 
 import io.github.wladyslawpopov.kpage.core.paging.data.state.DecorationScope
 import io.github.wladyslawpopov.kpage.core.paging.data.state.LoadState
+import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
 import io.github.wladyslawpopov.kpage.demo.domain.chat.ChatMessage
 import io.github.wladyslawpopov.kpage.demo.domain.chat.ChatRepository
 import io.github.wladyslawpopov.kpage.demo.domain.chat.MessageSendState
@@ -29,6 +30,7 @@ internal class MessagesEngine(
     private val tasks: ComponentTasks,
     private val chatId: Long,
     private val repository: ChatRepository,
+    cache: CacheRepository,
     private val outgoing: OutgoingEngine,
     private val getState: () -> ChatRoomState,
     private val updateState: ((ChatRoomState) -> ChatRoomState) -> Unit,
@@ -38,6 +40,7 @@ internal class MessagesEngine(
         getState = { getState().list },
         updateState = ::setList,
         onError = { onPageIntent(PageIntent.OnError(it)) },
+        refreshOn = cache.cleared,
     )
     private var isDeletingMessage = false
 

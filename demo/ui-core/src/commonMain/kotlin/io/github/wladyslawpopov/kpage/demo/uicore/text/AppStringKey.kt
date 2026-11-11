@@ -30,6 +30,12 @@ sealed interface AppStringKey {
         CENTER_JSC, CENTER_KSC, CENTER_LARC, CENTER_LRC, CENTER_MSFC, CENTER_SSC,
     }
 
-    /** Texts of the empty screens of the skeleton; removed with the real screens. */
-    enum class Placeholder : AppStringKey { SPACE, CHAT, LAB, SETTINGS, COMING_SOON }
+    /** Texts of the Settings screen: the theme, the language and the cache of the paginators. */
+    enum class Settings : AppStringKey {
+        THEME, THEME_SYSTEM, THEME_LIGHT, THEME_DARK, LANGUAGE,
+        CACHE, CACHE_LISTS, CACHE_SIZE, CLEAR_CACHE, CLEAR_CACHE_TITLE, CLEAR_CACHE_MESSAGE,
+    }
+
+    /** Texts of the screens that have no content yet. */
+    enum class Placeholder : AppStringKey { COMING_SOON }
 }

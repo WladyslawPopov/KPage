@@ -46,11 +46,7 @@ import io.github.wladyslawpopov.kpage.demo.shared.resources.favorites_remove
 import io.github.wladyslawpopov.kpage.demo.shared.resources.favorites_remove_message
 import io.github.wladyslawpopov.kpage.demo.shared.resources.favorites_remove_title
 import io.github.wladyslawpopov.kpage.demo.shared.resources.favorites_selected
-import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_chat
 import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_coming_soon
-import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_lab
-import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_settings
-import io.github.wladyslawpopov.kpage.demo.shared.resources.placeholder_space
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_album
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_albums
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_any
@@ -82,6 +78,17 @@ import io.github.wladyslawpopov.kpage.demo.shared.resources.space_photographer
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_resolution
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_search_hint
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_show
+import io.github.wladyslawpopov.kpage.demo.shared.resources.settings_cache
+import io.github.wladyslawpopov.kpage.demo.shared.resources.settings_cache_lists
+import io.github.wladyslawpopov.kpage.demo.shared.resources.settings_cache_size
+import io.github.wladyslawpopov.kpage.demo.shared.resources.settings_clear_cache
+import io.github.wladyslawpopov.kpage.demo.shared.resources.settings_clear_cache_message
+import io.github.wladyslawpopov.kpage.demo.shared.resources.settings_clear_cache_title
+import io.github.wladyslawpopov.kpage.demo.shared.resources.settings_language
+import io.github.wladyslawpopov.kpage.demo.shared.resources.settings_theme
+import io.github.wladyslawpopov.kpage.demo.shared.resources.settings_theme_dark
+import io.github.wladyslawpopov.kpage.demo.shared.resources.settings_theme_light
+import io.github.wladyslawpopov.kpage.demo.shared.resources.settings_theme_system
 import io.github.wladyslawpopov.kpage.demo.shared.resources.space_to
 import io.github.wladyslawpopov.kpage.demo.shared.resources.tabs_chat
 import io.github.wladyslawpopov.kpage.demo.shared.resources.tabs_favorites
@@ -190,11 +197,21 @@ fun AppStringKey.resource(): StringResource = when (this) {
         AppStringKey.Space.CENTER_SSC -> Res.string.space_center_ssc
     }
 
+    is AppStringKey.Settings -> when (this) {
+        AppStringKey.Settings.THEME -> Res.string.settings_theme
+        AppStringKey.Settings.THEME_SYSTEM -> Res.string.settings_theme_system
+        AppStringKey.Settings.THEME_LIGHT -> Res.string.settings_theme_light
+        AppStringKey.Settings.THEME_DARK -> Res.string.settings_theme_dark
+        AppStringKey.Settings.LANGUAGE -> Res.string.settings_language
+        AppStringKey.Settings.CACHE -> Res.string.settings_cache
+        AppStringKey.Settings.CACHE_LISTS -> Res.string.settings_cache_lists
+        AppStringKey.Settings.CACHE_SIZE -> Res.string.settings_cache_size
+        AppStringKey.Settings.CLEAR_CACHE -> Res.string.settings_clear_cache
+        AppStringKey.Settings.CLEAR_CACHE_TITLE -> Res.string.settings_clear_cache_title
+        AppStringKey.Settings.CLEAR_CACHE_MESSAGE -> Res.string.settings_clear_cache_message
+    }
+
     is AppStringKey.Placeholder -> when (this) {
-        AppStringKey.Placeholder.SPACE -> Res.string.placeholder_space
-        AppStringKey.Placeholder.CHAT -> Res.string.placeholder_chat
-        AppStringKey.Placeholder.LAB -> Res.string.placeholder_lab
-        AppStringKey.Placeholder.SETTINGS -> Res.string.placeholder_settings
         AppStringKey.Placeholder.COMING_SOON -> Res.string.placeholder_coming_soon
     }
 }

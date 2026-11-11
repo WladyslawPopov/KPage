@@ -3,6 +3,7 @@ package io.github.wladyslawpopov.kpage.core.paging.data.cache
 import io.github.wladyslawpopov.kpage.cache.PagingDatabase
 import io.github.wladyslawpopov.kpage.core.paging.common.dbDispatcher
 import io.github.wladyslawpopov.kpage.core.paging.data.DEFAULT_MAX_LISTS
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.KSerializer
@@ -68,7 +69,8 @@ suspend fun PagingDatabase.maxLists(dispatcher: CoroutineDispatcher = dbDispatch
  * screen changed it on the server. The change reaches every list of this item type, the open ones
  * too. Unlike [Paginator.updateItem][io.github.wladyslawpopov.kpage.core.paging.data.paginator.Paginator.updateItem],
  * a load that started before the edit may bring the old version back until its list is refreshed.
- * Returns the new item, or null if the item is not cached.
+ * Returns the new item, or null if the item is not cached or cannot be read. An exception of
+ * [transform] is thrown to the caller.
  */
 suspend fun <T : Any> PagingDatabase.updateItem(
     serializer: KSerializer<T>,
@@ -79,7 +81,14 @@ suspend fun <T : Any> PagingDatabase.updateItem(
     val itemType = serializer.descriptor.serialName
     transactionWithResult {
         val raw = itemRawQueries.selectById(itemType, id).executeAsOneOrNull()
-        val current = raw?.let { CacheJson.decodeFromString(serializer, it.json) }
+        val current = raw?.let {
+            try {
+                CacheJson.decodeFromString(serializer, it.json)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                null
+            }
+        }
         current?.let(transform)?.also { next ->
             itemRawQueries.updateJson(CacheJson.encodeToString(serializer, next), itemType, id)
         }

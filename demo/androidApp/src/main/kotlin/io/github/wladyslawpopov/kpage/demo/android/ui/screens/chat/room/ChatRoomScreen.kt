@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,13 +37,13 @@ import io.github.wladyslawpopov.kpage.demo.android.ui.screens.chat.room.parts.Me
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.chat.room.parts.MessagePlaceholder
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.chat.room.photos.url
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.space.details.viewer.SpaceImageViewer
+import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.ConfirmDialog
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.rememberBackAction
 import io.github.wladyslawpopov.kpage.demo.domain.chat.ChatAttachment
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.room.ChatRoomComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.room.ChatRoomIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.room.display.ChatDecoration
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.room.display.rowKey
-import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
 import kotlinx.coroutines.delay
@@ -143,16 +140,12 @@ fun ChatRoomScreen(component: ChatRoomComponent) {
 /** Asks whether to delete the whole chat. */
 @Composable
 private fun DeleteChatDialog(onIntent: (ChatRoomIntent) -> Unit) {
-    AlertDialog(
-        onDismissRequest = { onIntent(ChatRoomIntent.CancelDeleteChat) },
-        title = { Text(AppStringKey.Chat.DELETE_CHAT_TITLE.asString()) },
-        text = { Text(AppStringKey.Chat.DELETE_CHAT_MESSAGE.asString()) },
-        confirmButton = {
-            TextButton(onClick = { onIntent(ChatRoomIntent.ConfirmDeleteChat) }) { Text(AppStringKey.Chat.DELETE.asString()) }
-        },
-        dismissButton = {
-            TextButton(onClick = { onIntent(ChatRoomIntent.CancelDeleteChat) }) { Text(AppStringKey.Core.CANCEL.asString()) }
-        },
+    ConfirmDialog(
+        title = AppStringKey.Chat.DELETE_CHAT_TITLE,
+        message = AppStringKey.Chat.DELETE_CHAT_MESSAGE,
+        confirmText = AppStringKey.Chat.DELETE,
+        onConfirm = { onIntent(ChatRoomIntent.ConfirmDeleteChat) },
+        onCancel = { onIntent(ChatRoomIntent.CancelDeleteChat) },
     )
 }
 

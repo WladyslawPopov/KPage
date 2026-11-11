@@ -1,11 +1,11 @@
 package io.github.wladyslawpopov.kpage.demo.android.ui
 
 import androidx.compose.runtime.Composable
-import io.github.wladyslawpopov.kpage.demo.android.ui.screens.LabScreen
-import io.github.wladyslawpopov.kpage.demo.android.ui.screens.SettingsScreen
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.chat.listing.ChatsScreen
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.chat.room.ChatRoomScreen
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.favorites.FavoritesScreen
+import io.github.wladyslawpopov.kpage.demo.android.ui.screens.lab.LabScreen
+import io.github.wladyslawpopov.kpage.demo.android.ui.screens.settings.SettingsScreen
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.space.details.SpaceDetailsScreen
 import io.github.wladyslawpopov.kpage.demo.android.ui.screens.space.listing.SpaceScreen
 import io.github.wladyslawpopov.kpage.demo.presentation.navigation.ScreenComponent

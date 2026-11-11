@@ -49,6 +49,7 @@ extension AppColorKey {
             case .secondary: return .secondary
             case .accent: return .accentColor
             case .onAccent: return .white
+            case .favorite: return .red
             default: return .primary
             }
         case let key as AppColorKeyOverlay:
