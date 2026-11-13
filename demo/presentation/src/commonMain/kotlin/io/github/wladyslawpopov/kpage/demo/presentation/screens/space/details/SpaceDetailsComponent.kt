@@ -41,7 +41,7 @@ internal class DefaultSpaceDetailsComponent(
         is SpaceDetailsIntent.OpenTag -> openList(SpaceQuery(tag = intent.tag))
     }
 
-    override fun onRefresh() = engine.onRefresh()
+    override suspend fun onRefresh() = engine.onRefresh()
 
     private fun openList(query: SpaceQuery) = navigator.open(Route.SpaceResults(query))
 }

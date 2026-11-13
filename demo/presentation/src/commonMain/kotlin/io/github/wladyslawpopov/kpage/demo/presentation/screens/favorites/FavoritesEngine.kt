@@ -9,7 +9,6 @@ import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentTasks
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageEmptyState
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.paginator.PaginatorEngine
-import io.github.wladyslawpopov.kpage.demo.presentation.paginator.PaginatorIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.paginator.PaginatorUiState
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppIconKey
@@ -43,7 +42,7 @@ internal class FavoritesEngine(
         }
         // The tab lives from the start of the app: a heart set in Space or on the details reaches it here.
         tasks.launchMain {
-            favorites.changes.collect { paginator.onIntent(PaginatorIntent.Refresh) }
+            favorites.changes.collect { paginator.refresh() }
         }
     }
 
@@ -59,7 +58,7 @@ internal class FavoritesEngine(
         }
     }
 
-    fun onRefresh() = paginator.onIntent(PaginatorIntent.Refresh)
+    suspend fun onRefresh() = paginator.refresh()
 
     private fun toggle(id: String) =
         updateState { state ->
@@ -89,7 +88,7 @@ internal class FavoritesEngine(
             state.copy(
                 list = list,
                 page = state.page.copy(
-                    isLoading = list.loadState is LoadState.INITIAL,
+                    isLoading = list.loadState is LoadState.INITIAL || list.isRefreshing,
                     empty = if (list.isEmptyResult) {
                         PageEmptyState(
                             title = AppStringKey.Favorites.EMPTY,

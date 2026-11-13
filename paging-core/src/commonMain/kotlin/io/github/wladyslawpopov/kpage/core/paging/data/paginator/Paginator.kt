@@ -13,6 +13,9 @@ import kotlinx.coroutines.flow.StateFlow
  * - Renew data from the server: [refresh], always where the user is. The paginator renews the list once
  *   when it is created and never by itself after that: when to renew (a pull, a retry, a change of
  *   the query) is the app's decision.
+ *
+ * One rule for the whole API: [state] tells what is going on with the list (its own loads included);
+ * the calls of the app ([refresh], [updateItem], [getItemById]) suspend until they are done.
  * - Change one item without the server: [updateItem]; the app sees it at once in every list.
  * - Work with one item: [getItemById] (read), [updateItem] (write). Removing is a server operation
  *   followed by [refresh].
@@ -27,8 +30,13 @@ interface Paginator<T : Any> : PagingEvents {
      * and pages outside the window are dropped. On failure the cache and the position are left
      * untouched, so it is safe to call again. Use it for pull-to-refresh, the retry button and after
      * removing items on the server. To refresh from the top, scroll the list to the top first.
+     *
+     * Returns when the refresh is over: the new data is written, or it failed (the error is in
+     * [state] as `LoadState.ERROR`, not thrown), or a scroll out of the window or [close] ended it.
+     * A refresh asked while another runs replaces it; both calls return when the new one is over.
+     * Keep a pull-to-refresh indicator until it returns; not to wait, launch it.
      */
-    fun refresh()
+    suspend fun refresh()
 
     /**
      * Reads the full item from the cache, for example when UI rows hold only a display model and a

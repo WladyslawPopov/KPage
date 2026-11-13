@@ -6,11 +6,16 @@ struct FavoritesScreen: View {
     let state: FavoritesState
 
     var body: some View {
-        PageLayout(page: state.page, onPageIntent: { component.onPageIntent(intent: $0) }) {
+        PageLayout(
+            page: state.page,
+            onPageIntent: { component.onPageIntent(intent: $0) },
+            onRefresh: { try? await component.pullToRefresh() }
+        ) {
             PagedGrid(
                 list: state.list,
                 // Rows keep their own padding and a divider.
                 spacing: AppDimenKeyPadding.none.value,
+                itemKey: { $0.id },
                 placeholder: { _ in ImageRow(image: nil) }
             ) { image, _ in
                 row(image)

@@ -10,12 +10,16 @@ import io.github.wladyslawpopov.kpage.core.paging.data.state.PagingState
  * a new paginator. [D] are the decoration rows (`Nothing` without decorations); [rows] are the items
  * with them, read by index on every platform. [events] go to the list UI, which
  * reports the visible rows through a `PagingListTracker`.
+ *
+ * [isRefreshing] is true while a refresh asked by the screen runs: from the call until the paginator
+ * has finished it.
  */
 data class PaginatorUiState<Q : Any, T : Any, D : Any>(
     val query: Q,
     val paging: PagingState<T> = PagingState.initial(),
     val rows: PagingRows<T, D> = PagingRows.empty(),
     val events: PagingEvents? = null,
+    val isRefreshing: Boolean = false,
 ) {
     val items get() = paging.items
     val totalCount get() = paging.totalCount

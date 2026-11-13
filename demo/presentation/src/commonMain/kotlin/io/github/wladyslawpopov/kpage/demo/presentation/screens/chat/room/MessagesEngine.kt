@@ -10,7 +10,6 @@ import io.github.wladyslawpopov.kpage.demo.domain.chat.OutgoingMessage
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentTasks
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.paginator.PaginatorEngine
-import io.github.wladyslawpopov.kpage.demo.presentation.paginator.PaginatorIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.paginator.PaginatorUiState
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.room.display.ChatDecoration
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.room.display.ChatAction
@@ -54,7 +53,7 @@ internal class MessagesEngine(
         }
     }
 
-    fun refresh() = paginator.onIntent(PaginatorIntent.Refresh)
+    suspend fun refresh() = paginator.refresh()
 
     /** Builds the rows again: the local messages have changed. */
     fun updateMessages() = paginator.decorate { decorateMessages() }

@@ -38,7 +38,18 @@ class PaginatorEngine<Q : Any, T : Any, D : Any>(
     fun onIntent(intent: PaginatorIntent<Q>) {
         when (intent) {
             is PaginatorIntent.SetQuery -> setQuery(intent.query)
-            PaginatorIntent.Refresh -> paginator?.refresh()
+        }
+    }
+
+    /** Renews the list and returns when the paginator has finished; the state is refreshing meanwhile. */
+    suspend fun refresh() {
+        val paginator = paginator ?: return
+        updateState(getState().copy(isRefreshing = true))
+        try {
+            paginator.refresh()
+        } finally {
+            // A new query has its own paginator, already shown as not refreshing.
+            if (this.paginator === paginator) updateState(getState().copy(isRefreshing = false))
         }
     }
 
@@ -49,7 +60,7 @@ class PaginatorEngine<Q : Any, T : Any, D : Any>(
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun collectPaging(queries: Flow<Q>, create: (Q, CoroutineScope) -> Paginator<T>) {
         coroutineScope {
-            launch { refreshOn.collect { paginator?.refresh() } }
+            launch { refreshOn.collect { refresh() } }
             queries
                 .distinctUntilChanged()
                 .flatMapLatest { query ->
@@ -65,7 +76,7 @@ class PaginatorEngine<Q : Any, T : Any, D : Any>(
                     updateState(
                         getState().copy(
                             paging = paging,
-                            rows = paging.items.decorate(decorations)
+                            rows = paging.items.decorate(decorations),
                         )
                     )
                     reportError(paging.loadState)
@@ -96,7 +107,8 @@ class PaginatorEngine<Q : Any, T : Any, D : Any>(
             getState().copy(
                 events = newPaginator,
                 paging = PagingState.initial(),
-                rows = PagingRows.empty()
+                rows = PagingRows.empty(),
+                isRefreshing = false,
             )
         )
     }

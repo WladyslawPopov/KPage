@@ -28,6 +28,12 @@ struct ChatRoomScreen: View {
                     showPosition: false,
                     spacing: AppDimenKeyPadding.none.value,
                     startTrigger: state.newestKey,
+                    itemKey: { $0.rowKey() },
+                    decorationKey: { decoration in
+                        if let local = decoration as? ChatDecoration.Local { return local.item.key }
+                        if let separator = decoration as? ChatDecoration.DateSeparator { return separator.key }
+                        return String(describing: decoration)
+                    },
                     decoration: { (decoration: ChatDecoration) in
                         if let local = decoration as? ChatDecoration.Local {
                             bubble(local.item)

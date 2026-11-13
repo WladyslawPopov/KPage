@@ -33,7 +33,12 @@ struct SpaceScreen: View {
 
     var body: some View {
         // The empty state is drawn by the list, under the search field, so the field stays.
-        PageLayout(page: state.page, onPageIntent: { component.onPageIntent(intent: $0) }, showsEmpty: false) {
+        PageLayout(
+            page: state.page,
+            onPageIntent: { component.onPageIntent(intent: $0) },
+            showsEmpty: false,
+            onRefresh: { try? await component.pullToRefresh() }
+        ) {
             PagedGrid(
                 list: state.list,
                 columns: isGrid ? 2 : 1,
@@ -41,6 +46,7 @@ struct SpaceScreen: View {
                 spacing: isGrid ? AppDimenKeyPadding.medium.value : AppDimenKeyPadding.none.value,
                 empty: state.page.empty,
                 onEmptyAction: { component.onPageIntent(intent: $0) },
+                itemKey: { $0.id },
                 header: {
                     // Gone while the search mode is open; back when it ends.
                     if !isSearchMode {
@@ -96,9 +102,13 @@ struct SpaceScreen: View {
                     Image(systemName: AppIconKey.filter.sfSymbol)
                 }
                 .accessibilityLabel(AppStringKeyCore.filters.text)
-                // Shows the layout a tap switches to.
-                Button { component.onIntent(intent: SpaceIntentToggleLayout.shared) } label: {
-                    Image(systemName: (isGrid ? AppIconKey.layoutList : AppIconKey.layoutGrid).sfSymbol)
+                // Shows the layout a tap switches to. Only near the top: another layout starts the list from
+                // its first row, so deeper the switch would lose the place.
+                if !isSearchAway {
+                    Button { component.onIntent(intent: SpaceIntentToggleLayout.shared) } label: {
+                        Image(systemName: (isGrid ? AppIconKey.layoutList : AppIconKey.layoutGrid).sfSymbol)
+                    }
+                    .transition(.opacity.combined(with: .scale))
                 }
             }
         }

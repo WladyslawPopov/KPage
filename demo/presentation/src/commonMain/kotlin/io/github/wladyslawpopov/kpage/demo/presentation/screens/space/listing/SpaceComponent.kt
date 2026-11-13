@@ -54,7 +54,7 @@ internal class DefaultSpaceComponent(
         else -> engine.onIntent(intent)
     }
 
-    override fun onRefresh() = engine.onRefresh()
+    override suspend fun onRefresh() = engine.onRefresh()
 
     override fun onReset() = engine.onReset()
 

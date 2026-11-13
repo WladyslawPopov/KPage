@@ -44,7 +44,7 @@ internal class DefaultChatsComponent(
         }
     }
 
-    override fun onRefresh() = engine.onRefresh()
+    override suspend fun onRefresh() = engine.onRefresh()
 
     override fun onEmptyAction() = engine.onIntent(ChatsIntent.StartCreate)
 }

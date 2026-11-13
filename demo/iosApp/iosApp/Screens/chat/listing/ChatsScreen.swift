@@ -10,10 +10,15 @@ struct ChatsScreen: View {
     @State private var newInterlocutor = ""
 
     var body: some View {
-        PageLayout(page: state.page, onPageIntent: { component.onPageIntent(intent: $0) }) {
+        PageLayout(
+            page: state.page,
+            onPageIntent: { component.onPageIntent(intent: $0) },
+            onRefresh: { try? await component.pullToRefresh() }
+        ) {
             PagedGrid(
                 list: state.list,
                 spacing: AppDimenKeyPadding.none.value,
+                itemKey: { String($0.id) },
                 placeholder: { _ in ChatRow(chat: nil) }
             ) { chat, _ in
                 row(chat)

@@ -22,4 +22,10 @@ sealed interface PageIntent {
 
 interface PageOwner {
     fun onPageIntent(intent: PageIntent)
+
+    /**
+     * The pull to refresh: sends [PageIntent.Refresh] and returns when the page is no longer loading,
+     * for a UI whose indicator lives as long as its action (SwiftUI `refreshable`). Call it on Main.
+     */
+    suspend fun pullToRefresh() = onPageIntent(PageIntent.Refresh)
 }

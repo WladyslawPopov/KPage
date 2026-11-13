@@ -87,7 +87,7 @@ internal class SpaceEngine(
         }
     }
 
-    fun onRefresh() = paginator.onIntent(PaginatorIntent.Refresh)
+    suspend fun onRefresh() = paginator.refresh()
 
     /** Back to the start: the text and the filters the list was opened with. */
     fun onReset() {
@@ -135,7 +135,7 @@ internal class SpaceEngine(
             state.copy(
                 list = list,
                 page = state.page.copy(
-                    isLoading = list.loadState is LoadState.INITIAL,
+                    isLoading = list.loadState is LoadState.INITIAL || list.isRefreshing,
                     empty = when {
                         !list.isEmptyResult -> null
                         list.query != initialQuery -> PageEmptyState(

@@ -199,7 +199,7 @@ SwiftUI and UIKit use the same tracker: the demo's [`PagedGrid.swift`](demo/iosA
 |---|---|---|
 | Show the list | `paginator.state` | `items`, `totalCount`, `loadState`, `isRestored` |
 | Report what is on screen | `PagingListTracker(events).onLayout(rows, visibleRows)` | on every layout change |
-| Refresh | `refresh()` | where the user is: pull-to-refresh, retry, a changed query, after removing items on the server |
+| Refresh | `refresh()` | where the user is: pull-to-refresh, retry, after removing items on the server; returns when it is over |
 | Refresh from the top | scroll to the top, then `refresh()` | the window follows the scroll |
 | Jump to a position | scroll the list | the window follows by itself |
 | Read the full item | `getItemById(id)` | when rows hold a display model |
@@ -221,10 +221,14 @@ The paginator keeps the **visible pages** plus `prefetchDistance` pages on each 
 ### Refresh
 
 ```kotlin
-paginator.refresh()
+scope.launch {
+    paginator.refresh() // returns when the refresh is over
+}
 ```
 
 One refresh, and it works **where the user is**: it requests the pages of the current window again, ignoring the cache, and replaces them in one transaction. The old data stays on screen meanwhile (`loadState = REFRESH`).
+
+One rule for the whole API: `state` tells what is going on with the list, and the calls of the app (`refresh()`, `updateItem()`, `getItemById()`) suspend until they are done. A pull-to-refresh indicator simply stays until `refresh()` returns.
 
 <details>
 <summary>Details</summary>
@@ -232,7 +236,8 @@ One refresh, and it works **where the user is**: it requests the pages of the cu
 - When every page of the window has answered, one transaction replaces the list, updates `totalCount` and drops the pages outside the window (they are stale and load again when the user scrolls there).
 - If any page fails, everything received is thrown away: the cache and the position stay, `loadState = ERROR`, and a retry button can call `refresh()` as often as needed.
 - If the list got shorter than the user's position, the refresh moves to the new end. A failure of a page past the real end does not fail the refresh.
-- Scrolling out of the window during a refresh cancels it; calling `refresh()` again restarts it.
+- `refresh()` returns when the new data is written, when it failed (the error is in `state`, not thrown), or when a scroll out of the window or `close()` ended it. It never waits forever.
+- Scrolling out of the window during a refresh cancels it; calling `refresh()` again restarts it. A refresh asked while another runs replaces it, and both calls return when the new one is over.
 - The library never touches the scroll position.
 - **You decide when the list is renewed.** The paginator refreshes once when it is created (over a cache it refreshes the window at the start and drops deep cached pages). After that `refresh()` is yours: call it on a pull, on a retry, on a signal of your business logic (a cleared cache, a changed favorite) or when the screen comes back, one line wherever your app needs it. Nothing renews behind your back, so counters and positions stay exactly as the user sees them until you decide. A changed query is a new paginator with a new `queryKey`.
 - An empty list ("nothing found") is renewed only by `refresh()` as well.

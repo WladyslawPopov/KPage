@@ -12,7 +12,7 @@ internal class FakePaginator<T : Any>(val query: String = "") : Paginator<T> {
     var closed = false
     val updatedIds = mutableListOf<String>()
 
-    override fun refresh() {
+    override suspend fun refresh() {
         refreshCount++
     }
 

@@ -19,7 +19,8 @@ data class PageEmptyState(
 
 /**
  * What every page shows besides its content. [isRefreshEnabled] is only the pull-to-refresh gesture: the retry
- * of the error banner works on every page.
+ * of the error banner works on every page. [isLoading] is the loader: the first load or a refresh of the
+ * shown data.
  */
 data class PageState(
     val error: ScreenError? = null,

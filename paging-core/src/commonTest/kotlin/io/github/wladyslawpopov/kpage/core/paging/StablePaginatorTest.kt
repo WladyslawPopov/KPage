@@ -12,6 +12,7 @@ import io.github.wladyslawpopov.kpage.core.paging.data.cache.clearCache
 import io.github.wladyslawpopov.kpage.core.paging.data.cache.updateItem
 import io.github.wladyslawpopov.kpage.core.paging.data.existingPages
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -125,6 +126,10 @@ class StablePaginatorTest {
 
     private fun StablePaginator<FakeItem>.scrollTo(first: Int, last: Int = first) = onVisibleRangeChanged(first..last)
 
+    /** Asks for a refresh at once, as a pull does, and does not wait for it; the returned job ends with it. */
+    private fun TestScope.startRefresh(paginator: StablePaginator<FakeItem> = pg): Job =
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { paginator.refresh() }
+
     private fun PagingState<FakeItem>.isSettled() = loadState == LoadState.IDLE || loadState == LoadState.END
 
     private fun FakeItem?.isOld() = this?.title?.startsWith("Old") == true
@@ -201,7 +206,7 @@ class StablePaginatorTest {
         val collector = backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { pg.state.collect { seen += it } }
 
         pg.scrollTo(50)
-        pg.refresh()
+        startRefresh()
         awaitState { it.loadState == LoadState.REFRESH }
         // While the window loads, the old data stays on screen.
         assertTrue(pg.state.value.items[45].isOld())
@@ -230,7 +235,7 @@ class StablePaginatorTest {
         createOverCache(server)
 
         pg.scrollTo(50)
-        pg.refresh()
+        startRefresh()
         val failed = awaitState { it.loadState is LoadState.ERROR }
 
         assertEquals(100, failed.items.loadedCount)
@@ -239,7 +244,7 @@ class StablePaginatorTest {
         assertEquals((0L..9L).toList(), db.existingPages(PAGE))
 
         server.failing.clear()
-        pg.refresh()
+        startRefresh()
         awaitState { it.items[50].isNew() && it.isSettled() }
     }
 
@@ -249,13 +254,13 @@ class StablePaginatorTest {
         createOverCache(server)
         pg.scrollTo(50)
 
-        pg.refresh()
+        startRefresh()
         val failed = awaitState { it.loadState is LoadState.ERROR }
         assertEquals(100, failed.items.loadedCount, "The cache is intact")
 
         server.failAll = false
         server.clearRequests()
-        pg.refresh()
+        startRefresh()
         val state = awaitState { it.items[50].isNew() && it.isSettled() }
 
         assertEquals(listOf(4, 5, 6), server.requests.sorted(), "The retry refreshes where the user is")
@@ -268,7 +273,7 @@ class StablePaginatorTest {
         createOverCache(server)
 
         pg.scrollTo(50)
-        pg.refresh()
+        startRefresh()
         awaitState { it.loadState == LoadState.REFRESH }
         pg.scrollTo(80)
         server.release(4, 5, 6)
@@ -284,7 +289,7 @@ class StablePaginatorTest {
         createOverCache(server)
 
         pg.scrollTo(90)
-        pg.refresh()
+        startRefresh()
         // Page 9 is past the new end and fails; page 8 (empty, total 35) reveals the new end.
         barrier()
         assertTrue(server.requests.containsAll(listOf(8, 9)))
@@ -303,7 +308,7 @@ class StablePaginatorTest {
         createOverCache(server)
 
         pg.scrollTo(40)
-        pg.refresh()
+        startRefresh()
         val state = awaitState { it.totalCount == 45 && it.isSettled() }
 
         assertEquals(LoadState.END, state.loadState)
@@ -316,12 +321,64 @@ class StablePaginatorTest {
         createOverCache(server)
 
         pg.scrollTo(50)
-        pg.refresh()
+        startRefresh()
         val state = awaitState { it.totalCount == 98 && it.isSettled() }
 
         assertEquals((40 until 70).toList(), state.items.loadedIndices)
         assertEquals("id_47", state.items[45]?.id)
         assertEquals(listOf(4L, 5L, 6L), db.existingPages(PAGE), "Shifted pages outside the window are dropped")
+    }
+
+    @Test
+    fun refresh_returns_when_the_new_data_is_written() = runTest {
+        val server = GatedServer(ids(95), PAGE).apply { hold(4, 5, 6) }
+        createOverCache(server)
+
+        pg.scrollTo(50)
+        val refresh = startRefresh()
+        barrier()
+        assertTrue(refresh.isActive, "Still running while the pages are held")
+
+        server.release(4, 5, 6)
+        barrier()
+        assertTrue(refresh.isCompleted)
+        assertTrue(pg.state.value.items[50].isNew() && pg.state.value.isSettled())
+    }
+
+    @Test
+    fun refresh_returns_when_it_failed_or_was_cancelled() = runTest {
+        val server = GatedServer(ids(100), PAGE).apply { failing += 5 }
+        createOverCache(server)
+
+        pg.scrollTo(50)
+        val failed = startRefresh()
+        barrier()
+        assertTrue(failed.isCompleted)
+        assertTrue(pg.state.value.loadState is LoadState.ERROR, "The error is in the state when it returns")
+
+        server.failing.clear()
+        server.hold(4, 5, 6)
+        val cancelled = startRefresh()
+        barrier()
+        pg.scrollTo(80)
+        barrier()
+        assertTrue(cancelled.isCompleted, "A scroll out of the window ends it")
+    }
+
+    @Test
+    fun a_refresh_that_replaced_another_returns_both_and_close_returns_all() = runTest {
+        val server = GatedServer(ids(100), PAGE).apply { hold(4, 5, 6) }
+        createOverCache(server)
+
+        pg.scrollTo(50)
+        val first = startRefresh()
+        val second = startRefresh()
+        barrier()
+        assertTrue(first.isActive && second.isActive)
+
+        pg.close()
+        barrier()
+        assertTrue(first.isCompleted && second.isCompleted, "Nobody waits for a closed paginator")
     }
 
     // ---- Creating ----
@@ -394,7 +451,7 @@ class StablePaginatorTest {
         barrier()
         assertEquals(0, pg.state.value.totalCount)
 
-        pg.refresh()
+        startRefresh()
         val state = awaitState { it.isSettled() }
 
         assertEquals(5, state.totalCount)
@@ -408,7 +465,7 @@ class StablePaginatorTest {
         create(server)
         awaitRestored()
 
-        pg.refresh()
+        startRefresh()
         awaitState { it.loadState == LoadState.REFRESH }
         server.release(0, 1)
         awaitState { it.items[0].isNew() && it.isSettled() }
@@ -481,7 +538,7 @@ class StablePaginatorTest {
         createOverCache(server)
 
         pg.scrollTo(50)
-        pg.refresh()
+        startRefresh()
         awaitState { it.loadState == LoadState.REFRESH }
         pg.updateItem("id_50") { it.copy(title = "Edited") }
         server.release(4, 5, 6)
@@ -533,7 +590,7 @@ class StablePaginatorTest {
         assertFalse(pg.state.value.items.isLoaded(0))
         assertTrue(server.requests.isEmpty())
 
-        pg.refresh()
+        startRefresh()
         val state = awaitState { it.isSettled() && it.items.isLoaded(0) }
 
         assertEquals(100, state.totalCount)

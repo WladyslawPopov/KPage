@@ -8,7 +8,6 @@ import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentTasks
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageEmptyState
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.paginator.PaginatorEngine
-import io.github.wladyslawpopov.kpage.demo.presentation.paginator.PaginatorIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.paginator.PaginatorUiState
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppIconKey
@@ -42,7 +41,7 @@ internal class ChatsEngine(
         }
         // Any change of a chat reaches the list here: a new message moves its chat to the top.
         tasks.launchMain {
-            repository.changes.collect { paginator.onIntent(PaginatorIntent.Refresh) }
+            repository.changes.collect { paginator.refresh() }
         }
     }
 
@@ -61,7 +60,7 @@ internal class ChatsEngine(
         }
     }
 
-    fun onRefresh() = paginator.onIntent(PaginatorIntent.Refresh)
+    suspend fun onRefresh() = paginator.refresh()
 
     private fun toggle(id: Long) =
         updateState { state ->
@@ -98,7 +97,7 @@ internal class ChatsEngine(
             state.copy(
                 list = list,
                 page = state.page.copy(
-                    isLoading = list.loadState is LoadState.INITIAL,
+                    isLoading = list.loadState is LoadState.INITIAL || list.isRefreshing,
                     empty = if (list.isEmptyResult) {
                         PageEmptyState(
                             title = AppStringKey.Chat.EMPTY,

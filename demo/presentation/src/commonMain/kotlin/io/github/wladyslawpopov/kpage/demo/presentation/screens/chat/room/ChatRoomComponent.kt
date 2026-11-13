@@ -93,8 +93,8 @@ internal class DefaultChatRoomComponent(
 
     override fun messageItem(message: ChatMessage): ChatMessageItem = messages.messageItem(message)
 
-    override fun onRefresh() {
-        messages.refresh()
+    override suspend fun onRefresh() {
         info.refresh()
+        messages.refresh()
     }
 }

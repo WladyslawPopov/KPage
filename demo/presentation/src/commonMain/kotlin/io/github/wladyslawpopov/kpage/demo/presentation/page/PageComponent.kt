@@ -50,7 +50,14 @@ abstract class PageComponent<S : PageScreenState<S>, I : Any>(
         }
     }
 
-    protected open fun onRefresh() = Unit
+    final override suspend fun pullToRefresh() {
+        if (!isActive) return
+        updatePage { it.copy(error = null) }
+        onRefresh()
+    }
+
+    /** Renews the page and returns when the renewal is over. */
+    protected open suspend fun onRefresh() = Unit
 
     protected open fun onReset() = Unit
 
@@ -67,7 +74,7 @@ abstract class PageComponent<S : PageScreenState<S>, I : Any>(
             PageIntent.ClearError -> updatePage { it.copy(error = null) }
             PageIntent.Refresh -> {
                 updatePage { it.copy(error = null) }
-                onRefresh()
+                launchMain { onRefresh() }
             }
 
             PageIntent.Reset -> {

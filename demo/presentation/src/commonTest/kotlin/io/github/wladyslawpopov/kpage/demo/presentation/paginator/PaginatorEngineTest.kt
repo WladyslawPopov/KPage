@@ -123,12 +123,13 @@ class PaginatorEngineTest {
     }
 
     @Test
-    fun the_refresh_intent_renews_the_paginator() = runTest {
+    fun refresh_renews_the_paginator_and_is_not_refreshing_after_it() = runTest {
         val harness = Harness(this).apply { start() }
 
-        harness.engine.onIntent(PaginatorIntent.Refresh)
+        harness.engine.refresh()
 
         assertEquals(1, harness.current.refreshCount)
+        assertFalse(harness.state.isRefreshing)
     }
 
     @Test

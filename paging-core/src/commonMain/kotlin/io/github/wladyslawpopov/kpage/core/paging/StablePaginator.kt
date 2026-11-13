@@ -109,7 +109,7 @@ class StablePaginator<T : Any>(
 
     private sealed interface Event {
         class Visible(val pages: IntRange) : Event
-        data object Refresh : Event
+        class Refresh(val done: CompletableDeferred<Unit>) : Event
         class Run(val block: suspend () -> Unit) : Event
         class Loaded<T>(
             val page: Int,
@@ -125,6 +125,8 @@ class StablePaginator<T : Any>(
     private var anchorEnd = 0
     private var generation = 0L
     private var activeRefresh: Refresh<T>? = null
+    // Callers of refresh() waiting for the refresh in progress; a new refresh takes over the waiters.
+    private val refreshWaiters = mutableListOf<CompletableDeferred<Unit>>()
     private val jobs = mutableMapOf<Int, Job>()
     private var error: Throwable? = null
     private var tick = 0L
@@ -262,6 +264,8 @@ class StablePaginator<T : Any>(
                 guarded { handle(event) }
                 if (jobs.isEmpty() && activeRefresh == null) localEdits.clear()
                 publishLoadState()
+                // After the state, so a returning refresh() already sees how it ended.
+                if (activeRefresh == null) completeRefreshWaiters()
             }
         }
         paginatorScope.launch {
@@ -291,8 +295,19 @@ class StablePaginator<T : Any>(
         return first..maxOf(first, visible.last / pageSize)
     }
 
-    override fun refresh() {
-        send(Event.Refresh)
+    override suspend fun refresh() {
+        val done = CompletableDeferred<Unit>()
+        val onClose = job.invokeOnCompletion { done.complete(Unit) }
+        try {
+            if (send(Event.Refresh(done))) done.await()
+        } finally {
+            onClose.dispose()
+        }
+    }
+
+    private fun completeRefreshWaiters() {
+        refreshWaiters.forEach { it.complete(Unit) }
+        refreshWaiters.clear()
     }
 
     override fun close() {
@@ -309,7 +324,11 @@ class StablePaginator<T : Any>(
                 followAnchor()
             }
 
-            Event.Refresh -> startRefresh()
+            is Event.Refresh -> {
+                // Added first: a refresh that fails to start still ends, and its waiter with it.
+                refreshWaiters += event.done
+                startRefresh()
+            }
 
             is Event.Run -> event.block()
 

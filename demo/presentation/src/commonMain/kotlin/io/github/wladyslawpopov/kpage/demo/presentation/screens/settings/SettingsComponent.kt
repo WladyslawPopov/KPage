@@ -39,5 +39,5 @@ internal class DefaultSettingsComponent(
 
     override fun onIntent(intent: SettingsIntent) = engine.onIntent(intent)
 
-    override fun onRefresh() = engine.refreshCache()
+    override suspend fun onRefresh() = engine.refreshCache()
 }
