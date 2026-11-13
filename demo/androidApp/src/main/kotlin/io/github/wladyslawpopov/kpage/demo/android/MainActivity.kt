@@ -5,8 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import coil3.compose.setSingletonImageLoaderFactory
 import io.github.wladyslawpopov.kpage.demo.android.theme.AppLanguageProvider
 import io.github.wladyslawpopov.kpage.demo.android.theme.DemoTheme
@@ -29,7 +33,10 @@ class MainActivity : ComponentActivity() {
             val themeMode by settings.themeMode.collectAsState()
             val language by settings.language.collectAsState()
             AppLanguageProvider(language) {
-                DemoTheme(themeMode) { AppRoot() }
+                DemoTheme(themeMode) {
+                    // Test tags are shown to UI tools (Maestro, UiAutomator) as resource ids.
+                    Box(Modifier.semantics { testTagsAsResourceId = true }) { AppRoot() }
+                }
             }
         }
     }

@@ -23,6 +23,7 @@ struct ImageRow<Trailing: View>: View {
             // From the start of the texts to the end of the screen.
             Divider().padding(.leading, start + thumbnail + gap)
         }
+        .uiTestRow(.imageCard, isOn: image != nil)
     }
 
     private var row: some View {
@@ -84,6 +85,7 @@ struct ImageTile: View {
 
             ImageTexts(image: image)
         }
+        .uiTestRow(.imageCard, isOn: image != nil)
     }
 }
 

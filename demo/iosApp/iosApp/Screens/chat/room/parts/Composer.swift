@@ -53,10 +53,12 @@ struct Composer: View {
                     .padding(.horizontal, AppDimenKeyPadding.medium.value)
                     .padding(.vertical, AppDimenKeyPadding.small.value)
                     .background(AppColorKeyContainer.background.color, in: RoundedRectangle(cornerRadius: 18))
+                    .uiTestId(.messageField)
                 Button { onIntent(ChatRoomIntentSend.shared) } label: {
                     Image(systemName: AppIconKey.send.sfSymbol).font(.title2)
                 }
                 .disabled(!state.canSend)
+                .uiTestId(.send)
             }
             .padding(.horizontal, AppDimenKeyPadding.small.value)
         }

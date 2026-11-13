@@ -41,6 +41,7 @@ struct ChatRow<Trailing: View>: View {
             .padding(.vertical, AppDimenKeyPadding.medium.value)
             Divider().padding(.leading, AppDimenKeyPadding.large.value + avatarSize + AppDimenKeyPadding.medium.value)
         }
+        .uiTestRow(.chatRow, isOn: chat != nil)
     }
 
     private var avatar: some View {

@@ -89,10 +89,21 @@ fun ChatRoomScreen(component: ChatRoomComponent) {
         PageLayout(
             page = state.page,
             onPageIntent = component::onPageIntent,
-            header = { ChatRoomTopBar(state = state, onBack = rememberBackAction(), onIntent = component::onIntent) },
+            header = {
+                ChatRoomTopBar(
+                    state = state,
+                    onBack = rememberBackAction(),
+                    onIntent = component::onIntent
+                )
+            },
         ) { padding ->
             // A tap on the messages hides the keyboard, as in MarketKMP.
-            Box(Modifier.fillMaxSize().pointerInput(Unit) { detectTapGestures(onTap = { focusManager.clearFocus() }) }) {
+            Box(
+                Modifier.fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectTapGestures(onTap = { focusManager.clearFocus() })
+                    }
+            ) {
                 PagedGrid(
                     list = state.list,
                     keyOf = { it.rowKey() },
@@ -112,7 +123,12 @@ fun ChatRoomScreen(component: ChatRoomComponent) {
                     },
                     decorationContent = { decoration ->
                         when (decoration) {
-                            is ChatDecoration.Local -> MessageBubble(decoration.item, component::onIntent, openPhoto)
+                            is ChatDecoration.Local -> MessageBubble(
+                                decoration.item,
+                                component::onIntent,
+                                openPhoto
+                            )
+
                             is ChatDecoration.DateSeparator -> DateSeparator(decoration.date)
                         }
                     },
@@ -128,7 +144,11 @@ fun ChatRoomScreen(component: ChatRoomComponent) {
                     bottomInset = if (isImeVisible) 0.dp else systemNavBar,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .onSizeChanged { composerHeight = with(density) { it.height.toDp() } },
+                        .onSizeChanged {
+                            composerHeight = with(density) {
+                                it.height.toDp()
+                            }
+                        },
                 )
             }
         }

@@ -106,7 +106,8 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, HeaderView: View, Dec
                     }
                 }
             }
-            .scrollPosition(id: topKeyInLayout, anchor: .top)
+            // A reversed list (a chat) needs no help: it is held from its start, where the newest row is.
+            .modifier(TopRowPosition(id: reversed ? nil : topKeyInLayout))
             // A list becomes a grid and back: the list starts from its first row. A lazy grid finds a far row only
             // by laying out every row before it, which is slow; a new identity makes a new scroll view at the top.
             .id(columns)
@@ -122,7 +123,8 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, HeaderView: View, Dec
                 Task {
                     // The new row is laid out first, as on Android.
                     try? await Task.sleep(for: .milliseconds(100))
-                    withAnimation { proxy.scrollTo(first, anchor: .top) }
+                    // At once: an animated scroll through a long history lays rows out on the way and they fly.
+                    proxy.scrollTo(first, anchor: .top)
                 }
             }
         }
@@ -189,6 +191,19 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, HeaderView: View, Dec
                 .padding(.vertical, AppDimenKeyPadding.extraSmall.value)
                 .background(.regularMaterial, in: Capsule())
                 .padding(AppDimenKeyPadding.small.value)
+        }
+    }
+}
+
+/// Holds the scroll position by the key of the top row, when there is one to hold.
+private struct TopRowPosition: ViewModifier {
+    let id: Binding<String?>?
+
+    func body(content: Content) -> some View {
+        if let id {
+            content.scrollPosition(id: id, anchor: .top)
+        } else {
+            content
         }
     }
 }

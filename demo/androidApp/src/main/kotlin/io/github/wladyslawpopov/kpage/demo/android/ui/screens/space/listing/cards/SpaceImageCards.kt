@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -33,6 +34,7 @@ import io.github.wladyslawpopov.kpage.demo.android.ui.screens.space.common.Heart
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.RemoteImage
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.listing.mapper.caption
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppTypographyKey
@@ -54,7 +56,7 @@ internal fun ImageRow(
     val start = AppDimenKey.Padding.LARGE.dp()
     val haptics = LocalHapticFeedback.current
     Column(
-        Modifier.fillMaxWidth().combinedClickable(
+        Modifier.fillMaxWidth().cardTag(image != null).combinedClickable(
             enabled = image != null,
             onClick = onClick,
             onLongClick = onLongClick?.let { action ->
@@ -101,6 +103,7 @@ internal fun ImageTile(image: SpaceImage?, onClick: () -> Unit, onFavorite: () -
     Column(
         Modifier
             .fillMaxWidth()
+            .cardTag(image != null)
             .clip(RoundedCornerShape(AppDimenKey.CornerRadius.MEDIUM.dp()))
             .clickable(enabled = image != null, onClick = onClick),
     ) {
@@ -126,6 +129,9 @@ internal fun ImageTile(image: SpaceImage?, onClick: () -> Unit, onFavorite: () -
         }
     }
 }
+
+// Only a loaded card: the UI flows look for images, not placeholders.
+private fun Modifier.cardTag(isLoaded: Boolean): Modifier = if (isLoaded) testTag(UiTestId.IMAGE_CARD.id) else this
 
 /** The title in two lines and "date · center" under it; grey bars for a placeholder. */
 @Composable

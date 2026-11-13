@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.github.wladyslawpopov.kpage.demo.android.theme.color
@@ -43,6 +44,7 @@ import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.RemoteImage
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.room.ChatRoomIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.room.ChatRoomState
 import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
@@ -120,6 +122,7 @@ internal fun Composer(
                 cursorBrush = SolidColor(AppColorKey.Text.ACCENT.color()),
                 modifier = Modifier
                     .weight(1f)
+                    .testTag(UiTestId.MESSAGE_FIELD.id)
                     .heightIn(min = 40.dp)
                     .padding(vertical = AppDimenKey.Padding.EXTRA_SMALL.dp())
                     .background(AppColorKey.Container.BACKGROUND.color(), corner),
@@ -135,7 +138,11 @@ internal fun Composer(
                     }
                 },
             )
-            IconButton(enabled = state.canSend, onClick = { onIntent(ChatRoomIntent.Send) }) {
+            IconButton(
+                enabled = state.canSend,
+                onClick = { onIntent(ChatRoomIntent.Send) },
+                modifier = Modifier.testTag(UiTestId.SEND.id),
+            ) {
                 Icon(
                     AppIconKey.SEND.vector(),
                     contentDescription = null,

@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
+import androidx.core.graphics.scale
 
 /**
  * Turns the photos picked by the system into files of the app: scaled down to [MAX_SIDE], saved as
@@ -30,12 +31,15 @@ private fun savePhoto(context: Context, uri: Uri, folder: File): ChatAttachment?
     var sample = 1
     while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= MAX_SIDE) sample *= 2
     val decoded = resolver.openInputStream(uri)?.use {
-        BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample })
+        BitmapFactory.decodeStream(
+            it,
+            null,
+            BitmapFactory.Options().apply { inSampleSize = sample })
     } ?: return null
 
     val scale = minOf(1f, MAX_SIDE.toFloat() / maxOf(decoded.width, decoded.height))
     val bitmap = if (scale < 1f) {
-        Bitmap.createScaledBitmap(decoded, (decoded.width * scale).toInt(), (decoded.height * scale).toInt(), true)
+        decoded.scale((decoded.width * scale).toInt(), (decoded.height * scale).toInt())
     } else {
         decoded
     }

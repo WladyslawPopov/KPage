@@ -1,99 +1,2722 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "core_back" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Back" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wstecz" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Назад" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Назад" } } } },
-    "core_cancel" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Cancel" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Anuluj" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Скасувати" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отмена" } } } },
-    "core_clear" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Clear" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wyczyść" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Очистити" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Очистить" } } } },
-    "core_close" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Close" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Zamknij" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Закрити" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Закрыть" } } } },
-    "core_copied" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Copied" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Skopiowano" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Скопійовано" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Скопировано" } } } },
-    "core_done" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Done" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Gotowe" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Готово" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Готово" } } } },
-    "core_filters" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Filters" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Filtry" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Фільтри" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Фильтры" } } } },
-    "core_network_error" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Network error" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Błąd sieci" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Помилка мережі" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ошибка сети" } } } },
-    "core_no_internet_title" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "No internet connection" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Brak połączenia z internetem" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Немає з'єднання з інтернетом" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Нет подключения к интернету" } } } },
-    "core_nothing_found" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Nothing found" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nic nie znaleziono" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Нічого не знайдено" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ничего не найдено" } } } },
-    "core_ok" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "OK" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "OK" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "OK" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "OK" } } } },
-    "core_oops_title" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Oops, something went wrong" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Ups, coś poszło nie tak" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Ой, щось пішло не так" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Упс, что-то пошло не так" } } } },
-    "core_refresh" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Refresh" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Odśwież" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Оновити" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Обновить" } } } },
-    "core_reset" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Reset" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Resetuj" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Скинути" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сбросить" } } } },
-    "core_retry" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Retry" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Ponów" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Повторити" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Повторить" } } } },
-    "core_search" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Search" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Szukaj" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Пошук" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Поиск" } } } },
-    "core_server_error" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Server error" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Błąd serwera" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Помилка сервера" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ошибка сервера" } } } },
-    "placeholder_coming_soon" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Coming soon" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wkrótce" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Незабаром" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Скоро" } } } },
-    "chat_copy" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Copy" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Kopiuj" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Копіювати" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Копировать" } } } },
-    "chat_create" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Create a chat" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Utwórz czat" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Створити чат" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Создать чат" } } } },
-    "chat_create_title" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "New chat" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nowy czat" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Новий чат" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Новый чат" } } } },
-    "chat_delete" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Usuń" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Видалити" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Удалить" } } } },
-    "chat_actions" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Actions" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Działania" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Дії" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Действия" } } } },
-    "chat_delete_chat" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete chat" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Usuń czat" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Видалити чат" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Удалить чат" } } } },
-    "chat_delete_chat_message" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "All its messages are deleted too." } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wszystkie jego wiadomości również zostaną usunięte." } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Усі його повідомлення теж буде видалено." } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Все его сообщения тоже будут удалены." } } } },
-    "chat_delete_chat_title" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete this chat?" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Usunąć ten czat?" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Видалити цей чат?" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Удалить этот чат?" } } } },
-    "chat_delete_message" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "The messages of these chats are deleted too." } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wiadomości z tych czatów również zostaną usunięte." } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Повідомлення цих чатів теж буде видалено." } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сообщения этих чатов тоже будут удалены." } } } },
-    "chat_delete_title" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Delete the chats?" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Usunąć czaty?" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Видалити чати?" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Удалить чаты?" } } } },
-    "chat_empty" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "No chats yet" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Brak czatów" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Чатів ще немає" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Чатов пока нет" } } } },
-    "chat_interlocutor_hint" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Interlocutor's name" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Imię rozmówcy" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Ім'я співрозмовника" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Имя собеседника" } } } },
-    "chat_message_hint" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Message" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wiadomość" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Повідомлення" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сообщение" } } } },
-    "chat_not_found" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "The chat was deleted" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Czat został usunięty" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Чат видалено" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Чат удалён" } } } },
-    "chat_retry" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Send again" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wyślij ponownie" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Надіслати знову" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Отправить снова" } } } },
-    "chat_scenario_chatty" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Mock: quick replies" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Makieta: szybkie odpowiedzi" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Мок: швидкі відповіді" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Мок: быстрые ответы" } } } },
-    "chat_scenario_flaky" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Mock: some sends fail" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Makieta: część wysyłek kończy się błędem" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Мок: частина надсилань завершується помилкою" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Мок: часть отправок завершается ошибкой" } } } },
-    "chat_scenario_historian" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Mock: long history" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Makieta: długa historia" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Мок: довга історія" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Мок: длинная история" } } } },
-    "chat_selected" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Selected" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wybrano" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Вибрано" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выбрано" } } } },
-    "chat_send_failed" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Not sent" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nie wysłano" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Не надіслано" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Не отправлено" } } } },
-    "chat_title_hint" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Chat name" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Nazwa czatu" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Назва чату" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Название чата" } } } },
-    "chat_today" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Today" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Dzisiaj" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Сьогодні" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Сегодня" } } } },
-    "favorites_empty" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "No favorites yet" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Brak ulubionych" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Обраного ще немає" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Избранного пока нет" } } } },
-    "favorites_remove" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Remove" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Usuń" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Видалити" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Удалить" } } } },
-    "favorites_remove_message" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "The images stay in Space; only the favorite marks are removed." } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Obrazy pozostają w Kosmosie; usuwane są tylko oznaczenia ulubionych." } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Зображення залишаться в Космосі; видаляються лише позначки обраного." } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Изображения останутся в Космосе; удаляются только отметки избранного." } } } },
-    "favorites_remove_title" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Remove from favorites?" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Usunąć z ulubionych?" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Видалити з обраного?" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Удалить из избранного?" } } } },
-    "favorites_selected" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Selected" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wybrano" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Вибрано" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Выбрано" } } } },
-    "settings_cache" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Pagination cache" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Pamięć podręczna paginacji" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Кеш пагінації" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Кеш пагинации" } } } },
-    "settings_cache_lists" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Lists" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Listy" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Списки" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Списки" } } } },
-    "settings_cache_size" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Size" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Rozmiar" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Розмір" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Размер" } } } },
-    "settings_clear_cache" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Clear cache" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wyczyść pamięć podręczną" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Очистити кеш" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Очистить кеш" } } } },
-    "settings_clear_cache_message" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "All saved lists are removed, as after signing out. Open lists show data again after a refresh." } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wszystkie zapisane listy zostaną usunięte, jak po wylogowaniu. Otwarte listy pokażą dane ponownie po odświeżeniu." } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Усі збережені списки буде видалено, як після виходу з облікового запису. Відкриті списки покажуть дані знову після оновлення." } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Все сохранённые списки будут удалены, как после выхода из аккаунта. Открытые списки снова покажут данные после обновления." } } } },
-    "settings_clear_cache_title" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Clear the cache?" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Wyczyścić pamięć podręczną?" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Очистити кеш?" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Очистить кеш?" } } } },
-    "settings_language" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Language" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Język" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Мова" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Язык" } } } },
-    "settings_theme" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Theme" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Motyw" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Тема" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Тема" } } } },
-    "settings_theme_dark" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Dark" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Ciemny" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Темна" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Тёмная" } } } },
-    "settings_theme_light" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Light" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Jasny" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Світла" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Светлая" } } } },
-    "settings_theme_system" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "System" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Systemowy" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Системна" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Системная" } } } },
-    "space_album" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Album" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Album" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Альбом" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Альбом" } } } },
-    "space_albums" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Albums" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Albumy" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Альбоми" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Альбомы" } } } },
-    "space_any" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Any" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Dowolny" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Будь-який" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Любой" } } } },
-    "space_author" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Author" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Autor" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Автор" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Автор" } } } },
-    "space_center" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "NASA center" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Ośrodek NASA" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Центр NASA" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Центр NASA" } } } },
-    "space_center_afrc" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Armstrong Flight Research Center" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Armstrong Flight Research Center" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Armstrong Flight Research Center" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Armstrong Flight Research Center" } } } },
-    "space_center_arc" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Ames Research Center" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Ames Research Center" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Ames Research Center" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ames Research Center" } } } },
-    "space_center_grc" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Glenn Research Center" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Glenn Research Center" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Glenn Research Center" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Glenn Research Center" } } } },
-    "space_center_gsfc" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Goddard Space Flight Center" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Goddard Space Flight Center" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Goddard Space Flight Center" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Goddard Space Flight Center" } } } },
-    "space_center_hq" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "NASA Headquarters" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "NASA Headquarters" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "NASA Headquarters" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "NASA Headquarters" } } } },
-    "space_center_jpl" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Jet Propulsion Laboratory" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Jet Propulsion Laboratory" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Jet Propulsion Laboratory" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Jet Propulsion Laboratory" } } } },
-    "space_center_jsc" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Johnson Space Center" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Johnson Space Center" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Johnson Space Center" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Johnson Space Center" } } } },
-    "space_center_ksc" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Kennedy Space Center" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Kennedy Space Center" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Kennedy Space Center" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Kennedy Space Center" } } } },
-    "space_center_larc" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Langley Research Center" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Langley Research Center" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Langley Research Center" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Langley Research Center" } } } },
-    "space_center_lrc" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Lewis Research Center" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Lewis Research Center" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Lewis Research Center" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Lewis Research Center" } } } },
-    "space_center_msfc" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Marshall Space Flight Center" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Marshall Space Flight Center" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Marshall Space Flight Center" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Marshall Space Flight Center" } } } },
-    "space_center_ssc" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Stennis Space Center" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Stennis Space Center" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Stennis Space Center" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Stennis Space Center" } } } },
-    "space_date" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Date" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Data" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Дата" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Дата" } } } },
-    "space_details" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Details" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Szczegóły" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Подробиці" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Подробности" } } } },
-    "space_file_size" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "File size" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Rozmiar pliku" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Розмір файлу" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Размер файла" } } } },
-    "space_format" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Format" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Format" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Формат" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Формат" } } } },
-    "space_from" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "From" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Od" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Від" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "От" } } } },
-    "space_image" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Image" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Obraz" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Зображення" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Изображение" } } } },
-    "space_keyword" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Keyword" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Słowo kluczowe" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Ключове слово" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ключевое слово" } } } },
-    "space_keywords" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Keywords" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Słowa kluczowe" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Ключові слова" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Ключевые слова" } } } },
-    "space_location" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Location" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Miejsce" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Місце" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Место" } } } },
-    "space_nasa_id" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "NASA ID" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "NASA ID" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "NASA ID" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "NASA ID" } } } },
-    "space_photographer" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Photographer" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Fotograf" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Фотограф" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Фотограф" } } } },
-    "space_resolution" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Resolution" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Rozdzielczość" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Роздільна здатність" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Разрешение" } } } },
-    "space_search_hint" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Title, location or photographer" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Tytuł, miejsce lub fotograf" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Назва, місце або фотограф" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Название, место или фотограф" } } } },
-    "space_show" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Show" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Pokaż" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Показати" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Показать" } } } },
-    "space_to" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "To" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Do" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "До" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "До" } } } },
-    "tabs_chat" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Chat" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Czat" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Чат" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Чат" } } } },
-    "tabs_favorites" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Favorites" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Ulubione" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Обране" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Избранное" } } } },
-    "tabs_lab" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Lab" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Laboratorium" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Лабораторія" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Лаборатория" } } } },
-    "tabs_settings" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Settings" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Ustawienia" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Налаштування" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Настройки" } } } },
-    "tabs_space" : { "extractionState" : "manual", "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Space" } }, "pl" : { "stringUnit" : { "state" : "translated", "value" : "Kosmos" } }, "uk" : { "stringUnit" : { "state" : "translated", "value" : "Космос" } }, "ru" : { "stringUnit" : { "state" : "translated", "value" : "Космос" } } } }
+    "" : {
+
+    },
+    "%lld / %lld" : {
+      "comment" : "A badge that shows the last visible row and the total count of rows.",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld"
+          }
+        }
+      }
+    },
+    "chat_actions" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actions"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Działania"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Действия"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дії"
+          }
+        }
+      }
+    },
+    "chat_copy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kopiuj"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копировать"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Копіювати"
+          }
+        }
+      }
+    },
+    "chat_create" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create a chat"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utwórz czat"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создать чат"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Створити чат"
+          }
+        }
+      }
+    },
+    "chat_create_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New chat"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nowy czat"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новый чат"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новий чат"
+          }
+        }
+      }
+    },
+    "chat_delete" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Видалити"
+          }
+        }
+      }
+    },
+    "chat_delete_chat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete chat"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń czat"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить чат"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Видалити чат"
+          }
+        }
+      }
+    },
+    "chat_delete_chat_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All its messages are deleted too."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wszystkie jego wiadomości również zostaną usunięte."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все его сообщения тоже будут удалены."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Усі його повідомлення теж буде видалено."
+          }
+        }
+      }
+    },
+    "chat_delete_chat_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this chat?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunąć ten czat?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить этот чат?"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Видалити цей чат?"
+          }
+        }
+      }
+    },
+    "chat_delete_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The messages of these chats are deleted too."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiadomości z tych czatów również zostaną usunięte."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сообщения этих чатов тоже будут удалены."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повідомлення цих чатів теж буде видалено."
+          }
+        }
+      }
+    },
+    "chat_delete_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete the chats?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunąć czaty?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить чаты?"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Видалити чати?"
+          }
+        }
+      }
+    },
+    "chat_empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No chats yet"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak czatów"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чатов пока нет"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чатів ще немає"
+          }
+        }
+      }
+    },
+    "chat_interlocutor_hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interlocutor's name"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imię rozmówcy"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Имя собеседника"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ім'я співрозмовника"
+          }
+        }
+      }
+    },
+    "chat_message_hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Message"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiadomość"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сообщение"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повідомлення"
+          }
+        }
+      }
+    },
+    "chat_not_found" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The chat was deleted"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czat został usunięty"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чат удалён"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чат видалено"
+          }
+        }
+      }
+    },
+    "chat_retry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send again"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyślij ponownie"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отправить снова"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Надіслати знову"
+          }
+        }
+      }
+    },
+    "chat_scenario_chatty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mock: quick replies"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Makieta: szybkie odpowiedzi"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мок: быстрые ответы"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мок: швидкі відповіді"
+          }
+        }
+      }
+    },
+    "chat_scenario_flaky" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mock: some sends fail"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Makieta: część wysyłek kończy się błędem"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мок: часть отправок завершается ошибкой"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мок: частина надсилань завершується помилкою"
+          }
+        }
+      }
+    },
+    "chat_scenario_historian" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mock: long history"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Makieta: długa historia"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мок: длинная история"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мок: довга історія"
+          }
+        }
+      }
+    },
+    "chat_selected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybrano"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрано"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вибрано"
+          }
+        }
+      }
+    },
+    "chat_send_failed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not sent"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie wysłano"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не отправлено"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не надіслано"
+          }
+        }
+      }
+    },
+    "chat_title_hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chat name"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nazwa czatu"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Название чата"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назва чату"
+          }
+        }
+      }
+    },
+    "chat_today" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dzisiaj"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сегодня"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сьогодні"
+          }
+        }
+      }
+    },
+    "core_back" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wstecz"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назад"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назад"
+          }
+        }
+      }
+    },
+    "core_cancel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancel"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anuluj"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отмена"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скасувати"
+          }
+        }
+      }
+    },
+    "core_clear" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyczyść"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистити"
+          }
+        }
+      }
+    },
+    "core_close" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamknij"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закрыть"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Закрити"
+          }
+        }
+      }
+    },
+    "core_copied" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copied"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skopiowano"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скопировано"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скопійовано"
+          }
+        }
+      }
+    },
+    "core_done" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gotowe"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Готово"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Готово"
+          }
+        }
+      }
+    },
+    "core_filters" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filters"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtry"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фильтры"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фільтри"
+          }
+        }
+      }
+    },
+    "core_network_error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Network error"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Błąd sieci"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка сети"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Помилка мережі"
+          }
+        }
+      }
+    },
+    "core_no_internet_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No internet connection"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak połączenia z internetem"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нет подключения к интернету"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Немає з'єднання з інтернетом"
+          }
+        }
+      }
+    },
+    "core_nothing_found" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing found"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nic nie znaleziono"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ничего не найдено"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нічого не знайдено"
+          }
+        }
+      }
+    },
+    "core_ok" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "core_oops_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oops, something went wrong"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ups, coś poszło nie tak"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Упс, что-то пошло не так"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ой, щось пішло не так"
+          }
+        }
+      }
+    },
+    "core_refresh" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refresh"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odśwież"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оновити"
+          }
+        }
+      }
+    },
+    "core_reset" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reset"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resetuj"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сбросить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скинути"
+          }
+        }
+      }
+    },
+    "core_retry" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ponów"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторити"
+          }
+        }
+      }
+    },
+    "core_search" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szukaj"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пошук"
+          }
+        }
+      }
+    },
+    "core_server_error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server error"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Błąd serwera"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ошибка сервера"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Помилка сервера"
+          }
+        }
+      }
+    },
+    "favorites_empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No favorites yet"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Brak ulubionych"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Избранного пока нет"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обраного ще немає"
+          }
+        }
+      }
+    },
+    "favorites_remove" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Видалити"
+          }
+        }
+      }
+    },
+    "favorites_remove_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The images stay in Space; only the favorite marks are removed."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obrazy pozostają w Kosmosie; usuwane są tylko oznaczenia ulubionych."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изображения останутся в Космосе; удаляются только отметки избранного."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зображення залишаться в Космосі; видаляються лише позначки обраного."
+          }
+        }
+      }
+    },
+    "favorites_remove_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove from favorites?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usunąć z ulubionych?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить из избранного?"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Видалити з обраного?"
+          }
+        }
+      }
+    },
+    "favorites_selected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selected"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybrano"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выбрано"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вибрано"
+          }
+        }
+      }
+    },
+    "No UI for %@" : {
+      "comment" : "A label that shows when a screen doesn't have a UI. The argument is the name of the component.",
+      "isCommentAutoGenerated" : true
+    },
+    "placeholder_coming_soon" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coming soon"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wkrótce"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скоро"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Незабаром"
+          }
+        }
+      }
+    },
+    "settings_cache" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pagination cache"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pamięć podręczna paginacji"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кеш пагинации"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Кеш пагінації"
+          }
+        }
+      }
+    },
+    "settings_cache_lists" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lists"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listy"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Списки"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Списки"
+          }
+        }
+      }
+    },
+    "settings_cache_size" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Size"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozmiar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Размер"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розмір"
+          }
+        }
+      }
+    },
+    "settings_clear_cache" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear cache"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyczyść pamięć podręczną"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить кеш"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистити кеш"
+          }
+        }
+      }
+    },
+    "settings_clear_cache_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All saved lists are removed, as after signing out. Open lists show data again after a refresh."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wszystkie zapisane listy zostaną usunięte, jak po wylogowaniu. Otwarte listy pokażą dane ponownie po odświeżeniu."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все сохранённые списки будут удалены, как после выхода из аккаунта. Открытые списки снова покажут данные после обновления."
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Усі збережені списки буде видалено, як після виходу з облікового запису. Відкриті списки покажуть дані знову після оновлення."
+          }
+        }
+      }
+    },
+    "settings_clear_cache_title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear the cache?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyczyścić pamięć podręczną?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистить кеш?"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Очистити кеш?"
+          }
+        }
+      }
+    },
+    "settings_language" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Język"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Язык"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мова"
+          }
+        }
+      }
+    },
+    "settings_theme" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theme"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Motyw"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тема"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тема"
+          }
+        }
+      }
+    },
+    "settings_theme_dark" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dark"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ciemny"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тёмная"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Темна"
+          }
+        }
+      }
+    },
+    "settings_theme_light" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Light"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jasny"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Светлая"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Світла"
+          }
+        }
+      }
+    },
+    "settings_theme_system" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "System"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Systemowy"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Системная"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Системна"
+          }
+        }
+      }
+    },
+    "space_album" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Album"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Album"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Альбом"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Альбом"
+          }
+        }
+      }
+    },
+    "space_albums" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albums"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumy"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Альбомы"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Альбоми"
+          }
+        }
+      }
+    },
+    "space_any" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Any"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dowolny"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Любой"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Будь-який"
+          }
+        }
+      }
+    },
+    "space_author" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Author"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autor"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автор"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Автор"
+          }
+        }
+      }
+    },
+    "space_center" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NASA center"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ośrodek NASA"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Центр NASA"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Центр NASA"
+          }
+        }
+      }
+    },
+    "space_center_afrc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Armstrong Flight Research Center"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Armstrong Flight Research Center"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Armstrong Flight Research Center"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Armstrong Flight Research Center"
+          }
+        }
+      }
+    },
+    "space_center_arc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ames Research Center"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ames Research Center"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ames Research Center"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ames Research Center"
+          }
+        }
+      }
+    },
+    "space_center_grc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glenn Research Center"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glenn Research Center"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glenn Research Center"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Glenn Research Center"
+          }
+        }
+      }
+    },
+    "space_center_gsfc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Goddard Space Flight Center"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Goddard Space Flight Center"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Goddard Space Flight Center"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Goddard Space Flight Center"
+          }
+        }
+      }
+    },
+    "space_center_hq" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NASA Headquarters"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NASA Headquarters"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NASA Headquarters"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NASA Headquarters"
+          }
+        }
+      }
+    },
+    "space_center_jpl" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jet Propulsion Laboratory"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jet Propulsion Laboratory"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jet Propulsion Laboratory"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jet Propulsion Laboratory"
+          }
+        }
+      }
+    },
+    "space_center_jsc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Johnson Space Center"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Johnson Space Center"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Johnson Space Center"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Johnson Space Center"
+          }
+        }
+      }
+    },
+    "space_center_ksc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kennedy Space Center"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kennedy Space Center"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kennedy Space Center"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kennedy Space Center"
+          }
+        }
+      }
+    },
+    "space_center_larc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langley Research Center"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langley Research Center"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langley Research Center"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Langley Research Center"
+          }
+        }
+      }
+    },
+    "space_center_lrc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lewis Research Center"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lewis Research Center"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lewis Research Center"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lewis Research Center"
+          }
+        }
+      }
+    },
+    "space_center_msfc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marshall Space Flight Center"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marshall Space Flight Center"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marshall Space Flight Center"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marshall Space Flight Center"
+          }
+        }
+      }
+    },
+    "space_center_ssc" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stennis Space Center"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stennis Space Center"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stennis Space Center"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stennis Space Center"
+          }
+        }
+      }
+    },
+    "space_date" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дата"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дата"
+          }
+        }
+      }
+    },
+    "space_details" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Details"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szczegóły"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подробности"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подробиці"
+          }
+        }
+      }
+    },
+    "space_file_size" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File size"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozmiar pliku"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Размер файла"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Розмір файлу"
+          }
+        }
+      }
+    },
+    "space_format" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Format"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Формат"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Формат"
+          }
+        }
+      }
+    },
+    "space_from" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Od"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "От"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Від"
+          }
+        }
+      }
+    },
+    "space_image" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Image"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obraz"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изображение"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Зображення"
+          }
+        }
+      }
+    },
+    "space_keyword" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keyword"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Słowo kluczowe"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключевое слово"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключове слово"
+          }
+        }
+      }
+    },
+    "space_keywords" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keywords"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Słowa kluczowe"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключевые слова"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключові слова"
+          }
+        }
+      }
+    },
+    "space_location" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Miejsce"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Место"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Місце"
+          }
+        }
+      }
+    },
+    "space_nasa_id" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NASA ID"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NASA ID"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NASA ID"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NASA ID"
+          }
+        }
+      }
+    },
+    "space_photographer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photographer"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotograf"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фотограф"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фотограф"
+          }
+        }
+      }
+    },
+    "space_resolution" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolution"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozdzielczość"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешение"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Роздільна здатність"
+          }
+        }
+      }
+    },
+    "space_search_hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Title, location or photographer"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tytuł, miejsce lub fotograf"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Название, место или фотограф"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Назва, місце або фотограф"
+          }
+        }
+      }
+    },
+    "space_show" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaż"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показать"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показати"
+          }
+        }
+      }
+    },
+    "space_to" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "To"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Do"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "До"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "До"
+          }
+        }
+      }
+    },
+    "tabs_chat" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chat"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Czat"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чат"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чат"
+          }
+        }
+      }
+    },
+    "tabs_favorites" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Favorites"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ulubione"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Избранное"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обране"
+          }
+        }
+      }
+    },
+    "tabs_lab" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lab"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laboratorium"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Лаборатория"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Лабораторія"
+          }
+        }
+      }
+    },
+    "tabs_settings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Settings"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ustawienia"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Налаштування"
+          }
+        }
+      }
+    },
+    "tabs_space" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Space"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kosmos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Космос"
+          }
+        },
+        "uk" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Космос"
+          }
+        }
+      }
+    }
   },
-  "version" : "1.0"
+  "version" : "1.1"
 }

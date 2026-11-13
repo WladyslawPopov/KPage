@@ -1,0 +1,113 @@
+# The demo tour: one flow for Android and iOS, run by `record-demo.sh` while the screen is recorded.
+# Elements are found by the ids of `UiTestId` (ui-core): a Compose testTag and a SwiftUI
+# accessibilityIdentifier with the same name; a tap takes the first element with the id. After a scroll
+# the first card lies partly under the translucent top bar and a tap on its middle hits the bar, so
+# there a tap takes a random card from the middle of the screen (`output.card`, 2..4). Tabs and
+# system buttons are found by their English text on iOS, so the app runs in English. The data comes
+# from NASA live: the flow never relies on a given image. APP_ID comes from the environment.
+appId: ${APP_ID}
+---
+- launchApp
+- extendedWaitUntil:
+    visible:
+      id: "image_card"
+    timeout: 30000
+
+# Space: look through the list, mark an image as a favorite.
+- swipe:
+    direction: UP
+    duration: 1500
+- swipe:
+    direction: UP
+    duration: 1500
+# One random card for both taps: the heart and the details are of the same image.
+- evalScript: ${output.card = 2 + Math.floor(Math.random() * 3)}
+- tapOn:
+    id: "heart"
+    index: ${output.card}
+
+# Its details: the heart is set there too; take it off and come back, the list shows it off.
+- tapOn:
+    id: "image_card"
+    index: ${output.card}
+# The details have no cards: this fails here, not later, if the card was not opened.
+- extendedWaitUntil:
+    notVisible:
+      id: "image_card"
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
+      id: "heart"
+    timeout: 15000
+- waitForAnimationToEnd
+- tapOn:
+    id: "heart"
+- waitForAnimationToEnd
+- runFlow: { file: back.yaml }
+- waitForAnimationToEnd
+
+# Further down, two more favorites.
+- swipe:
+    direction: UP
+    duration: 1500
+- tapOn:
+    id: "heart"
+    index: ${2 + Math.floor(Math.random() * 3)}
+- swipe:
+    direction: UP
+    duration: 1500
+- tapOn:
+    id: "heart"
+    index: ${2 + Math.floor(Math.random() * 3)}
+
+# Favorites: they are there; remove one with a swipe.
+- runFlow:
+    file: open-tab.yaml
+    env:
+      TAB: favorites
+      TAB_TEXT: Favorites
+- extendedWaitUntil:
+    visible:
+      id: "image_card"
+    timeout: 15000
+- waitForAnimationToEnd
+- swipe:
+    from:
+      id: "image_card"
+    direction: LEFT
+- tapOn: "Remove"
+- waitForAnimationToEnd
+
+# Chat: open a room, look through its history, send a message.
+- runFlow:
+    file: open-tab.yaml
+    env:
+      TAB: chat
+      TAB_TEXT: Chat
+- extendedWaitUntil:
+    visible:
+      id: "chat_row"
+    timeout: 15000
+- tapOn:
+    id: "chat_row"
+- extendedWaitUntil:
+    visible:
+      id: "message_field"
+    timeout: 15000
+- swipe:
+    direction: DOWN
+    duration: 1500
+- swipe:
+    direction: DOWN
+    duration: 1500
+- tapOn:
+    id: "message_field"
+- inputText: "Hello from KPage!"
+- tapOn:
+    id: "send"
+# The tour ends in the room on the sent message. No hideKeyboard: on Android it presses back, which
+# leaves the room when the keyboard is already hidden.
+- extendedWaitUntil:
+    visible: "Hello from KPage!"
+    timeout: 15000
+- waitForAnimationToEnd

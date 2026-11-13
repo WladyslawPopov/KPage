@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -28,6 +29,7 @@ import io.github.wladyslawpopov.kpage.demo.android.ui.screens.chat.common.ChatAv
 import io.github.wladyslawpopov.kpage.demo.domain.chat.Chat
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.listing.mapper.avatar
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.listing.mapper.time
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppTypographyKey
@@ -49,7 +51,7 @@ internal fun ChatRow(
     val start = AppDimenKey.Padding.LARGE.dp()
     val gap = AppDimenKey.Padding.MEDIUM.dp()
     Column(
-        Modifier.fillMaxWidth().combinedClickable(
+        Modifier.fillMaxWidth().then(if (chat != null) Modifier.testTag(UiTestId.CHAT_ROW.id) else Modifier).combinedClickable(
             enabled = chat != null,
             onClick = onClick,
             onLongClick = {

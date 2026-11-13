@@ -160,3 +160,16 @@ extension AppIconKey {
         }
     }
 }
+
+extension View {
+    /// The id of an element for the UI flows (`demo/maestro`): what `testTag` is on Android.
+    func uiTestId(_ id: UiTestId) -> some View {
+        accessibilityIdentifier(id.id)
+    }
+
+    /// The id of a row that holds other elements (a card with a heart): the row gets the id, its parts
+    /// keep theirs. None while `isOn` is false, so a flow finds only loaded rows, not placeholders.
+    func uiTestRow(_ id: UiTestId, isOn: Bool) -> some View {
+        accessibilityElement(children: .contain).accessibilityIdentifier(isOn ? id.id : "")
+    }
+}

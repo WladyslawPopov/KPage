@@ -19,5 +19,6 @@ struct Heart: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .uiTestId(.heart)
     }
 }

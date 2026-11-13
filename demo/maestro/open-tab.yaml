@@ -1,0 +1,21 @@
+# Opens a tab: by its test tag on Android (an unselected tab shows no title there), by its title on iOS
+# (the tab bar of iOS takes no ids). TAB is the name of the AppTab in lower case, TAB_TEXT its English title.
+appId: ${APP_ID}
+---
+# A scroll down hides the tab bar (Android) or folds it (iOS 26); a short pull back shows it again.
+- swipe:
+    start: "50%, 45%"
+    end: "50%, 60%"
+    duration: 500
+- waitForAnimationToEnd
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn:
+          id: "tab_${TAB}"
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - tapOn: "${TAB_TEXT}"

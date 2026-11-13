@@ -41,7 +41,8 @@ internal fun DateSeparator(date: UiText) {
 @Composable
 internal fun MessagePlaceholder(serverIndex: Int) {
     Box(
-        Modifier.fillMaxWidth().padding(horizontal = AppDimenKey.Padding.SMALL.dp(), vertical = 2.dp),
+        Modifier.fillMaxWidth()
+            .padding(horizontal = AppDimenKey.Padding.SMALL.dp(), vertical = 2.dp),
         contentAlignment = if (serverIndex % 2 == 0) Alignment.CenterStart else Alignment.CenterEnd,
     ) {
         Box(

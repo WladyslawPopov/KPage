@@ -5,9 +5,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import io.github.wladyslawpopov.kpage.demo.android.theme.color
 import io.github.wladyslawpopov.kpage.demo.android.theme.vector
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppIconKey
 
 /** The favorite mark; over an image it gets a background to stay visible on any picture. */
@@ -20,7 +22,7 @@ internal fun Heart(
 ) {
     IconButton(
         onClick = onClick,
-        modifier = modifier,
+        modifier = modifier.testTag(UiTestId.HEART.id),
         colors = if (onImage) {
             IconButtonDefaults.iconButtonColors(containerColor = AppColorKey.Container.ELEVATED.color().copy(alpha = 0.8f))
         } else {
