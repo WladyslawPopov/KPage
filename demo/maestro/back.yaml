@@ -1,4 +1,5 @@
-# Goes back one screen: the system back on Android, the edge swipe of the navigation stack on iOS.
+# Goes back one screen: the system back on Android, the back button of the navigation bar on iOS
+# (UIKit gives it the id `BackButton`; an edge swipe is not taken reliably).
 appId: ${APP_ID}
 ---
 - runFlow:
@@ -10,7 +11,5 @@ appId: ${APP_ID}
     when:
       platform: iOS
     commands:
-      - swipe:
-          start: "1%, 50%"
-          end: "80%, 50%"
-          duration: 600
+      - tapOn:
+          id: "BackButton"

@@ -14,17 +14,18 @@ struct DetailsHero: View {
             .overlay {
                 if let display { RemoteImage(url: display.picture.url) }
             }
+            .clipped()
+            .contentShape(Rectangle())
+            .onTapGesture {
+                if display?.fullPictureUrl != nil { onOpen() }
+            }
+            // Over the picture, not inside it: inside the view with the tap gesture the heart would be merged
+            // into the picture for VoiceOver and UI tests.
             .overlay(alignment: .bottomTrailing) {
                 if let display {
                     Heart(isFavorite: display.isFavorite, onClick: { onFavorite(!display.isFavorite) }, onImage: true)
                         .padding(AppDimenKeyPadding.small.value)
                 }
-            }
-            .clipped()
-            // The heart is a button of its own and keeps its taps.
-            .contentShape(Rectangle())
-            .onTapGesture {
-                if display?.fullPictureUrl != nil { onOpen() }
             }
     }
 }

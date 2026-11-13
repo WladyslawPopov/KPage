@@ -2,20 +2,29 @@
 # (the tab bar of iOS takes no ids). TAB is the name of the AppTab in lower case, TAB_TEXT its English title.
 appId: ${APP_ID}
 ---
-# A scroll down hides the tab bar (Android) or folds it (iOS 26); a short pull back shows it again.
-- swipe:
-    start: "50%, 45%"
-    end: "50%, 60%"
-    duration: 500
-- waitForAnimationToEnd
 - runFlow:
     when:
       platform: Android
     commands:
+      # A scroll down hides the tab bar; a short pull back shows it again.
+      - swipe:
+          start: "50%, 45%"
+          end: "50%, 60%"
+          duration: 500
+      - waitForAnimationToEnd
       - tapOn:
           id: "tab_${TAB}"
 - runFlow:
     when:
       platform: iOS
     commands:
+      # On iOS 26 a scroll down folds the tab bar into one button at the bottom leading corner; a tap
+      # unfolds it. The button has no id and its title is the one of the screen, so it is tapped by place.
+      - runFlow:
+          when:
+            notVisible: "${TAB_TEXT}"
+          commands:
+            - tapOn:
+                point: "13%, 94%"
+            - waitForAnimationToEnd
       - tapOn: "${TAB_TEXT}"
