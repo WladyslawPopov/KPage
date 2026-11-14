@@ -11,10 +11,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import io.github.wladyslawpopov.kpage.demo.android.theme.dp
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.ConfirmDialog
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.DialogCancelButton
 import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
 
@@ -25,6 +30,8 @@ internal fun CreateChatDialog(onCreate: (title: String, interlocutor: String) ->
     var interlocutor by rememberSaveable { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onCancel,
+        // A dialog is a window of its own: the flag of the activity's content does not reach it.
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
         title = { Text(AppStringKey.Chat.CREATE_TITLE.asString()) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(AppDimenKey.Padding.SMALL.dp())) {
@@ -33,12 +40,14 @@ internal fun CreateChatDialog(onCreate: (title: String, interlocutor: String) ->
                     onValueChange = { title = it.take(MAX_LENGTH) },
                     label = { Text(AppStringKey.Chat.TITLE_HINT.asString()) },
                     singleLine = true,
+                    modifier = Modifier.testTag(UiTestId.NEW_CHAT_TITLE.id),
                 )
                 OutlinedTextField(
                     value = interlocutor,
                     onValueChange = { interlocutor = it.take(MAX_LENGTH) },
                     label = { Text(AppStringKey.Chat.INTERLOCUTOR_HINT.asString()) },
                     singleLine = true,
+                    modifier = Modifier.testTag(UiTestId.NEW_CHAT_INTERLOCUTOR.id),
                 )
             }
         },
@@ -46,6 +55,7 @@ internal fun CreateChatDialog(onCreate: (title: String, interlocutor: String) ->
             TextButton(
                 onClick = { onCreate(title, interlocutor) },
                 enabled = title.isNotBlank() && interlocutor.isNotBlank(),
+                modifier = Modifier.testTag(UiTestId.NEW_CHAT_CREATE.id),
             ) { Text(AppStringKey.Chat.CREATE.asString()) }
         },
         dismissButton = { DialogCancelButton(onCancel) },

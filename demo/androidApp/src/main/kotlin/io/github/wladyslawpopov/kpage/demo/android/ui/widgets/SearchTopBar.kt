@@ -44,6 +44,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -57,6 +58,7 @@ import io.github.wladyslawpopov.kpage.demo.android.theme.vector
 import io.github.wladyslawpopov.kpage.demo.android.ui.barItemColor
 import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
 import io.github.wladyslawpopov.kpage.demo.uicore.model.TopBarState
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
@@ -176,11 +178,11 @@ fun SearchTopBar(
         },
         actions = {
             if (isOpen) {
-                BarIconButton(onClick = close) {
+                BarIconButton(onClick = close, modifier = Modifier.testTag(UiTestId.SEARCH_DONE.id)) {
                     Icon(AppIconKey.DONE.vector(), contentDescription = AppStringKey.Core.DONE.asString())
                 }
             } else {
-                BarIconButton(onClick = searchBar::open) {
+                BarIconButton(onClick = searchBar::open, modifier = Modifier.testTag(UiTestId.SEARCH_OPEN.id)) {
                     Icon(AppIconKey.SEARCH.vector(), contentDescription = AppStringKey.Core.SEARCH.asString())
                 }
                 actions()
@@ -242,7 +244,8 @@ private fun SearchField(
         modifier = Modifier
             .fillMaxWidth()
             .padding(end = AppDimenKey.Padding.SMALL.dp())
-            .focusRequester(focusRequester),
+            .focusRequester(focusRequester)
+            .testTag(UiTestId.SEARCH_FIELD.id),
         decorationBox = { input ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,

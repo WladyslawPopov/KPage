@@ -5,8 +5,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import io.github.wladyslawpopov.kpage.demo.android.theme.color
 import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 
@@ -25,11 +30,14 @@ fun ConfirmDialog(
 ) {
     AlertDialog(
         onDismissRequest = onCancel,
+        // A dialog is a window of its own: the flag of the activity's content does not reach it.
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
         title = { Text(title.asString()) },
         text = { Text(message.asString()) },
         confirmButton = {
             TextButton(
                 onClick = onConfirm,
+                modifier = Modifier.testTag(UiTestId.CONFIRM.id),
                 colors = ButtonDefaults.textButtonColors(contentColor = confirmColor.color()),
             ) { Text(confirmText.asString()) }
         },

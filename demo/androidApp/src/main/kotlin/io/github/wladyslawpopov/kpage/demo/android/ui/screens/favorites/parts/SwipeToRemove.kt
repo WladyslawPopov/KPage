@@ -35,8 +35,10 @@ internal fun SwipeToRemove(
 ) {
     val currentOnRemove by rememberUpdatedState(onRemove)
     val state = rememberSwipeToDismissBoxState()
-    LaunchedEffect(state.currentValue) {
-        if (state.currentValue == SwipeToDismissBoxValue.EndToStart) currentOnRemove()
+    // The settled value, not the current one: the current one turns to the end while the finger still
+    // drags the row past the middle, and the question would show up under the finger.
+    LaunchedEffect(state.settledValue) {
+        if (state.settledValue == SwipeToDismissBoxValue.EndToStart) currentOnRemove()
     }
     // Keyed by the question only: the value of the state changes while the row moves back, and an
     // effect keyed by it would cancel its own return.

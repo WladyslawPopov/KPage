@@ -8,6 +8,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import io.github.wladyslawpopov.kpage.demo.android.theme.vector
 import io.github.wladyslawpopov.kpage.demo.android.ui.page.PageLayout
 import io.github.wladyslawpopov.kpage.demo.android.ui.paging.PagedGrid
@@ -26,6 +28,7 @@ import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceLayout
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.listing.SpaceComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.listing.SpaceIntent
 import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppIconKey
@@ -62,7 +65,10 @@ fun SpaceScreen(component: SpaceComponent) {
                     Icon(AppIconKey.FILTER.vector(), contentDescription = AppStringKey.Core.FILTERS.asString())
                 }
                 // Shows the layout a tap switches to.
-                BarIconButton(onClick = { component.onIntent(SpaceIntent.ToggleLayout) }) {
+                BarIconButton(
+                    onClick = { component.onIntent(SpaceIntent.ToggleLayout) },
+                    modifier = Modifier.testTag(UiTestId.LAYOUT_TOGGLE.id),
+                ) {
                     Icon((if (isGrid) AppIconKey.LAYOUT_LIST else AppIconKey.LAYOUT_GRID).vector(), contentDescription = null)
                 }
             }

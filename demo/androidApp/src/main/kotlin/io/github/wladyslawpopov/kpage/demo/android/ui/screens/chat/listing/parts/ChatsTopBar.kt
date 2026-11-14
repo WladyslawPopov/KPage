@@ -14,6 +14,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import io.github.wladyslawpopov.kpage.demo.android.theme.asString
 import io.github.wladyslawpopov.kpage.demo.android.theme.dp
 import io.github.wladyslawpopov.kpage.demo.android.theme.style
@@ -23,6 +24,7 @@ import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.BarIconButton
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.listing.ChatsIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.listing.ChatsState
 import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppIconKey
@@ -62,7 +64,10 @@ internal fun ChatsTopBar(state: ChatsState, onIntent: (ChatsIntent) -> Unit) {
                     Icon(AppIconKey.TRASH.vector(), contentDescription = AppStringKey.Chat.DELETE.asString())
                 }
             } else {
-                BarIconButton(onClick = { onIntent(ChatsIntent.StartCreate) }) {
+                BarIconButton(
+                    onClick = { onIntent(ChatsIntent.StartCreate) },
+                    modifier = Modifier.testTag(UiTestId.NEW_CHAT.id),
+                ) {
                     Icon(AppIconKey.ADD.vector(), contentDescription = AppStringKey.Chat.CREATE.asString())
                 }
             }
