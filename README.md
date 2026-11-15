@@ -21,7 +21,7 @@ One tour of the [demo app](demo/) on KPage, Android on the left and iOS on the r
 
 <table>
   <tr>
-    <td align="center"><img src="demo/docs/media/tour-android.gif" width="300" alt="The demo tour on Android"><br><sub>Android</sub></td>
+    <td align="center"><video src="https://github.com/user-attachments/assets/ae7a4619-1711-4678-93c7-69d403c2cb06" width="300" autoplay loop muted playsinline></video><br><sub>Android</sub></td>
     <td align="center"><img src="demo/docs/media/tour-ios.gif" width="300" alt="The demo tour on iOS"><br><sub>iOS</sub></td>
   </tr>
 </table>
