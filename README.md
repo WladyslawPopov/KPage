@@ -342,7 +342,7 @@ tracker.onLayout(rows: list.rows, visibleRows: visible.map { KotlinInt(int: Int3
 
 - Create one tracker per `events` object (the paginator itself): a new paginator gets a new one. Call it from the main thread.
 - Repeated calls are cheap: only the visible rows are read and an unchanged range is not sent again. Before the first layout a non-empty list has no visible rows yet, and nothing is sent.
-- In SwiftUI identify rows by position (`ForEach(0..<rowCount)`): the rows are read by index and the identity of every row is read on each update.
+- In SwiftUI identify rows by the keys of `PagingRows.keys`, made once per snapshot as on Android: SwiftUI reads the identity of every row on each update, and the keys keep the scroll position when a row is added or removed.
 - Complete examples: [`PagedGrid.swift`](demo/iosApp/iosApp/Paging/PagedGrid.swift) (SwiftUI) and [`TrackVisibleRows.kt`](demo/androidApp/src/main/kotlin/io/github/wladyslawpopov/kpage/demo/android/ui/paging/TrackVisibleRows.kt) (Compose).
 
 </details>
