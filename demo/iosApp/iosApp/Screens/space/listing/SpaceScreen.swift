@@ -109,6 +109,7 @@ struct SpaceScreen: View {
                     Image(systemName: AppIconKey.filter.sfSymbol)
                 }
                 .accessibilityLabel(AppStringKeyCore.filters.text)
+                .uiTestId(.filtersOpen)
                 // Shows the layout a tap switches to. Only near the top: another layout starts the list from
                 // its first row, so deeper the switch would lose the place.
                 if !isSearchAway {

@@ -30,7 +30,10 @@ struct DetailsFieldRows: View {
         ForEach(Array(rows.enumerated()), id: \.offset) { index, row in
             if index > 0 { Divider().padding(.leading, AppDimenKeyPadding.large.value) }
             if let action = row.action {
-                Button { onIntent(action) } label: { content(row, isTappable: true) }.buttonStyle(.plain)
+                Button { onIntent(action) } label: { content(row, isTappable: true) }
+                    .buttonStyle(.plain)
+                    // Only a field that opens the list by a tag; the date and the center open it by other filters.
+                    .accessibilityIdentifier(action is SpaceDetailsIntentOpenTag ? UiTestId.detailsTag.id : "")
             } else {
                 content(row, isTappable: false)
             }
@@ -86,6 +89,7 @@ struct DetailsChips: View {
                     .background(AppColorKeyContainer.accent.color, in: Capsule())
                 }
                 .buttonStyle(.plain)
+                .uiTestId(.detailsTag)
             }
         }
         .padding(AppDimenKeyPadding.medium.value)

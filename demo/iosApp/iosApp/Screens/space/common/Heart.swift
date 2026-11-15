@@ -19,6 +19,8 @@ struct Heart: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        // Selected is the set mark, for accessibility and for the demo tour.
+        .accessibilityAddTraits(isFavorite ? .isSelected : [])
         .uiTestId(.heart)
     }
 }

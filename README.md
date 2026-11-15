@@ -17,7 +17,7 @@ Targets: **Android**, **iOS** (`iosArm64`, `iosSimulatorArm64`), **JVM / Desktop
 
 ## See it in action
 
-One tour of the [demo app](demo/) on KPage, Android on the left and iOS on the right: the grid, a search, a run far down a long list and back, favorites, a details screen and a chat room. Both clips are recorded from the demo's [tour tests](demo/TESTING.md#demo-tours), which drive the real app through the system like a person (UiAutomator on Android, XCUITest on iOS), so nothing in them is staged. More about every screen is in the [demo README](demo/README.md#screens).
+One tour of the [demo app](demo/) on KPage, Android on the left and iOS on the right. Both clips are recorded from the demo's [tour tests](demo/TESTING.md#demo-tours), which drive the real app through the system like a person (UiAutomator on Android, XCUITest on iOS), so nothing in them is staged. More about every screen is in the [demo README](demo/README.md#screens).
 
 <table>
   <tr>
@@ -25,6 +25,24 @@ One tour of the [demo app](demo/) on KPage, Android on the left and iOS on the r
     <td align="center"><img src="demo/docs/media/tour-ios.gif" width="300" alt="The demo tour on iOS"><br><sub>iOS</sub></td>
   </tr>
 </table>
+
+<details>
+<summary>What happens in the clip, step by step</summary>
+
+The images come from NASA live, so the pictures differ from run to run. The long runs along the list are sped up 3×; everything else plays in real time.
+
+1. **Space, the grid.** The list turns into a grid, glides down, a heart, back to the list.
+2. **Search.** "Titan" gives a new list for the query; a heart among the results.
+3. **A run far down** the found images, about a thousand rows, by the position counter: the pages load as the list goes, with placeholders in between.
+4. **Details.** The image hearted down there has its heart set in the details too; it is taken off, and back in the list the heart is off as well: one change reaches every list.
+5. **Settings.** A dark theme and Polish, applied at once; back in Space the list keeps its place and runs back up, almost to the start, with two more hearts.
+6. **Favorites.** English again; the hearted images are in Favorites. The details of one of them.
+7. **A list by a tag.** A tag of the image (an author, a keyword, an album) opens Space filtered by it. The filters show the tag; "From 2018" narrows the list, and the button shows how many images are left. Two more hearts there.
+8. **Back.** In the details the heart is taken off; Favorites now lack that image and have the new ones. One more is removed by a swipe, after a confirmation.
+9. **Chat.** A new room with a mock server: its history loads, a message is sent, back to the list of chats.
+10. **Clear the cache.** Settings, "Clear cache": Space, Favorites and Chat load again, while the favorites and the chats stay, as they are the app's own data, not the cache. The system theme at the end.
+
+</details>
 
 > **See it working:** [`demo/`](demo/) is a complete Android + iOS app on this library (NASA image search, favorites, a chat with a mock server, settings) with shared logic and fully native UI. [Jump to the demo](#demo).
 

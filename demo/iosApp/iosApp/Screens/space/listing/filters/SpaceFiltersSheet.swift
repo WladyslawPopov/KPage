@@ -43,6 +43,7 @@ struct SpaceFiltersSheet: View {
                     }
                 }
                 Picker(AppStringKeySpace.from.text, selection: yearStart) { yearChoices(filters.fromYears) }
+                    .uiTestId(.filterYearFrom)
                 Picker(AppStringKeySpace.to.text, selection: yearEnd) { yearChoices(filters.toYears) }
             }
             .pickerStyle(.menu)
@@ -60,6 +61,7 @@ struct SpaceFiltersSheet: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+                .uiTestId(.filtersShow)
                 .padding()
             }
         }

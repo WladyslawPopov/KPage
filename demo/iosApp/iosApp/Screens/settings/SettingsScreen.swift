@@ -8,10 +8,18 @@ struct SettingsScreen: View {
     var body: some View {
         PageLayout(page: state.page, onPageIntent: { component.onPageIntent(intent: $0) }) {
             List {
-                SettingsOptionsSection(title: AppStringKeySettings.theme.text, options: state.themes) {
+                SettingsOptionsSection(
+                    title: AppStringKeySettings.theme.text,
+                    options: state.themes,
+                    testId: { UiTestId.companion.option(name: $0.name) }
+                ) {
                     component.onIntent(intent: SettingsIntentSetTheme(mode: $0))
                 }
-                SettingsOptionsSection(title: AppStringKeySettings.language.text, options: state.languages) {
+                SettingsOptionsSection(
+                    title: AppStringKeySettings.language.text,
+                    options: state.languages,
+                    testId: { UiTestId.companion.option(name: $0.name) }
+                ) {
                     component.onIntent(intent: SettingsIntentSetLanguage(language: $0))
                 }
                 Section(AppStringKeySettings.cache.text) {
@@ -20,6 +28,7 @@ struct SettingsScreen: View {
                     Button(AppStringKeySettings.clearCache.text, role: .destructive) {
                         component.onIntent(intent: SettingsIntentClearCache.shared)
                     }
+                    .uiTestId(.clearCache)
                 }
             }
         }

@@ -1,10 +1,11 @@
 import SwiftUI
 import SharedLogic
 
-/// A titled group of choices, one of them marked.
+/// A titled group of choices, one of them marked; `testId` names a choice for the demo tour.
 struct SettingsOptionsSection<T: AnyObject>: View {
     let title: String
     let options: [SettingsOption<T>]
+    let testId: (T) -> String
     let onSelect: (T) -> Void
 
     var body: some View {
@@ -22,6 +23,7 @@ struct SettingsOptionsSection<T: AnyObject>: View {
                     }
                 }
                 .accessibilityAddTraits(option.selected ? .isSelected : [])
+                .accessibilityIdentifier(testId(option.value))
             }
         }
     }

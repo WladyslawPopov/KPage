@@ -2,14 +2,20 @@ import XCTest
 
 /// The demo tour on iOS, the story of `DemoTour` of the `tour` module on Android: Space (the grid, a
 /// favorite, back to the list; a search by a word, a favorite in it) -> far down the found images, a
-/// favorite -> its details (take the heart off, back) -> back up, more favorites -> Favorites (remove one
-/// by a swipe) -> a chat room (create it, look through the history, send a message).
+/// favorite -> its details (take the heart off, back) -> Settings (a dark theme, Polish) -> back up, more
+/// favorites -> Settings (English again) -> Favorites, the details of one -> the list of one of its tags
+/// (the filters: the tag and a year, favorites there) -> back to the details (the heart off) -> Favorites
+/// (the changes are there; remove one by a swipe) -> a chat room (create it, look through the history,
+/// send a message) -> Settings (clear the cache) -> the lists again -> Settings (the system theme).
 ///
 /// XCUITest runs out of the app's process: the app lives on the real clock and the gestures come from
 /// the system, so the flicks glide and slow down as a person's do. Elements are found by the ids of
 /// `UiTestId` (ui-core), set by `uiTestId` / `uiTestRow` in the app; the test does not link the shared
 /// framework, so the ids are written here as strings. The tabs, the back button and the buttons of the
-/// alerts have no ids: they are found by their place. The pauses are the pace of the video.
+/// alerts have no ids: they are found by their place. The tour pauses only where the viewer needs to see a
+/// result: a heart set or taken off, the details or a chat room just opened or left, the filters or the
+/// settings just applied, a tap that changes the screen; everything else goes on at once, waiting only for
+/// what it needs.
 final class DemoTour: XCTestCase {
     @MainActor
     func testTour() throws {
@@ -42,12 +48,11 @@ private struct Tour {
 
     func run() {
         waitFor { count(Id.imageCard) > 0 }
-        look(Pause.long)
 
         // The grid: the same images in two columns, a calm glide down them, a favorite. The layout switch
         // is shown only near the top (another layout starts the list from its first row), so back up first.
         element(Id.layoutToggle).tap()
-        look(Pause.transition)
+        look(Pause.change)
         flickUntil(up: true, velocity: Flick.gridVelocity, burst: 1) { $0 >= Position.grid - Position.gridCoast }
         settle()
         tapHeart(of: cardInMiddle())
@@ -55,17 +60,15 @@ private struct Tour {
         flickUntilShown(Id.layoutToggle, velocity: Flick.gridVelocity)
         settle()
         element(Id.layoutToggle).tap()
-        look(Pause.layoutHold)
+        look(Pause.change)
 
         // Search: a word narrows the list; the check mark keeps it, and the tour goes on in it.
         element(Id.searchOpen).tap()
         waitFor { count(Id.searchField) > 0 }
-        look(Pause.short)
         typeSlowly(Text.search)
-        look(Pause.short)
         element(Id.searchDone).tap()
         waitFor { count(Id.imageCard) > 0 }
-        look(Pause.long)
+        look(Pause.change)
         for _ in 0..<2 { flick(up: true, velocity: Flick.softVelocity) }
         settle()
         tapHeart(of: cardInMiddle())
@@ -81,12 +84,21 @@ private struct Tour {
         // Its details: the heart is set there too; take it off and come back, the list shows it off.
         tap(at: CGPoint(x: card.midX, y: card.midY))
         waitFor { count(Id.imageCard) == 0 && count(Id.heart) > 0 }
-        look(Pause.transition)
+        look(Pause.details)
         element(Id.heart).tap()
-        look(Pause.long)
+        look(Pause.heart)
         back()
         waitFor { count(Id.imageCard) > 0 }
-        look(Pause.transition)
+        look(Pause.change)
+
+        // Settings in the middle of the way: a dark theme and Polish, applied at once; the list keeps its place.
+        openTab(Tab.settings)
+        tapSteady(Id.option("dark"))
+        look(Pause.settings)
+        tapSteady(Id.option("polish"))
+        look(Pause.settings)
+        openTab(Tab.space)
+        waitFor { count(Id.imageCard) > 0 }
 
         // Back up, almost to the start of the list: a few more favorites there.
         flickUntil(up: false) { $0 <= Position.nearStart + Position.coast }
@@ -97,41 +109,104 @@ private struct Tour {
             look(Pause.heart)
         }
 
-        // Favorites: they are there; remove one with a swipe.
+        // English again: the rest of the tour is read, not only seen.
+        openTab(Tab.settings)
+        tapSteady(Id.option("english"))
+        look(Pause.settings)
+
+        // Favorites: they are there; the details of one.
         openTab(Tab.favorites)
         waitFor { count(Id.imageCard) > 0 }
-        look(Pause.long)
+        let favorite = frames(Id.imageCard)[0]
+        tap(at: CGPoint(x: favorite.midX, y: favorite.midY))
+        waitFor { count(Id.imageCard) == 0 && count(Id.heart) > 0 }
+        look(Pause.details)
+
+        // One of its tags opens a new list filtered by it.
+        let tag = tagInDetails()
+        tap(at: CGPoint(x: tag.midX, y: tag.midY))
+        waitFor { count(Id.imageCard) > 0 }
+        look(Pause.change)
+
+        // The filters show the tag; a year narrows the list.
+        tapSteady(Id.filtersOpen)
+        waitFor { count(Id.filterYearFrom) > 0 }
+        look(Pause.change)
+        tapSteady(Id.filterYearFrom)
+        pickFilterYear()
+        look(Pause.change)
+        tapSteady(Id.filtersShow)
+        // The sheet is gone and the list under it shows the result.
+        waitFor { count(Id.filtersShow) == 0 && count(Id.imageCard) > 0 }
+        look(Pause.filters)
+
+        // Down the list, a heart on an image that is not a favorite yet after every scroll.
+        for _ in 0..<Count.tagFavorites {
+            scroll()
+            if let heart = heartsOff().first {
+                tap(at: CGPoint(x: heart.midX, y: heart.midY))
+                look(Pause.heart)
+            }
+        }
+
+        // Back to the details, scrolled down to the tag: up to the picture, the heart off.
+        back()
+        waitFor { count(Id.imageCard) == 0 }
+        detailsToTop()
+        takeHeartOff()
+        look(Pause.heart)
+
+        // Favorites: the image is gone, the new ones are there; remove one with a swipe.
+        back()
+        waitFor { count(Id.imageCard) > 0 }
+        settle()
+        look(Pause.change)
         swipeLeft(over: frames(Id.imageCard)[0])
         waitFor { app.alerts.count > 0 }
-        look(Pause.short)
         alertAction().tap()
-        look(Pause.long)
+        look(Pause.heart)
 
         // Chat: create a room (the app opens it), look through its history, send a message.
         openTab(Tab.chat)
-        look(Pause.short)
         element(Id.newChat).tap()
         waitFor { app.alerts.textFields.count >= 2 }
-        look(Pause.short)
         app.alerts.textFields.element(boundBy: 0).tap()
         typeSlowly(Text.chatTitle)
         app.alerts.textFields.element(boundBy: 1).tap()
         typeSlowly(Text.chatInterlocutor)
-        look(Pause.short)
         alertAction().tap()
         waitFor { count(Id.messageField) > 0 }
-        // The room opens, then its history loads: give it time to appear before looking through it.
-        look(Pause.chatLoad)
+        // The room opens, then its history loads: time to see it before looking through it.
+        look(Pause.chat)
         for _ in 0..<2 { flick(up: false, velocity: Flick.softVelocity) }
-        look(Pause.glide)
         element(Id.messageField).tap()
-        look(Pause.short)
         typeSlowly(Text.message)
-        look(Pause.short)
         waitFor { element(Id.send).isEnabled }
         element(Id.send).tap()
-        // The message is in the list: the field is not a static text.
+        // The message is in the list: the field is not a static text. A look before leaving.
         waitFor { app.staticTexts[Text.message].exists }
+        look(Pause.chat)
+        // Back to the list of chats, the new one on top.
+        back()
+        waitFor { count(Id.chatRow) > 0 }
+        look(Pause.chatList)
+
+        // Settings: clear the cache; the lists load again, the favorites and the chats stay.
+        openTab(Tab.settings)
+        tapSteady(Id.clearCache)
+        waitFor { app.alerts.count > 0 }
+        alertAction().tap()
+        look(Pause.settings)
+        openTab(Tab.space)
+        waitFor { count(Id.imageCard) > 0 }
+        openTab(Tab.favorites)
+        waitFor { count(Id.imageCard) > 0 }
+        openTab(Tab.chat)
+        waitFor { count(Id.chatRow) > 0 }
+
+        // The end: the system theme again, as the next run expects.
+        openTab(Tab.settings)
+        tapSteady(Id.option("system"))
         look(Pause.end)
     }
 
@@ -184,7 +259,130 @@ private struct Tour {
             look(Pause.settle)
         }
         buttons.element(boundBy: index).tap()
-        look(Pause.transition)
+        look(Pause.tabSwitch)
+    }
+
+    /// Taps the element once it shows and stands still: a sheet or a screen still moving would take the tap
+    /// elsewhere.
+    private func tapSteady(_ id: String) {
+        var last: CGRect?
+        waitFor(timeout: 10) {
+            let now = frames(id).first
+            defer { last = now }
+            return now != nil && now == last
+        }
+        element(id).tap()
+    }
+
+    /// The hearts on the screen with whether each is set: the app marks a set heart as selected.
+    private func hearts() -> [(frame: CGRect, isSet: Bool)] {
+        guard let root = try? app.snapshot() else { return [] }
+        var found: [(frame: CGRect, isSet: Bool)] = []
+        func visit(_ node: XCUIElementSnapshot) {
+            if node.identifier == Id.heart { found.append((node.frame, node.isSelected)) }
+            node.children.forEach(visit)
+        }
+        visit(root)
+        return found
+    }
+
+    /// The hearts that are not set, clear of the bars: a new favorite, not one taken off.
+    private func heartsOff() -> [CGRect] {
+        let height = app.frame.height
+        let band = (height * 0.2)...(height * 0.85)
+        return hearts().filter { !$0.isSet && band.contains($0.frame.midY) }.map(\.frame)
+    }
+
+    /// Scrolls the details down to a field or a chip that opens a list by a tag.
+    private func tagInDetails() -> CGRect {
+        let height = app.frame.height
+        let band = (height * 0.2)...(height * 0.85)
+        for _ in 0..<Count.detailsScrolls {
+            if let tag = frames(Id.detailsTag).first(where: { band.contains($0.midY) }) { return tag }
+            drag(from: CGVector(dx: 0.5, dy: 0.7), to: CGVector(dx: 0.5, dy: 0.35), velocity: Flick.scrollVelocity)
+            look(Pause.settle)
+        }
+        XCTFail("No tag in the details")
+        return .zero
+    }
+
+    /// Flicks the details up to the picture with the heart, each time waiting only until they stand still: by
+    /// the heart, or by a tag while the picture is above the screen. It stops as soon as the heart is clear
+    /// of the top bar, which would take the tap: no swipe at the very top, which would pull to refresh.
+    private func detailsToTop() {
+        let height = app.frame.height
+        for _ in 0..<Count.detailsScrolls {
+            if let heart = frames(Id.heart).first, heart.minY > height * Position.heartClearTop, heart.maxY < height {
+                return
+            }
+            flick(up: false)
+            var last: CGRect?
+            var isFirst = true
+            waitFor {
+                let now = frames(Id.heart).first ?? frames(Id.detailsTag).first
+                defer {
+                    last = now
+                    isFirst = false
+                }
+                return !isFirst && now == last
+            }
+        }
+        XCTFail("No picture at the top of the details")
+    }
+
+    /// Taps the set heart of the details until it is off: a tap the screen did not take is repeated.
+    private func takeHeartOff() {
+        for _ in 0..<Count.heartTaps {
+            guard let heart = hearts().first else {
+                XCTFail("No heart in the details")
+                return
+            }
+            if !heart.isSet { return }
+            tap(at: CGPoint(x: heart.frame.midX, y: heart.frame.midY))
+            let end = Date().addingTimeInterval(Pause.heartWait)
+            while Date() < end {
+                if hearts().first?.isSet == false { return }
+                Thread.sleep(forTimeInterval: Pause.poll)
+            }
+        }
+        XCTFail("The heart of the details stays set")
+    }
+
+    /// Picks `Text.filterYear` in the open menu of years, newest first. It is usually shown at once; when it
+    /// is not, slow drags up the menu, held at the end so the menu does not fling and no row is chosen.
+    private func pickFilterYear() {
+        let target = app.buttons[Text.filterYear]
+        waitFor { yearFrames().count >= 2 }
+        for _ in 0..<Count.menuDrags {
+            if target.exists && target.isHittable {
+                target.tap()
+                return
+            }
+            let years = yearFrames()
+            guard let top = years.first, let bottom = years.last, years.count >= 2 else { continue }
+            let origin = app.coordinate(withNormalizedOffset: .zero)
+            origin.withOffset(CGVector(dx: bottom.midX, dy: bottom.midY)).press(
+                forDuration: Flick.hold,
+                thenDragTo: origin.withOffset(CGVector(dx: top.midX, dy: top.midY)),
+                withVelocity: XCUIGestureVelocity(Flick.scrollVelocity),
+                thenHoldForDuration: Pause.settle
+            )
+        }
+        XCTFail("No \(Text.filterYear) in the menu")
+    }
+
+    /// The frames of the years of the open menu, from the top: buttons with four digits.
+    private func yearFrames() -> [CGRect] {
+        guard let root = try? app.snapshot() else { return [] }
+        var found: [CGRect] = []
+        func visit(_ node: XCUIElementSnapshot) {
+            if node.elementType == .button, node.label.count == 4, node.label.allSatisfy(\.isNumber) {
+                found.append(node.frame)
+            }
+            node.children.forEach(visit)
+        }
+        visit(root)
+        return found.sorted { $0.minY < $1.minY }
     }
 
     /// The back button of the navigation bar, or the swipe from the left edge where there is none.
@@ -379,6 +577,15 @@ private enum Id {
     static let messageField = "message_field"
     static let send = "send"
     static let position = "position"
+    static let chatRow = "chat_row"
+    static let filtersOpen = "filters_open"
+    static let filterYearFrom = "filter_year_from"
+    static let filtersShow = "filters_show"
+    static let detailsTag = "details_tag"
+    static let clearCache = "clear_cache"
+
+    /// A choice of Settings, by the name of its value, as `UiTestId.option`.
+    static func option(_ name: String) -> String { "option_\(name)" }
 }
 
 /// The places of the tabs in the tab bar, as in `AppTab`.
@@ -386,6 +593,7 @@ private enum Tab {
     static let space = 0
     static let favorites = 1
     static let chat = 2
+    static let settings = 4
     static let all = 0..<5
 }
 
@@ -394,6 +602,19 @@ private enum Text {
     static let chatTitle = "Demo chat"
     static let chatInterlocutor = "Neil"
     static let message = "Hello from KPage!"
+
+    /// The year the filters start from, a few rows down the menu of years (newest first).
+    static let filterYear = "2018"
+}
+
+private enum Count {
+    /// Scrolls down the list of a tag, each with a heart on a new image.
+    static let tagFavorites = 2
+
+    /// Caps for the scrolls of the details, the taps on their heart and the drags of the menu of years.
+    static let detailsScrolls = 12
+    static let heartTaps = 3
+    static let menuDrags = 10
 }
 
 private enum Position {
@@ -407,6 +628,9 @@ private enum Position {
     /// The counter value to glide down to in the grid, and how far short of it the flicks stop.
     static let grid = 150
     static let gridCoast = 40
+
+    /// The share of the screen the heart of the details must be below: the top bar lies over the picture.
+    static let heartClearTop: CGFloat = 0.12
 }
 
 private enum Flick {
@@ -430,12 +654,25 @@ private enum Pause {
     static let poll: TimeInterval = 0.05
     static let key: TimeInterval = 0.15
     static let settle: TimeInterval = 0.4
+
+    /// The warm-up, off the record.
     static let short: TimeInterval = 0.6
     static let long: TimeInterval = 1.0
-    static let heart: TimeInterval = 1.0
-    static let transition: TimeInterval = 1.2
-    static let layoutHold: TimeInterval = 2.0
-    static let chatLoad: TimeInterval = 2.0
-    static let glide: TimeInterval = 2.5
+
+    /// The looks at a result: a heart set or taken off, the details just opened, the filters or the settings
+    /// just applied, a chat room just opened or left, a tap that changes the screen, the last screen.
+    static let heart: TimeInterval = 1.5
+    static let change: TimeInterval = 1.5
+    static let details: TimeInterval = 1.5
+    static let filters: TimeInterval = 1.5
+    static let settings: TimeInterval = 1.5
+    static let chat: TimeInterval = 2.5
+    static let chatList: TimeInterval = 1.5
     static let end: TimeInterval = 4.0
+
+    /// After a tab is selected: the screens change places before the next step.
+    static let tabSwitch: TimeInterval = 1.0
+
+    /// How long a tap on the heart of the details waits for it to go off.
+    static let heartWait: TimeInterval = 2.0
 }
