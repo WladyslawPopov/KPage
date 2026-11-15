@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import io.github.wladyslawpopov.kpage.demo.android.theme.asString
 import io.github.wladyslawpopov.kpage.demo.android.theme.color
@@ -21,9 +22,14 @@ import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppTypographyKey
 
-/** A titled group of choices, one of them selected. */
+/** A titled group of choices, one of them selected; [testId] names a choice for the demo tours. */
 @Composable
-internal fun <T : Any> OptionsSection(title: AppStringKey, options: List<SettingsOption<T>>, onSelect: (T) -> Unit) {
+internal fun <T : Any> OptionsSection(
+    title: AppStringKey,
+    options: List<SettingsOption<T>>,
+    testId: (T) -> String,
+    onSelect: (T) -> Unit,
+) {
     Column {
         SectionTitle(title)
         options.forEach { option ->
@@ -31,6 +37,7 @@ internal fun <T : Any> OptionsSection(title: AppStringKey, options: List<Setting
                 modifier = Modifier
                     .fillMaxWidth()
                     .selectable(selected = option.selected, role = Role.RadioButton) { onSelect(option.value) }
+                    .testTag(testId(option.value))
                     .padding(horizontal = AppDimenKey.Padding.MEDIUM.dp()),
                 verticalAlignment = Alignment.CenterVertically,
             ) {

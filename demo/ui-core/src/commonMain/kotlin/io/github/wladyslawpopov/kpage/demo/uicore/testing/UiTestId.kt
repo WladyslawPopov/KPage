@@ -8,6 +8,8 @@ package io.github.wladyslawpopov.kpage.demo.uicore.testing
 enum class UiTestId(val id: String) {
     /** A card of a Space image, in the list, the grid and Favorites. */
     IMAGE_CARD("image_card"),
+
+    /** The favorite mark; it reports whether it is set as selected. */
     HEART("heart"),
     CHAT_ROW("chat_row"),
     NEW_CHAT("new_chat"),
@@ -28,11 +30,25 @@ enum class UiTestId(val id: String) {
     SEARCH_FIELD("search_field"),
     SEARCH_DONE("search_done"),
 
+    /** The Space filters: the button that opens them, the "from year" choice, the button that shows the result. */
+    FILTERS_OPEN("filters_open"),
+    FILTER_YEAR_FROM("filter_year_from"),
+    FILTERS_SHOW("filters_show"),
+
+    /** A field or a chip of the Details that opens the list filtered by it (author, place, keyword, album). */
+    DETAILS_TAG("details_tag"),
+
+    /** The button of Settings that clears the cache of the paginators. */
+    CLEAR_CACHE("clear_cache"),
+
     /** The "last visible / total" counter of a paged list. */
     POSITION("position");
 
     companion object {
         /** A tab of the tab bar, by the name of its `AppTab`, for example `tab_space`. */
         fun tab(name: String): String = "tab_${name.lowercase()}"
+
+        /** A choice of Settings, by the name of its value, for example `option_dark` or `option_polish`. */
+        fun option(name: String): String = "option_${name.lowercase()}"
     }
 }

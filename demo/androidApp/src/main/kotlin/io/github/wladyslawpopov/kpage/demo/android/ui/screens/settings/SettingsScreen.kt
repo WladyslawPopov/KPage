@@ -13,6 +13,7 @@ import io.github.wladyslawpopov.kpage.demo.android.ui.screens.settings.parts.Opt
 import io.github.wladyslawpopov.kpage.demo.android.ui.widgets.TopBar
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.settings.SettingsComponent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.settings.SettingsIntent
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 
 @Composable
@@ -36,6 +37,7 @@ fun SettingsScreen(component: SettingsComponent) {
                 OptionsSection(
                     title = AppStringKey.Settings.THEME,
                     options = state.themes,
+                    testId = { UiTestId.option(it.name) },
                     onSelect = { component.onIntent(SettingsIntent.SetTheme(it)) },
                 )
             }
@@ -43,6 +45,7 @@ fun SettingsScreen(component: SettingsComponent) {
                 OptionsSection(
                     title = AppStringKey.Settings.LANGUAGE,
                     options = state.languages,
+                    testId = { UiTestId.option(it.name) },
                     onSelect = { component.onIntent(SettingsIntent.SetLanguage(it)) },
                 )
             }

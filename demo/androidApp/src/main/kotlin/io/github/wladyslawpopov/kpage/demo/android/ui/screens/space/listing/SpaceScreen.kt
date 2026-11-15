@@ -61,7 +61,7 @@ fun SpaceScreen(component: SpaceComponent) {
                 onTextChange = { component.onIntent(SpaceIntent.SearchChanged(it)) },
                 onBack = rememberBackAction(),
             ) {
-                BarIconButton(onClick = { isFiltersShown = true }) {
+                BarIconButton(onClick = { isFiltersShown = true }, modifier = Modifier.testTag(UiTestId.FILTERS_OPEN.id)) {
                     Icon(AppIconKey.FILTER.vector(), contentDescription = AppStringKey.Core.FILTERS.asString())
                 }
                 // Shows the layout a tap switches to.

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -24,7 +25,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import io.github.wladyslawpopov.kpage.demo.android.theme.color
 import io.github.wladyslawpopov.kpage.demo.android.theme.dp
 import io.github.wladyslawpopov.kpage.demo.android.theme.style
@@ -35,6 +40,7 @@ import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.listing.op
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.listing.SpaceIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.listing.SpaceState
 import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
@@ -60,7 +66,11 @@ fun SpaceFiltersSheet(
     }
     val display = state.filters
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        // The sheet is a window of its own: the flag of the activity's content does not reach it.
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
+    ) {
         Column(
             Modifier
                 .padding(horizontal = AppDimenKey.Padding.LARGE.dp())
@@ -97,6 +107,7 @@ fun SpaceFiltersSheet(
                 options = display.fromYears,
                 optionText = { it.toString() },
                 onSelect = { setFilters(query.center, it, query.yearEnd, query.tag) },
+                modifier = Modifier.testTag(UiTestId.FILTER_YEAR_FROM.id),
             )
             HorizontalDivider(color = AppColorKey.Border.DEFAULT.color())
             FilterMenu(
@@ -110,7 +121,8 @@ fun SpaceFiltersSheet(
                 onClick = onDismiss,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = AppDimenKey.Padding.LARGE.dp()),
+                    .padding(top = AppDimenKey.Padding.LARGE.dp())
+                    .testTag(UiTestId.FILTERS_SHOW.id),
             ) { Text(showLabel(display.resultCount)) }
         }
     }
@@ -149,6 +161,8 @@ private fun TagRow(tag: SpaceTag, onRemove: () -> Unit) {
     }
 }
 
+private val MENU_MAX_HEIGHT = 320.dp
+
 /** "Show", and how many images the filters leave once the list has loaded. */
 @Composable
 private fun showLabel(resultCount: Int?): String {
@@ -164,10 +178,11 @@ private fun <T : Any> FilterMenu(
     options: List<T>,
     optionText: @Composable (T) -> String,
     onSelect: (T?) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val any = AppStringKey.Space.ANY.asString()
-    Box {
+    Box(modifier) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
@@ -190,7 +205,12 @@ private fun <T : Any> FilterMenu(
                 )
             }
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        // A hundred years would stretch the menu over the whole screen; it scrolls within this height.
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.heightIn(max = MENU_MAX_HEIGHT),
+        ) {
             DropdownMenuItem(
                 text = { Text(any) },
                 onClick = {

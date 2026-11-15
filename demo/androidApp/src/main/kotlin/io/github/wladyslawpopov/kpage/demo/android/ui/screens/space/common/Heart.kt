@@ -6,6 +6,8 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import io.github.wladyslawpopov.kpage.demo.android.theme.color
 import io.github.wladyslawpopov.kpage.demo.android.theme.vector
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
@@ -22,7 +24,8 @@ internal fun Heart(
 ) {
     IconButton(
         onClick = onClick,
-        modifier = modifier.testTag(UiTestId.HEART.id),
+        // Selected is the set mark, for accessibility and for the demo tours.
+        modifier = modifier.testTag(UiTestId.HEART.id).semantics { selected = isFavorite },
         colors = if (onImage) {
             IconButtonDefaults.iconButtonColors(containerColor = AppColorKey.Container.ELEVATED.color().copy(alpha = 0.8f))
         } else {

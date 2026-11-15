@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -32,6 +33,7 @@ import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.details.di
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.details.display.DetailsRow
 import io.github.wladyslawpopov.kpage.demo.presentation.screens.space.details.SpaceDetailsIntent
 import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppDimenKey
@@ -74,6 +76,7 @@ internal fun DetailsFieldRows(rows: List<DetailsRow>, onIntent: (SpaceDetailsInt
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(enabled = action != null, role = Role.Button) { action?.let(onIntent) }
+                .then(if (action is SpaceDetailsIntent.OpenTag) Modifier.testTag(UiTestId.DETAILS_TAG.id) else Modifier)
                 .padding(horizontal = AppDimenKey.Padding.LARGE.dp(), vertical = AppDimenKey.Padding.MEDIUM.dp()),
         ) {
             row.icon?.let { icon ->
@@ -124,6 +127,7 @@ internal fun DetailsChips(chips: List<DetailsChip>, onIntent: (SpaceDetailsInten
                     .clip(CircleShape)
                     .background(AppColorKey.Container.ACCENT.color())
                     .clickable(role = Role.Button) { onIntent(chip.action) }
+                    .testTag(UiTestId.DETAILS_TAG.id)
                     .padding(horizontal = AppDimenKey.Padding.MEDIUM.dp()),
             ) {
                 Icon(

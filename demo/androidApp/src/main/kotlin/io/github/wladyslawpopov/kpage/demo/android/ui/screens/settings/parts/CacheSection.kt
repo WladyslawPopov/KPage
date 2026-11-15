@@ -11,12 +11,14 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import io.github.wladyslawpopov.kpage.demo.android.theme.asString
 import io.github.wladyslawpopov.kpage.demo.android.theme.color
 import io.github.wladyslawpopov.kpage.demo.android.theme.dp
 import io.github.wladyslawpopov.kpage.demo.android.theme.style
 import io.github.wladyslawpopov.kpage.demo.shared.strings.asString
+import io.github.wladyslawpopov.kpage.demo.uicore.testing.UiTestId
 import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.text.UiText
 import io.github.wladyslawpopov.kpage.demo.uicore.theme.AppColorKey
@@ -34,7 +36,7 @@ internal fun CacheSection(lists: UiText, size: UiText, onClear: () -> Unit) {
         val danger = AppColorKey.Status.FAIL.color()
         OutlinedButton(
             onClick = onClear,
-            modifier = Modifier.padding(AppDimenKey.Padding.MEDIUM.dp()),
+            modifier = Modifier.padding(AppDimenKey.Padding.MEDIUM.dp()).testTag(UiTestId.CLEAR_CACHE.id),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = danger),
             border = BorderStroke(1.dp, danger),
         ) { Text(AppStringKey.Settings.CLEAR_CACHE.asString()) }
