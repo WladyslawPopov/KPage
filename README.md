@@ -22,14 +22,14 @@ One tour of the [demo app](demo/) on KPage, Android on the left and iOS on the r
 <table>
   <tr>
     <td align="center"><video src="https://github.com/user-attachments/assets/02ff9122-ae86-430c-a36a-d6b6db0853d6" width="300" autoplay loop muted playsinline></video><br><sub>Android</sub></td>
-    <td align="center"><img src="demo/docs/media/tour-ios.gif" width="300" alt="The demo tour on iOS"><br><sub>iOS</sub></td>
+    <td align="center"><video src="https://github.com/user-attachments/assets/438dc8f8-dedb-475c-bd7c-ad5aacd09283" width="300" autoplay loop muted playsinline></video><br><sub>iOS</sub></td>
   </tr>
 </table>
 
 <details>
 <summary>What happens in the clip, step by step</summary>
 
-The images come from NASA live, so the pictures differ from run to run. The long runs along the list are sped up 3×; everything else plays in real time.
+The images come from NASA live, so the pictures differ from run to run. The long runs along the list, the typing and the waits between steps are sped up (the Android clip up to 3×, the iOS clip up to 4×); the rest plays at its own pace. The steps are the same on both platforms.
 
 1. **Space, the grid.** The list turns into a grid, glides down, a heart, back to the list.
 2. **Search.** "Titan" gives a new list for the query; a heart among the results.

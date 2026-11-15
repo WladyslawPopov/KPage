@@ -52,9 +52,11 @@ CI runs both (`.github/workflows/tests.yml`). The tests of the library itself ar
 
 One scenario, written natively for each platform, that drives the release app the way a person does:
 the grid (a glide down, a favorite, back to the list), a search by a word with a favorite in it, a run far
-down the found images and back by the position counter, the details of an image (the heart off, back),
-more favorites, Favorites (removing one by a swipe, after the confirmation), and a new chat room with a
-message. The images come from NASA live, so a tour never relies on a given picture. The clips in the
+down the found images, the details of an image (the heart off), Settings (a dark theme, Polish, then English
+again), the list back up with more favorites, Favorites with the details of one image, a tag that opens Space
+filtered by it with the "From 2018" filter, hearts, the details again, removing a favorite by a swipe (after the
+confirmation), a new chat room with a message, clearing the cache, and the system theme at the end. The images
+come from NASA live, so a tour never relies on a given picture. The clips in the
 [library README](../README.md#see-it-in-action) are recorded from these tours.
 
 They find elements by the ids of [`UiTestId`](ui-core/src/commonMain/kotlin/io/github/wladyslawpopov/kpage/demo/uicore/testing/UiTestId.kt):
@@ -71,7 +73,10 @@ cd demo
 ./gradlew :tour:connectedTourAndroidTest     # Android: a device or an emulator
 ```
 
-iOS: `testTour` in Xcode (Release), or from the terminal, building first so the run is not slowed by it:
+iOS: delete the app from the simulator first (the data is not cleared between runs, and the tour expects empty
+Favorites and no chats), then run `testTour` in Xcode. The shared `iosAppUITests` scheme runs the tests in Release
+without a debugger and not in parallel, so the simulator stays the one in the Xcode window. Or from the terminal,
+building first so the run is not slowed by it:
 
 ```bash
 xcodebuild build-for-testing -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Release \

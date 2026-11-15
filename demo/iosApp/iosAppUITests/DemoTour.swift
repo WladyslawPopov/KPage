@@ -32,6 +32,7 @@ final class DemoTour: XCTestCase {
 @MainActor
 private struct Tour {
     let app: XCUIApplication
+    let ramp = FlickRamp()
 
     /// The first showing of the keyboard and of every tab is slow; it is done once before the tour, and the
     /// recording is cut to start after it.
@@ -53,7 +54,13 @@ private struct Tour {
         // is shown only near the top (another layout starts the list from its first row), so back up first.
         element(Id.layoutToggle).tap()
         look(Pause.change)
-        flickUntil(up: true, velocity: Flick.gridVelocity, burst: 1) { $0 >= Position.grid - Position.gridCoast }
+        flickUntil(
+            up: true,
+            to: Position.grid - Position.gridCoast,
+            velocity: Flick.gridVelocity,
+            burst: 1,
+            slowZone: Position.gridSlowZone
+        )
         settle()
         tapHeart(of: cardInMiddle())
         look(Pause.heart)
@@ -75,7 +82,7 @@ private struct Tour {
         look(Pause.heart)
 
         // Far down the found images, by the position counter, to show the paginator on a long list.
-        flickUntil(up: true) { $0 >= Position.far - Position.coast }
+        flickUntil(up: true, to: Position.far - Position.coast)
         settle()
         let card = cardInMiddle()
         tapHeart(of: card)
@@ -93,25 +100,25 @@ private struct Tour {
 
         // Settings in the middle of the way: a dark theme and Polish, applied at once; the list keeps its place.
         openTab(Tab.settings)
-        tapSteady(Id.option("dark"))
+        tapShown(Id.option("dark"))
         look(Pause.settings)
-        tapSteady(Id.option("polish"))
+        tapShown(Id.option("polish"))
         look(Pause.settings)
         openTab(Tab.space)
         waitFor { count(Id.imageCard) > 0 }
 
         // Back up, almost to the start of the list: a few more favorites there.
-        flickUntil(up: false) { $0 <= Position.nearStart + Position.coast }
+        flickUntil(up: false, to: Position.nearStart + Position.coast)
         settle()
         for _ in 0..<2 {
-            scroll()
+            for _ in 0..<Count.nearStartScrolls { scroll() }
             tapHeart(of: cardInMiddle())
             look(Pause.heart)
         }
 
         // English again: the rest of the tour is read, not only seen.
         openTab(Tab.settings)
-        tapSteady(Id.option("english"))
+        tapShown(Id.option("english"))
         look(Pause.settings)
 
         // Favorites: they are there; the details of one.
@@ -129,7 +136,7 @@ private struct Tour {
         look(Pause.change)
 
         // The filters show the tag; a year narrows the list.
-        tapSteady(Id.filtersOpen)
+        tapShown(Id.filtersOpen)
         waitFor { count(Id.filterYearFrom) > 0 }
         look(Pause.change)
         tapSteady(Id.filterYearFrom)
@@ -162,19 +169,16 @@ private struct Tour {
         settle()
         look(Pause.change)
         swipeLeft(over: frames(Id.imageCard)[0])
-        waitFor { app.alerts.count > 0 }
-        alertAction().tap()
+        confirmAlert()
         look(Pause.heart)
 
         // Chat: create a room (the app opens it), look through its history, send a message.
         openTab(Tab.chat)
         element(Id.newChat).tap()
         waitFor { app.alerts.textFields.count >= 2 }
-        app.alerts.textFields.element(boundBy: 0).tap()
-        typeSlowly(Text.chatTitle)
-        app.alerts.textFields.element(boundBy: 1).tap()
-        typeSlowly(Text.chatInterlocutor)
-        alertAction().tap()
+        typeSlowly(Text.chatTitle, into: app.alerts.textFields.element(boundBy: 0))
+        typeSlowly(Text.chatInterlocutor, into: app.alerts.textFields.element(boundBy: 1))
+        confirmAlert()
         waitFor { count(Id.messageField) > 0 }
         // The room opens, then its history loads: time to see it before looking through it.
         look(Pause.chat)
@@ -193,9 +197,8 @@ private struct Tour {
 
         // Settings: clear the cache; the lists load again, the favorites and the chats stay.
         openTab(Tab.settings)
-        tapSteady(Id.clearCache)
-        waitFor { app.alerts.count > 0 }
-        alertAction().tap()
+        tapShown(Id.clearCache)
+        confirmAlert()
         look(Pause.settings)
         openTab(Tab.space)
         waitFor { count(Id.imageCard) > 0 }
@@ -206,7 +209,7 @@ private struct Tour {
 
         // The end: the system theme again, as the next run expects.
         openTab(Tab.settings)
-        tapSteady(Id.option("system"))
+        tapShown(Id.option("system"))
         look(Pause.end)
     }
 
@@ -262,6 +265,15 @@ private struct Tour {
         look(Pause.tabSwitch)
     }
 
+    /// Taps the element once it shows, with one look at the screen: for what does not move (a row of
+    /// Settings, a button of a bar). Each look at the screen costs XCUITest a snapshot of the whole app.
+    private func tapShown(_ id: String) {
+        let target = element(id)
+        // `waitForExistence` spends a whole second before its first look: only for what is not there yet.
+        if !target.exists && !target.waitForExistence(timeout: 10) { XCTFail("No \(id)") }
+        target.tap()
+    }
+
     /// Taps the element once it shows and stands still: a sheet or a screen still moving would take the tap
     /// elsewhere.
     private func tapSteady(_ id: String) {
@@ -293,14 +305,24 @@ private struct Tour {
         return hearts().filter { !$0.isSet && band.contains($0.frame.midY) }.map(\.frame)
     }
 
-    /// Scrolls the details down to a field or a chip that opens a list by a tag.
+    /// Scrolls the details down to a field or a chip that opens a list by a tag. After each scroll it waits
+    /// until the details stand still: a tap while they still glide only stops them and opens nothing.
     private func tagInDetails() -> CGRect {
         let height = app.frame.height
         let band = (height * 0.2)...(height * 0.85)
         for _ in 0..<Count.detailsScrolls {
             if let tag = frames(Id.detailsTag).first(where: { band.contains($0.midY) }) { return tag }
             drag(from: CGVector(dx: 0.5, dy: 0.7), to: CGVector(dx: 0.5, dy: 0.35), velocity: Flick.scrollVelocity)
-            look(Pause.settle)
+            var last: CGRect?
+            var isFirst = true
+            waitFor {
+                let now = frames(Id.detailsTag).first ?? frames(Id.heart).first
+                defer {
+                    last = now
+                    isFirst = false
+                }
+                return !isFirst && now == last
+            }
         }
         XCTFail("No tag in the details")
         return .zero
@@ -401,16 +423,63 @@ private struct Tour {
         return buttons.element(boundBy: buttons.count - 1)
     }
 
+    /// Taps the action of the alert once it stands still, and again while the alert stays: a tap while it
+    /// still slides in is lost, and XCUITest would later dismiss the alert left behind by its cancel button.
+    private func confirmAlert() {
+        waitFor { app.alerts.count > 0 }
+        for _ in 0..<Count.alertTaps {
+            var last: CGRect?
+            waitFor(timeout: 10) {
+                let now = alertAction().exists ? alertAction().frame : nil
+                defer { last = now }
+                return now != nil && now == last
+            }
+            alertAction().tap()
+            let end = Date().addingTimeInterval(Pause.alertWait)
+            while Date() < end {
+                if app.alerts.count == 0 { return }
+                Thread.sleep(forTimeInterval: Pause.poll)
+            }
+        }
+        XCTFail("The alert stays open")
+    }
+
     /// Types like a person: a key of the on-screen keyboard at a time, into the field with the focus. A
     /// `typeText` per character hides and shows the keyboard on every one; it is left for a key not found.
     private func typeSlowly(_ text: String) {
         let keyboard = app.keyboards.firstMatch
+        let isShown = waitForKeyboard(keyboard)
         for character in text {
-            if keyboard.exists {
+            if isShown {
                 typeKey(character, on: keyboard)
             } else {
                 app.typeText(String(character))
             }
+            look(Pause.key)
+        }
+    }
+
+    /// Waits until the keyboard has slid in and stands within the screen: a key tapped while it still moves
+    /// lies below the screen. False when it does not come in time: with a hardware keyboard connected to a
+    /// simulator, the on-screen one stays below the screen, and the typing falls back to `typeText`.
+    private func waitForKeyboard(_ keyboard: XCUIElement) -> Bool {
+        let end = Date().addingTimeInterval(Pause.keyboardWait)
+        var last: CGRect?
+        while Date() < end {
+            let now = keyboard.exists ? keyboard.frame : nil
+            if let now, now == last, now.maxY <= app.frame.maxY + 1 { return true }
+            last = now
+            Thread.sleep(forTimeInterval: Pause.poll)
+        }
+        return false
+    }
+
+    /// Types a character at a time into a field of an alert. Not by the keys: the keyboard lies outside the
+    /// alert, so XCUITest takes the alert for an interruption of a key's tap and dismisses it.
+    private func typeSlowly(_ text: String, into field: XCUIElement) {
+        field.tap()
+        for character in text {
+            field.typeText(String(character))
             look(Pause.key)
         }
     }
@@ -437,12 +506,13 @@ private struct Tour {
     // MARK: - Flicks
 
     /// A flick: the list goes on by itself after it and slows down. A flick down starts below the
-    /// navigation bar and the search field: a touch there does not move the list.
+    /// navigation bar and the search field: a touch there does not move the list. Its speed comes from the
+    /// ramp: a series of flicks starts slow and gathers speed up to `velocity`.
     private func flick(up: Bool, velocity: CGFloat = Flick.velocity) {
         drag(
             from: CGVector(dx: 0.5, dy: up ? 0.85 : 0.3),
             to: CGVector(dx: 0.5, dy: up ? 0.15 : 0.95),
-            velocity: velocity
+            velocity: ramp.next(up: up, top: velocity)
         )
     }
 
@@ -461,17 +531,32 @@ private struct Tour {
             .max()
     }
 
-    /// A run along the list: flicks one after another until the counter says `reached`. The counter is
-    /// read between bursts: a read takes time and would slow the run down. An unreadable counter does not
-    /// stop the tour, the cap does; a counter that stands still (the end of the list) stops it too.
-    private func flickUntil(up: Bool, velocity: CGFloat = Flick.velocity, burst: Int = Flick.burst, reached: (Int) -> Bool) {
+    /// A run along the list: flicks one after another until the counter passes `goal`. The counter is read
+    /// between bursts: a read takes time and would slow the run down. An unreadable counter does not stop the
+    /// tour, the cap does; a counter that stands still (the end of the list) stops it too. The run gathers
+    /// speed from the start (the ramp of `flick`) and slows down within `slowZone` rows of the goal, reading
+    /// the counter more often there, so it comes to the goal gently.
+    private func flickUntil(
+        up: Bool,
+        to goal: Int,
+        velocity: CGFloat = Flick.velocity,
+        burst: Int = Flick.burst,
+        slowZone: Int = Position.slowZone
+    ) {
         var last: Int?
-        for _ in 0..<(Flick.max / burst) {
+        var flicks = 0
+        while flicks < Flick.max {
             let now = position()
-            if let now, reached(now) { return }
+            if let now, up ? now >= goal : now <= goal { return }
             if let now, now == last { return }
             last = now
-            for _ in 0..<burst { flick(up: up, velocity: velocity) }
+            let left = now.map { abs(goal - $0) } ?? slowZone
+            let isNear = left < slowZone
+            let top = isNear ? max(Flick.startVelocity, velocity * CGFloat(left) / CGFloat(slowZone)) : velocity
+            for _ in 0..<(isNear ? min(burst, Flick.nearBurst) : burst) {
+                flick(up: up, velocity: top)
+                flicks += 1
+            }
         }
     }
 
@@ -495,6 +580,7 @@ private struct Tour {
     }
 
     private func tap(at point: CGPoint) {
+        ramp.reset()
         app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: point.x, dy: point.y)).tap()
     }
 
@@ -540,9 +626,18 @@ private struct Tour {
         }
     }
 
-    /// The pause that gives the viewer time to see the screen.
+    /// The pause that gives the viewer time to see the screen. A pause of half a second or more is an activity
+    /// of the test log, "hold" with its length, so the edit of the video can tell it from the waits of
+    /// XCUITest; the short ones between keys and steps are not marked.
     private func look(_ seconds: TimeInterval) {
-        Thread.sleep(forTimeInterval: seconds)
+        ramp.reset()
+        guard seconds >= 0.5 else {
+            Thread.sleep(forTimeInterval: seconds)
+            return
+        }
+        XCTContext.runActivity(named: "hold \(seconds)") { _ in
+            Thread.sleep(forTimeInterval: seconds)
+        }
     }
 }
 
@@ -562,6 +657,36 @@ private enum Quiescence {
     private static func replace(_ type: AnyClass, _ selector: String, with block: Any) {
         guard let method = class_getInstanceMethod(type, NSSelectorFromString(selector)) else { return }
         method_setImplementation(method, imp_implementationWithBlock(block))
+    }
+}
+
+/// The speed of the flicks: a series starts slow and grows a flick at a time, so the first rows have time
+/// for their animations and the picture does not tear. A series goes on while the flicks keep their
+/// direction and follow soon one after another; a pause, a tap or a turn starts a new one.
+@MainActor
+private final class FlickRamp {
+    private var speed: CGFloat = 0
+    private var isUp: Bool?
+    private var lastTime = Date.distantPast
+
+    /// The speed of the next flick, a step nearer to `top` from the last one: up while gathering speed,
+    /// down while slowing to the end of a run.
+    func next(up: Bool, top: CGFloat) -> CGFloat {
+        let goesOn = isUp == up && Date().timeIntervalSince(lastTime) < Flick.seriesGap
+        if !goesOn {
+            speed = min(Flick.startVelocity, top)
+        } else if speed < top {
+            speed = min(speed * Flick.speedUp, top)
+        } else {
+            speed = max(speed / Flick.speedUp, top)
+        }
+        isUp = up
+        lastTime = Date()
+        return speed
+    }
+
+    func reset() {
+        isUp = nil
     }
 }
 
@@ -608,6 +733,10 @@ private enum Text {
 }
 
 private enum Count {
+    /// Scrolls before each heart near the start of the list. The last heart is the first favorite, whose
+    /// details the tour opens for a tag: a few scrolls move it off an image that has none.
+    static let nearStartScrolls = 4
+
     /// Scrolls down the list of a tag, each with a heart on a new image.
     static let tagFavorites = 2
 
@@ -615,6 +744,9 @@ private enum Count {
     static let detailsScrolls = 12
     static let heartTaps = 3
     static let menuDrags = 10
+
+    /// A cap for the taps on the action of an alert.
+    static let alertTaps = 3
 }
 
 private enum Position {
@@ -629,6 +761,10 @@ private enum Position {
     static let grid = 150
     static let gridCoast = 40
 
+    /// How many rows short of its goal a run starts to slow down: a long run and the glide of the grid.
+    static let slowZone = 400
+    static let gridSlowZone = 40
+
     /// The share of the screen the heart of the details must be below: the top bar lies over the picture.
     static let heartClearTop: CGFloat = 0.12
 }
@@ -636,7 +772,17 @@ private enum Position {
 private enum Flick {
     /// The speed of the finger at the end of a gesture, points a second: a sharp flick of a run, the calm
     /// flicks of the grid and the search, a slow scroll, the removal swipe.
-    static let velocity: CGFloat = 20000
+    static let velocity: CGFloat = 8000
+
+    /// A run along the list begins with this speed and grows by `speedUp` a flick up to its own.
+    static let startVelocity: CGFloat = 2000
+    static let speedUp: CGFloat = 1.4
+
+    /// The longest time between two flicks of one series; XCUITest itself takes about two between them.
+    static let seriesGap: TimeInterval = 3.0
+
+    /// Flicks between the reads of the counter near the goal of a run, where it slows down.
+    static let nearBurst = 2
     static let gridVelocity: CGFloat = 5000
     static let softVelocity: CGFloat = 3000
     static let scrollVelocity: CGFloat = 1200
@@ -645,8 +791,8 @@ private enum Flick {
     /// The touch before the move.
     static let hold: TimeInterval = 0.01
 
-    /// Flicks between the reads of the counter, and a cap for a run.
-    static let burst = 5
+    /// Flicks between the reads of the counter, and a cap for a run. A read is a snapshot of the whole app.
+    static let burst = 8
     static let max = 150
 }
 
@@ -675,4 +821,10 @@ private enum Pause {
 
     /// How long a tap on the heart of the details waits for it to go off.
     static let heartWait: TimeInterval = 2.0
+
+    /// How long the typing waits for the keyboard to slide in.
+    static let keyboardWait: TimeInterval = 1.0
+
+    /// How long a tap on the action of an alert waits for the alert to close.
+    static let alertWait: TimeInterval = 2.0
 }

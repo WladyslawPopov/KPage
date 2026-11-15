@@ -67,8 +67,6 @@ Each chapter: what the screen is, how it is built, what is done and what is left
 
 The start tab: search NASA's image library.
 
-<!-- Full video of the listing (Android | iOS): the whole range, not one path. Paste the GitHub video URLs here. -->
-
 - **What it does:** a list or a grid (the choice is remembered); search that follows the text after a 400 ms pause; filters by NASA center and years; chips of the active filters; a heart on every image; a tap opens the Details. From the Details a field (author, place, keyword, album) opens the same screen filtered by it.
 - **How it works:** a `SpaceQuery` (text and filters) is the query of the list: a changed query is a new paginator. [`SpaceEngine`](presentation/src/commonMain/kotlin/io/github/wladyslawpopov/kpage/demo/presentation/screens/space/listing/SpaceEngine.kt) holds the search pause, the filters and the heart (the database first, then `updateItem`). NASA gives only the first 10 000 results, so `totalCount = min(total_hits, 10000)`.
 - **Done:** all of the above on Android and iOS; the empty result offers "Reset" when a search or a filter is set.
@@ -81,15 +79,11 @@ The start tab: search NASA's image library.
 
 ### Favorites
 
-<!-- Full video of the favorites (Android | iOS). Paste the GitHub video URLs here. -->
-
 - **What it does:** one column of your favorites; a long press starts selection, a tap toggles; delete one by a swipe or many from the bar, always after a confirmation.
 - **How it works:** NASA has no favorites, so the demo's own database stands in for the server and keeps only ids. [`FavoritesRepositoryImpl`](data/src/commonMain/kotlin/io/github/wladyslawpopov/kpage/demo/data/favorites/FavoritesRepositoryImpl.kt) fetches the images of ids that have none yet, one request each (an id NASA does not know is removed; a failed request keeps it). Every change is announced as a signal and the list refreshes on it, whichever screen made it.
 - **Done:** both platforms.
 
 ### Chat
-
-<!-- Full video of the chat and the settings (Android | iOS). Paste the GitHub video URLs here. -->
 
 - **What it does:** a list of chats (create, select, delete) and a room: messages from the newest, date rows, sending with a retry for failed ones, a draft that survives a restart, up to 8 photos from the gallery, copying and deleting messages.
 - **How it works:** there is no backend: [`ChatServer`](data/src/commonMain/kotlin/io/github/wladyslawpopov/kpage/demo/data/chat/ChatServer.kt) is a server inside the app, with its own tables, and every call goes through a mock that adds delay, failures and offline. The other side answers by a scenario chosen when the chat is created (`CHATTY`, `HISTORIAN` with hundreds of messages, `FLAKY` that refuses part of the sends), and only while the app is open. A message is saved locally first and goes to the server with its local id, so a repeated send makes one message and the server's copy replaces the local one without the row blinking. In the room, `decorate` adds the unconfirmed local messages and the date rows ([`MessagesEngine`](presentation/src/commonMain/kotlin/io/github/wladyslawpopov/kpage/demo/presentation/screens/chat/room/MessagesEngine.kt)).
@@ -116,4 +110,4 @@ cd demo
 ./gradlew :data:jvmTest :presentation:jvmTest
 ```
 
-The **demo tours** walk the release app through the same story on both platforms: the grid, a search, a long list far and back, favorites, a details screen, removing a favorite by a swipe, a chat room. They drive it through the system like a person, and the clips in the [library README](../README.md#see-it-in-action) are recorded from them. How to run them: [Demo tours](TESTING.md#demo-tours).
+The **demo tours** walk the release app through the same story on both platforms: the grid, a search, a long list far and back, the details, a dark theme and another language, favorites, a tag and a year filter, removing a favorite by a swipe, a chat room, clearing the cache. They drive it through the system like a person, and the clips in the [library README](../README.md#see-it-in-action) are recorded from them. How to run them: [Demo tours](TESTING.md#demo-tours).
