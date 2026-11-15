@@ -107,7 +107,9 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, HeaderView: View, Dec
                 }
             }
             // A reversed list (a chat) needs no help: it is held from its start, where the newest row is.
-            .modifier(TopRowPosition(id: reversed ? nil : topKeyInLayout))
+            // A grid is not held either: the position is kept by a cell, and SwiftUI aligns that cell across too,
+            // which moves the content sideways by the edge gap when the layout changes (the search bar, the keyboard).
+            .modifier(TopRowPosition(id: reversed || columns > 1 ? nil : topKeyInLayout))
             // A list becomes a grid and back: the list starts from its first row. A lazy grid finds a far row only
             // by laying out every row before it, which is slow; a new identity makes a new scroll view at the top.
             .id(columns)
@@ -191,6 +193,7 @@ struct PagedGrid<Q: AnyObject, T: AnyObject, D: AnyObject, HeaderView: View, Dec
                 .padding(.vertical, AppDimenKeyPadding.extraSmall.value)
                 .background(.regularMaterial, in: Capsule())
                 .padding(AppDimenKeyPadding.small.value)
+                .uiTestId(.position)
         }
     }
 }

@@ -48,13 +48,17 @@ struct SpaceScreen: View {
                 onEmptyAction: { component.onPageIntent(intent: $0) },
                 itemKey: { $0.id },
                 header: {
-                    // Gone while the search mode is open; back when it ends.
-                    if !isSearchMode {
-                        SpaceSearchField(text: query, onOpen: openSearch, onClear: { query = "" })
-                            .onScrollVisibilityChange(threshold: 0.1) { visible in
-                                withAnimation(.easeInOut(duration: 0.25)) { isSearchFieldVisible = visible }
-                            }
-                    }
+                    // Folded while the search mode is open, so the bar takes its place with no gap; kept in the list,
+                    // so it keeps its identity and its visibility tracking.
+                    SpaceSearchField(text: query, onOpen: openSearch, onClear: { query = "" })
+                        .opacity(isSearchMode ? 0 : 1)
+                        .frame(height: isSearchMode ? 0 : nil, alignment: .top)
+                        .clipped()
+                        .allowsHitTesting(!isSearchMode)
+                        .accessibilityHidden(isSearchMode)
+                        .onScrollVisibilityChange(threshold: 0.1) { visible in
+                            withAnimation(.easeInOut(duration: 0.25)) { isSearchFieldVisible = visible }
+                        }
                 },
                 placeholder: { _ in card(nil) }
             ) { image, _ in
@@ -78,10 +82,12 @@ struct SpaceScreen: View {
                     .transition(.move(edge: .top).combined(with: .opacity))
                 }
             }
+            // Only the bar and the chips animate: on the whole screen every cell of the list would animate its
+            // own move, and the list would shake.
+            .animation(.easeInOut(duration: 0.25), value: showsChips)
+            .animation(.easeInOut(duration: 0.25), value: isSearchMode)
         }
         .toolbar(isSearchMode ? .hidden : .visible, for: .navigationBar)
-        .animation(.easeInOut(duration: 0.25), value: showsChips)
-        .animation(.easeInOut(duration: 0.25), value: isSearchMode)
         .navigationTitle(state.topBar.title.text)
         .onChange(of: query) { _, text in component.onIntent(intent: SpaceIntentSearchChanged(text: text)) }
         // The text cleared from outside (the Reset button of the empty state).
@@ -96,6 +102,7 @@ struct SpaceScreen: View {
                         Image(systemName: AppIconKey.search.sfSymbol)
                     }
                     .accessibilityLabel(AppStringKeyCore.search.text)
+                    .uiTestId(.searchOpen)
                     .transition(.opacity.combined(with: .scale))
                 }
                 Button { isFiltersShown = true } label: {
@@ -108,6 +115,7 @@ struct SpaceScreen: View {
                     Button { component.onIntent(intent: SpaceIntentToggleLayout.shared) } label: {
                         Image(systemName: (isGrid ? AppIconKey.layoutList : AppIconKey.layoutGrid).sfSymbol)
                     }
+                    .uiTestId(.layoutToggle)
                     .transition(.opacity.combined(with: .scale))
                 }
             }

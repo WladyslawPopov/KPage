@@ -2,8 +2,8 @@
 
 The logic of the demo lives in shared Kotlin (`domain`, `data`, `presentation`), so it is tested once
 and runs on every platform that has tests: **106 tests on the JVM, 92 on the iOS simulator** (the
-JVM also runs the tests that need a JDBC database). The UI of each platform is checked by hand; see
-[Still to cover](#still-to-cover).
+JVM also runs the tests that need a JDBC database). The UI of each platform is walked through by the
+[demo tours](#demo-tours) and checked by hand; see [Still to cover](#still-to-cover).
 
 ```bash
 cd demo
@@ -48,10 +48,46 @@ CI runs both (`.github/workflows/tests.yml`). The tests of the library itself ar
 | `SettingsEngineTest` (4) | choices go to the repository; clearing the cache asks first |
 | `SpaceDisplayTest` (5), `NavigationSnapshotCodecTest` (2) | display models of Space; saving and restoring the navigation |
 
+## Demo tours
+
+One scenario, written natively for each platform, that drives the release app the way a person does:
+the grid (a glide down, a favorite, back to the list), a search by a word with a favorite in it, a run far
+down the found images and back by the position counter, the details of an image (the heart off, back),
+more favorites, Favorites (removing one by a swipe, after the confirmation), and a new chat room with a
+message. The images come from NASA live, so a tour never relies on a given picture. The clips in the
+[library README](../README.md#see-it-in-action) are recorded from these tours.
+
+They find elements by the ids of [`UiTestId`](ui-core/src/commonMain/kotlin/io/github/wladyslawpopov/kpage/demo/uicore/testing/UiTestId.kt):
+a Compose `testTag` (shown as a resource id) and a SwiftUI `accessibilityIdentifier` with the same name.
+They check that the path goes through, not how the screens look.
+
+| Platform | Where | How it runs |
+|---|---|---|
+| Android | [`tour`](tour/src/main/kotlin/io/github/wladyslawpopov/kpage/demo/tour/DemoTour.kt), a `com.android.test` module | UiAutomator in its own process, against the release build of `androidApp`. The app is cleared first (empty Favorites, no chats); the gestures come from the system and the app runs on the real clock, so a flick glides as a finger's does. |
+| iOS | [`iosAppUITests`](iosApp/iosAppUITests/DemoTour.swift), a UI testing target of the Xcode project | XCUITest. It starts with a warm-up (the keyboard and every tab shown once), which a recording cuts off. XCUITest waits for the app to be quiet around every gesture, which would stop every glide; the test turns that private wait off and waits by itself. |
+
+```bash
+cd demo
+./gradlew :tour:connectedTourAndroidTest     # Android: a device or an emulator
+```
+
+iOS: `testTour` in Xcode (Release), or from the terminal, building first so the run is not slowed by it:
+
+```bash
+xcodebuild build-for-testing -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Release \
+  -destination 'platform=iOS Simulator,name=iPhone 16'
+xcodebuild test-without-building -project iosApp/iosApp.xcodeproj -scheme iosApp -configuration Release \
+  -destination 'platform=iOS Simulator,name=iPhone 16' -only-testing:iosAppUITests/DemoTour/testTour
+```
+
+The app is expected in English. The iOS run is slower between gestures than the Android one: XCUITest
+reads the accessibility tree before every gesture.
+
 ## Still to cover
 
-- **UI tests** for Compose and SwiftUI, and screenshot tests. Today the UI is checked by hand on devices.
-- **Instrumented tests and benchmarks.**
+- **UI tests that check screens** for Compose and SwiftUI, and screenshot tests. The tours walk the main
+  path, but what each screen shows is checked by hand on devices.
+- **Benchmarks.**
 - **Repositories:** `SpaceRepositoryImpl`, `ChatRepositoryImpl` (local outgoing messages and drafts in the
   database), `CacheRepositoryImpl`.
 - **Engines:** `SpaceDetailsEngine`, `ChatInfoEngine`, `LabEngine`, and the components that connect the

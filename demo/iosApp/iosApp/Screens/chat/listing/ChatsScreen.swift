@@ -45,6 +45,7 @@ struct ChatsScreen: View {
                         Image(systemName: AppIconKey.add.sfSymbol)
                     }
                     .accessibilityLabel(AppStringKeyChat.create.text)
+                    .uiTestId(.theNewChat)
                 }
             }
         }

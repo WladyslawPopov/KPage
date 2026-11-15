@@ -1,8 +1,8 @@
 package io.github.wladyslawpopov.kpage.demo.uicore.testing
 
 /**
- * Ids of the elements the UI flows find (`demo/maestro`): a Compose `testTag` on Android and a SwiftUI
- * `accessibilityIdentifier` on iOS, with the same [id], so one flow runs on both platforms.
+ * Ids of the elements the demo tours find (`demo/tour` on Android, `iosAppUITests` on iOS): a Compose
+ * `testTag` and a SwiftUI `accessibilityIdentifier` with the same [id], so both tours tell the same story.
  * Placeholders get no id: a flow finds only loaded rows.
  */
 enum class UiTestId(val id: String) {
@@ -26,7 +26,10 @@ enum class UiTestId(val id: String) {
     /** The search of a top bar: the button that opens it, the field, the check mark that closes it. */
     SEARCH_OPEN("search_open"),
     SEARCH_FIELD("search_field"),
-    SEARCH_DONE("search_done");
+    SEARCH_DONE("search_done"),
+
+    /** The "last visible / total" counter of a paged list. */
+    POSITION("position");
 
     companion object {
         /** A tab of the tab bar, by the name of its `AppTab`, for example `tab_space`. */

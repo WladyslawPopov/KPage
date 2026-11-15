@@ -1,6 +1,0 @@
-# The whole demo tour in one flow, for Maestro Studio: the launch, then the tour. `record-demo.sh` runs
-# the two parts apart, so the recording starts on a loaded list. APP_ID comes from the environment.
-appId: ${APP_ID}
----
-- runFlow: launch.yaml
-- runFlow: tour.yaml

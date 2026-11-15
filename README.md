@@ -17,34 +17,14 @@ Targets: **Android**, **iOS** (`iosArm64`, `iosSimulatorArm64`), **JVM / Desktop
 
 ## See it in action
 
-Short clips of the [demo app](demo/) on KPage, Android on the left and iOS on the right. The details and longer videos of every screen are in the [demo README](demo/README.md#screens).
+One tour of the [demo app](demo/) on KPage, Android on the left and iOS on the right: the grid, a search, a run far down a long list and back, favorites, a details screen and a chat room. Both clips are recorded from the demo's [tour tests](demo/TESTING.md#demo-tours), which drive the real app through the system like a person (UiAutomator on Android, XCUITest on iOS), so nothing in them is staged. More about every screen is in the [demo README](demo/README.md#screens).
 
 <table>
   <tr>
-    <td align="center"><img src="demo/docs/media/browse-android.gif" width="300" alt="Browsing a 10 000-row list on Android"><br><sub>Android</sub></td>
-    <td align="center"><img src="demo/docs/media/browse-ios.gif" width="300" alt="Browsing a 10 000-row list on iOS"><br><sub>iOS</sub></td>
+    <td align="center"><img src="demo/docs/media/tour-android.gif" width="300" alt="The demo tour on Android"><br><sub>Android</sub></td>
+    <td align="center"><img src="demo/docs/media/tour-ios.gif" width="300" alt="The demo tour on iOS"><br><sub>iOS</sub></td>
   </tr>
 </table>
-
-**Working with the listing.**
-
-<table>
-  <tr>
-    <td align="center"><img src="demo/docs/media/sync-android.gif" width="300" alt="One change in every list on Android"><br><sub>Android</sub></td>
-    <td align="center"><img src="demo/docs/media/sync-ios.gif" width="300" alt="One change in every list on iOS"><br><sub>iOS</sub></td>
-  </tr>
-</table>
-
-**Working with favorites.**
-
-<table>
-  <tr>
-    <td align="center"><img src="demo/docs/media/chat-android.gif" width="300" alt="A chat room on Android"><br><sub>Android</sub></td>
-    <td align="center"><img src="demo/docs/media/chat-ios.gif" width="300" alt="A chat room on iOS"><br><sub>iOS</sub></td>
-  </tr>
-</table>
-
-**Working with the chat.**
 
 > **See it working:** [`demo/`](demo/) is a complete Android + iOS app on this library (NASA image search, favorites, a chat with a mock server, settings) with shared logic and fully native UI. [Jump to the demo](#demo).
 

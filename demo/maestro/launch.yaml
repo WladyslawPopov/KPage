@@ -1,8 +1,0 @@
-# Starts the app and waits for the first loaded cards of Space.
-appId: ${APP_ID}
----
-- launchApp
-- extendedWaitUntil:
-    visible:
-      id: "image_card"
-    timeout: 30000

@@ -162,7 +162,7 @@ extension AppIconKey {
 }
 
 extension View {
-    /// The id of an element for the UI flows (`demo/maestro`): what `testTag` is on Android.
+    /// The id of an element for the demo tour (`iosAppUITests`): what `testTag` is on Android.
     func uiTestId(_ id: UiTestId) -> some View {
         accessibilityIdentifier(id.id)
     }

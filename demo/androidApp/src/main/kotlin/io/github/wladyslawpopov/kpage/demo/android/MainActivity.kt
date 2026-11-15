@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
             val language by settings.language.collectAsState()
             AppLanguageProvider(language) {
                 DemoTheme(themeMode) {
-                    // Test tags are shown to UI tools (Maestro, UiAutomator) as resource ids.
+                    // Test tags are shown to UiAutomator (the demo tour) as resource ids.
                     Box(Modifier.semantics { testTagsAsResourceId = true }) { AppRoot() }
                 }
             }

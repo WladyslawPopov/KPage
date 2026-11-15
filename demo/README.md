@@ -2,7 +2,7 @@
 
 A complete app on [KPage](../README.md): **NASA image search, favorites, a chat with a mock server and settings, on Android (Jetpack Compose) and iOS (SwiftUI)**. All the logic is shared Kotlin, and the UI of each platform is fully native.
 
-**About the app.** It brings together the practices I use in production: layers with clear responsibilities, MVI screens, one engine that wires a paginator to a screen, and a mock server for the cases a real API does not give. My Compose Multiplatform apps are built on Decompose; here I took the component approach of Arkadii Ivanov, the author of Decompose, and carried it over to a fully native UI on top of shared Kotlin logic. It is my own take on that idea. The library is proven by thousands of users; the shared logic of the demo is covered by tests ([what is covered](TESTING.md)), and its UI is checked by hand.
+**About the app.** It brings together the practices I use in production: layers with clear responsibilities, MVI screens, one engine that wires a paginator to a screen, and a mock server for the cases a real API does not give. My Compose Multiplatform apps are built on Decompose; here I took the component approach of Arkadii Ivanov, the author of Decompose, and carried it over to a fully native UI on top of shared Kotlin logic. It is my own take on that idea. The library is proven by thousands of users; the shared logic of the demo is covered by tests ([what is covered](TESTING.md)), and its UI is walked through by tour tests on both platforms and checked by hand.
 
 **On this page:** [Run it](#run-it) · [How it is built](#how-it-is-built) · [Screens](#screens) · [Tests](#tests)
 
@@ -115,3 +115,5 @@ Shared logic (repositories, engines, the component base) is covered on the JVM a
 cd demo
 ./gradlew :data:jvmTest :presentation:jvmTest
 ```
+
+The **demo tours** walk the release app through the same story on both platforms: the grid, a search, a long list far and back, favorites, a details screen, removing a favorite by a swipe, a chat room. They drive it through the system like a person, and the clips in the [library README](../README.md#see-it-in-action) are recorded from them. How to run them: [Demo tours](TESTING.md#demo-tours).

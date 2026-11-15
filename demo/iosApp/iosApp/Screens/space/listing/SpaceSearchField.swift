@@ -25,6 +25,7 @@ struct SpaceSearchField: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(AppStringKeyCore.search.text)
+            .uiTestId(.searchOpen)
             if !text.isEmpty {
                 SearchClearButton(action: onClear)
             }
@@ -58,6 +59,7 @@ struct SpaceSearchBar: View {
                     .onSubmit { isFocused = false }
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
+                    .uiTestId(.searchField)
                 if !text.isEmpty {
                     SearchClearButton { text = "" }
                 }
@@ -79,11 +81,13 @@ struct SpaceSearchBar: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(AppStringKeyCore.done.text)
+            .uiTestId(.searchDone)
         }
         .padding(.horizontal, AppDimenKeyPadding.large.value)
         .padding(.vertical, AppDimenKeyPadding.small.value)
-        // The focus is taken after the view is on screen; set at once it is often ignored.
-        .onAppear { DispatchQueue.main.async { isFocused = true } }
+        // The focus is taken after the bar has come in and the navigation bar has gone: the keyboard coming up
+        // in the same moment moved the list. Set at once, it is often ignored anyway.
+        .onAppear { DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { isFocused = true } }
     }
 }
 
