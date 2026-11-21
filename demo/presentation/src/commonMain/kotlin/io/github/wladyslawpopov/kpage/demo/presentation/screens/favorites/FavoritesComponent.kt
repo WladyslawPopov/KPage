@@ -1,8 +1,6 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.favorites
 
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
 import io.github.wladyslawpopov.kpage.demo.domain.favorites.FavoritesRepository
-import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceRepository
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentContext
 import io.github.wladyslawpopov.kpage.demo.presentation.component.StateOwner
 import io.github.wladyslawpopov.kpage.demo.presentation.navigation.AppNavigator
@@ -18,15 +16,11 @@ internal class DefaultFavoritesComponent(
     context: ComponentContext,
     private val navigator: AppNavigator,
     favorites: FavoritesRepository,
-    space: SpaceRepository,
-    cache: CacheRepository,
 ) : PageComponent<FavoritesState, FavoritesIntent>(context, FavoritesState()), FavoritesComponent {
 
     private val engine = FavoritesEngine(
         tasks = this,
         favorites = favorites,
-        space = space,
-        cache = cache,
         getState = { currentState },
         updateState = ::updateState,
         onPageIntent = ::onPageIntent,

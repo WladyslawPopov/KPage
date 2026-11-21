@@ -11,14 +11,14 @@ import kotlinx.coroutines.flow.StateFlow
  * - Report the scroll of the UI (a `PagingListTracker` turns the visible rows into positions): [onVisibleRangeChanged]. The paginator keeps the pages around the visible ones loaded; without the
  *   events it shows what it has.
  * - Renew data from the server: [refresh], always where the user is. The paginator renews the list once
- *   when it is created and never by itself after that: when to renew (a pull, a retry, a change of
- *   the query) is the app's decision.
+ *   when it is created; after that it renews when the app asks: [refresh] (a pull, a retry, a change
+ *   of the query) or `PagingStore.invalidate` of its group (the data layer changed the list on the
+ *   server) and `PagingStore.clear`.
  *
  * One rule for the whole API: [state] tells what is going on with the list (its own loads included);
- * the calls of the app ([refresh], [updateItem], [getItemById]) suspend until they are done.
- * - Change one item without the server: [updateItem]; the app sees it at once in every list.
- * - Work with one item: [getItemById] (read), [updateItem] (write). Removing is a server operation
- *   followed by [refresh].
+ * [refresh] suspends until it is done. Single items are read and changed through
+ * `PagingStore.items`, without a paginator. Removing is a server operation followed by [refresh] or
+ * `PagingStore.invalidate`.
  */
 interface Paginator<T : Any> : PagingEvents {
     /** The list, its total count and the load state; `items.size == totalCount`. */
@@ -37,20 +37,6 @@ interface Paginator<T : Any> : PagingEvents {
      * Keep a pull-to-refresh indicator until it returns; not to wait, launch it.
      */
     suspend fun refresh()
-
-    /**
-     * Reads the full item from the cache, for example when UI rows hold only a display model and a
-     * server call or a details screen needs the whole item. Items are shared by all lists of this
-     * item type. Returns null if it is not cached.
-     */
-    suspend fun getItemById(id: String): T?
-
-    /**
-     * Changes the cached item with [transform] in one step (read and write together), at every
-     * position where it occurs, in every list of this item type. Call it after the server confirmed
-     * the change. Returns the new item, or null if the item is not cached.
-     */
-    suspend fun updateItem(id: String, transform: (T) -> T): T?
 
     /**
      * Stops this paginator before its scope ends, for example when it is replaced by a new one after

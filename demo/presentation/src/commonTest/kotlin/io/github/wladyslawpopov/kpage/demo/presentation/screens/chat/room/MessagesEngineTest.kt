@@ -4,8 +4,6 @@ import io.github.wladyslawpopov.kpage.core.paging.data.state.LoadState
 import io.github.wladyslawpopov.kpage.core.paging.data.state.PagingRow
 import io.github.wladyslawpopov.kpage.core.paging.data.state.PagingState
 import io.github.wladyslawpopov.kpage.core.paging.data.state.pagedListOf
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheStats
 import io.github.wladyslawpopov.kpage.demo.domain.chat.ChatMessage
 import io.github.wladyslawpopov.kpage.demo.domain.chat.MessageSendState
 import io.github.wladyslawpopov.kpage.demo.domain.chat.OutgoingMessage
@@ -23,7 +21,6 @@ import io.github.wladyslawpopov.kpage.demo.uicore.text.AppStringKey
 import io.github.wladyslawpopov.kpage.demo.uicore.text.UiText
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -40,12 +37,6 @@ import kotlin.test.assertTrue
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MessagesEngineTest {
-
-    private class FakeCache : CacheRepository {
-        override val cleared = MutableSharedFlow<Unit>()
-        override suspend fun stats() = CacheStats(0, 0)
-        override suspend fun clear() = Unit
-    }
 
     private class Harness(scope: TestScope) {
         val chats = FakeChatRepository()
@@ -68,7 +59,6 @@ class MessagesEngineTest {
             tasks = tasks,
             chatId = CHAT_ID,
             repository = chats,
-            cache = FakeCache(),
             outgoing = outgoing,
             getState = { state.value },
             updateState = { state.value = it(state.value) },

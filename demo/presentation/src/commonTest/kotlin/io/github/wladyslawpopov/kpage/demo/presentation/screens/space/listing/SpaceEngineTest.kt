@@ -1,8 +1,6 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.space.listing
 
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.Paginator
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheStats
 import io.github.wladyslawpopov.kpage.demo.domain.favorites.FavoritesRepository
 import io.github.wladyslawpopov.kpage.demo.domain.settings.AppLanguage
 import io.github.wladyslawpopov.kpage.demo.domain.settings.SettingsRepository
@@ -18,7 +16,6 @@ import io.github.wladyslawpopov.kpage.demo.presentation.testing.FakePaginator
 import io.github.wladyslawpopov.kpage.demo.presentation.testing.TestTasks
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -41,12 +38,10 @@ class SpaceEngineTest {
             FakePaginator<SpaceImage>().also { created += query to it }
 
         override suspend fun details(id: String): SpaceImageDetails = error("not used")
-        override suspend fun updateImage(id: String, transform: (SpaceImage) -> SpaceImage) = Unit
     }
 
     private class FakeFavorites : FavoritesRepository {
         val set = mutableListOf<Pair<String, Boolean>>()
-        override val changes = MutableSharedFlow<Unit>()
         override fun favorites(scope: CoroutineScope): Paginator<SpaceImage> = error("not used")
         override suspend fun setFavorite(id: String, isFavorite: Boolean) {
             set += id to isFavorite
@@ -68,12 +63,6 @@ class SpaceEngineTest {
         override suspend fun setLanguage(language: AppLanguage) = Unit
     }
 
-    private class FakeCache : CacheRepository {
-        override val cleared = MutableSharedFlow<Unit>()
-        override suspend fun stats() = CacheStats(0, 0)
-        override suspend fun clear() = Unit
-    }
-
     private class Harness(scope: TestScope, val initialQuery: SpaceQuery = SpaceQuery()) {
         val space = FakeSpace()
         val favorites = FakeFavorites()
@@ -90,7 +79,6 @@ class SpaceEngineTest {
             repository = space,
             favorites = favorites,
             settings = settings,
-            cache = FakeCache(),
             states = state,
             getState = { state.value },
             updateState = { state.value = it(state.value) },
@@ -213,13 +201,13 @@ class SpaceEngineTest {
     }
 
     @Test
-    fun a_heart_is_saved_and_then_applied_to_the_cached_item() = runTest {
+    fun a_heart_goes_to_the_repository_and_the_list_is_not_refreshed() = runTest {
         val harness = started()
 
         harness.engine.onIntent(SpaceIntent.SetFavorite("a", isFavorite = true))
         runCurrent()
 
         assertEquals(listOf("a" to true), harness.favorites.set)
-        assertEquals(listOf("a"), harness.paginator.updatedIds)
+        assertEquals(0, harness.paginator.refreshCount)
     }
 }

@@ -8,8 +8,7 @@ import io.github.wladyslawpopov.kpage.core.paging.data.state.LoadState
 import io.github.wladyslawpopov.kpage.core.paging.data.state.PagingState
 import io.github.wladyslawpopov.kpage.core.paging.data.TestPaginatorFactory
 import io.github.wladyslawpopov.kpage.core.paging.data.TestPaginatorFactory.QUERY_KEY
-import io.github.wladyslawpopov.kpage.core.paging.data.cache.clearCache
-import io.github.wladyslawpopov.kpage.core.paging.data.cache.updateItem
+import io.github.wladyslawpopov.kpage.core.paging.data.cache.PagingStore
 import io.github.wladyslawpopov.kpage.core.paging.data.existingPages
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -60,11 +59,14 @@ class StablePaginatorTest {
     private fun TestScope.create(
         server: GatedServer,
         config: PaginatorConfig = PaginatorConfig(pageSize = PAGE, initialPageKey = server.firstPage),
+        queryKey: String = QUERY_KEY,
+        group: String? = null,
     ): StablePaginator<FakeItem> {
         val testDispatcher = StandardTestDispatcher(testScheduler)
         return StablePaginator(
             serializer = FakeItem.serializer(),
-            queryKey = QUERY_KEY,
+            queryKey = queryKey,
+            group = group,
             config = config,
             getPage = { server.getPage(it) },
             idExtractor = { it.id },
@@ -116,6 +118,8 @@ class StablePaginatorTest {
         assertTrue(predicate(state), "Unexpected state: $state")
         return state
     }
+
+    private fun TestScope.store() = PagingStore(db, StandardTestDispatcher(testScheduler))
 
     private fun TestScope.awaitRestored() = awaitState { it.isRestored }
 
@@ -533,14 +537,14 @@ class StablePaginatorTest {
     // ---- Changing one item ----
 
     @Test
-    fun updateItem_during_a_refresh_is_not_overwritten_by_an_older_answer() = runTest {
+    fun an_edit_during_a_refresh_is_not_overwritten_by_an_older_answer() = runTest {
         val server = GatedServer(ids(100), PAGE).apply { hold(4, 5, 6) }
         createOverCache(server)
 
         pg.scrollTo(50)
         startRefresh()
         awaitState { it.loadState == LoadState.REFRESH }
-        pg.updateItem("id_50") { it.copy(title = "Edited") }
+        store().items(FakeItem.serializer()).update("id_50") { it.copy(title = "Edited") }
         server.release(4, 5, 6)
 
         val state = awaitState { it.items.loadedCount == 30 && it.isSettled() }
@@ -549,25 +553,32 @@ class StablePaginatorTest {
     }
 
     @Test
-    fun updateItem_returns_null_for_an_item_that_is_not_cached() = runTest {
-        seedPages(0 until 1, total = 10)
-        create(GatedServer(ids(10), PAGE))
-        awaitRestored()
+    fun an_edit_survives_a_load_of_another_list_started_before_it() = runTest {
+        val first = create(GatedServer(ids(10), PAGE))
+        awaitSettled()
+        // Another list with the same item, its first page held: the answer predates the edit.
+        val otherServer = GatedServer(ids(10), PAGE).apply { hold(0) }
+        val second = create(otherServer, queryKey = "other")
+        awaitState(second) { it.loadState == LoadState.INITIAL }
 
-        assertEquals(null, pg.updateItem("missing") { it.copy(title = "x") })
-        assertEquals("New", pg.updateItem("id_3") { it.copy(title = "New") }?.title)
+        store().items(FakeItem.serializer()).update("id_3") { it.copy(title = "Edited") }
+        // The first list handles an event with no loads of its own: the edit must stay for the second.
+        first.scrollTo(0)
+        barrier()
+        otherServer.release(0)
+
+        assertEquals("Edited", awaitState(second) { it.isSettled() }.items[3]?.title)
+        assertEquals("Edited", awaitState(first) { it.isSettled() }.items[3]?.title)
     }
 
-    // ---- The cache under a live list ----
+    // ---- The store under live lists ----
 
     @Test
-    fun an_edit_of_the_database_reaches_an_open_list() = runTest {
+    fun an_edit_through_the_store_reaches_an_open_list() = runTest {
         create(GatedServer(ids(10), PAGE))
         awaitSettled()
 
-        val edited = db.updateItem(FakeItem.serializer(), "id_3", StandardTestDispatcher(testScheduler)) {
-            it.copy(title = "Edited")
-        }
+        val edited = store().items(FakeItem.serializer()).update("id_3") { it.copy(title = "Edited") }
         barrier()
 
         assertEquals("Edited", edited?.title)
@@ -575,14 +586,49 @@ class StablePaginatorTest {
     }
 
     @Test
-    fun clearing_the_cache_under_a_live_list_empties_it_until_it_is_refreshed() = runTest {
+    fun invalidate_refreshes_the_live_lists_of_its_groups_only() = runTest {
+        val serverA = GatedServer(ids(30), PAGE)
+        // Items are shared by type, so the other list has items of its own.
+        val serverB = GatedServer(List(30) { "b_$it" }, PAGE)
+        val listA = create(serverA, group = "a")
+        val listB = create(serverB, queryKey = "other", group = "b")
+        awaitState(listA) { it.isSettled() }
+        awaitState(listB) { it.isSettled() }
+        serverA.clearRequests()
+        serverB.clearRequests()
+        serverA.version = "Fresh"
+        serverB.version = "Fresh"
+
+        store().invalidate("a")
+
+        assertEquals("Fresh id_0", awaitState(listA) { it.isSettled() }.items[0]?.title)
+        assertTrue(awaitState(listB) { it.isSettled() }.items[0].isNew())
+        assertTrue(serverB.requests.isEmpty())
+    }
+
+    @Test
+    fun clearing_the_store_refreshes_the_live_lists() = runTest {
+        val server = GatedServer(ids(100), PAGE)
+        create(server)
+        awaitSettled()
+        server.version = "Fresh"
+
+        store().clear()
+
+        val state = awaitState { it.isSettled() && it.items.isLoaded(0) }
+        assertEquals(100, state.totalCount)
+        assertEquals("Fresh id_0", state.items[0]?.title)
+    }
+
+    @Test
+    fun clearing_the_store_without_refresh_empties_a_live_list_until_it_is_refreshed() = runTest {
         val server = GatedServer(ids(100), PAGE)
         create(server)
         awaitSettled()
         assertTrue(pg.state.value.items.isLoaded(0))
         server.clearRequests()
 
-        db.clearCache(StandardTestDispatcher(testScheduler))
+        store().clear(refreshLive = false)
         barrier()
 
         // The list reads the cache, so it is empty at once; it does not load again on its own.

@@ -4,7 +4,6 @@ import io.github.wladyslawpopov.kpage.core.paging.data.state.LoadState
 import io.github.wladyslawpopov.kpage.demo.presentation.testing.FakePaginator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
@@ -19,10 +18,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class PaginatorEngineTest {
 
-    private class Harness(
-        val scope: TestScope,
-        val refreshOn: MutableSharedFlow<Unit> = MutableSharedFlow(),
-    ) {
+    private class Harness(val scope: TestScope) {
         var state = PaginatorUiState<String, String, Nothing>(query = "")
         val errors = mutableListOf<Throwable>()
         var queryChanges = 0
@@ -34,7 +30,6 @@ class PaginatorEngineTest {
             updateState = { state = it },
             onQueryChanged = { queryChanges++ },
             onError = { errors += it },
-            refreshOn = refreshOn,
         )
 
         val current get() = created.last()
@@ -104,22 +99,6 @@ class PaginatorEngineTest {
         harness.current.fail(next)
         runCurrent()
         assertEquals(listOf<Throwable>(error, next), harness.errors)
-    }
-
-    @Test
-    fun a_refresh_event_renews_the_current_paginator() = runTest {
-        val harness = Harness(this).apply { start() }
-
-        harness.refreshOn.emit(Unit)
-        runCurrent()
-        assertEquals(1, harness.current.refreshCount)
-
-        harness.queries.value = "b"
-        runCurrent()
-        harness.refreshOn.emit(Unit)
-        runCurrent()
-        assertEquals(1, harness.current.refreshCount)
-        assertEquals(1, harness.created.first().refreshCount)
     }
 
     @Test

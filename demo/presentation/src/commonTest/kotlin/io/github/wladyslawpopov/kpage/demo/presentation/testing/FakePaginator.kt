@@ -10,16 +10,9 @@ internal class FakePaginator<T : Any>(val query: String = "") : Paginator<T> {
     override val state = MutableStateFlow(PagingState.initial<T>())
     var refreshCount = 0
     var closed = false
-    val updatedIds = mutableListOf<String>()
 
     override suspend fun refresh() {
         refreshCount++
-    }
-
-    override suspend fun getItemById(id: String): T? = null
-    override suspend fun updateItem(id: String, transform: (T) -> T): T? {
-        updatedIds += id
-        return null
     }
 
     override fun close() {

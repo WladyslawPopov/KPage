@@ -1,10 +1,8 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.favorites
 
 import io.github.wladyslawpopov.kpage.core.paging.data.state.LoadState
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
 import io.github.wladyslawpopov.kpage.demo.domain.favorites.FavoritesRepository
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
-import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceRepository
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentTasks
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageEmptyState
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageIntent
@@ -20,8 +18,6 @@ import kotlinx.coroutines.sync.withLock
 internal class FavoritesEngine(
     private val tasks: ComponentTasks,
     private val favorites: FavoritesRepository,
-    private val space: SpaceRepository,
-    cache: CacheRepository,
     private val getState: () -> FavoritesState,
     private val updateState: ((FavoritesState) -> FavoritesState) -> Unit,
     private val onPageIntent: (PageIntent) -> Unit,
@@ -30,7 +26,6 @@ internal class FavoritesEngine(
         getState = { getState().list },
         updateState = ::setList,
         onError = { onPageIntent(PageIntent.OnError(it)) },
-        refreshOn = cache.cleared,
     )
 
     // Removals are applied one after another, in the order they were confirmed.
@@ -39,10 +34,6 @@ internal class FavoritesEngine(
     fun start() {
         tasks.launchMain {
             paginator.collectPaging(flowOf(Unit)) { _, scope -> favorites.favorites(scope) }
-        }
-        // The tab lives from the start of the app: a heart set in Space or on the details reaches it here.
-        tasks.launchMain {
-            favorites.changes.collect { paginator.refresh() }
         }
     }
 
@@ -69,17 +60,13 @@ internal class FavoritesEngine(
         if (ids.isNotEmpty()) updateState { it.copy(pendingDelete = ids) }
     }
 
-    // The database first, then the cache of the Space lists: they show the removed mark without a
-    // refresh. The favorites list renews itself on the change of the repository.
+    // The repository removes the mark from every list; the favorites list renews itself.
     private fun confirmDelete() {
         val ids = getState().pendingDelete
         if (ids.isEmpty()) return
         updateState { it.copy(pendingDelete = emptySet(), selected = it.selected - ids) }
         tasks.launchMain {
-            deleteLock.withLock {
-                favorites.removeFavorites(ids)
-                ids.forEach { id -> space.updateImage(id) { it.copy(isFavorite = false) } }
-            }
+            deleteLock.withLock { favorites.removeFavorites(ids) }
         }
     }
 

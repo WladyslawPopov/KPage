@@ -18,7 +18,7 @@ CI runs both (`.github/workflows/tests.yml`). The tests of the library itself ar
 - **No mocking library.** Every dependency is a small hand-written fake that records what it was asked.
 - **Time is controlled.** Engines get `TestTasks`, which runs their coroutines in one `runTest` scope,
   so a 400 ms search pause is `advanceTimeBy(400)`, not a sleep.
-- **The paginator is faked at its interface.** `FakePaginator` counts `refresh()` and `updateItem()` and
+- **The paginator is faked at its interface.** `FakePaginator` counts `refresh()`, records `close()` and
   lets a test set the load state; lists with gaps are built with the library's `pagedListOf`.
 - **Data tests use real parts where it is cheap:** an in-memory SQLite (`JdbcSqliteDriver`) for the demo
   database, Ktor `MockEngine` for NASA, `MapSettings` for preferences.

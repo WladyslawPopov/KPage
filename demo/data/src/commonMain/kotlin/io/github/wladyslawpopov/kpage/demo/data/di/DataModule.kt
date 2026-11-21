@@ -1,5 +1,6 @@
 package io.github.wladyslawpopov.kpage.demo.data.di
 
+import io.github.wladyslawpopov.kpage.core.paging.data.cache.PagingStore
 import io.github.wladyslawpopov.kpage.demo.data.cache.CacheRepositoryImpl
 import io.github.wladyslawpopov.kpage.demo.data.chat.ChatRepositoryImpl
 import io.github.wladyslawpopov.kpage.demo.data.chat.ChatServer
@@ -33,9 +34,10 @@ val dataModule = module {
 
     single { NasaImagesRemote(get()) }
     single { FavoritesStore(get()) }
+    single { PagingStore(get()) }
 
     single<SpaceRepository> { SpaceRepositoryImpl(get(), get(), get()) }
-    single<FavoritesRepository> { FavoritesRepositoryImpl(get(), get(), get()) }
+    single<FavoritesRepository> { FavoritesRepositoryImpl(get(), get(), get(), get()) }
     single { ChatServer(get(), get(), get()) }
     single<ChatRepository> { ChatRepositoryImpl(get(), get(), get(), get()) }
     single<LabRepository> { LabRepositoryImpl() }

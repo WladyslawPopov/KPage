@@ -1,6 +1,5 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.space.listing
 
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
 import io.github.wladyslawpopov.kpage.demo.domain.favorites.FavoritesRepository
 import io.github.wladyslawpopov.kpage.demo.domain.settings.SettingsRepository
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceQuery
@@ -28,7 +27,6 @@ internal class DefaultSpaceComponent(
     repository: SpaceRepository,
     favorites: FavoritesRepository,
     settings: SettingsRepository,
-    cache: CacheRepository,
     initialQuery: SpaceQuery? = null,
 ) : PageComponent<SpaceState, SpaceIntent>(context, initialState(initialQuery)), SpaceComponent {
 
@@ -38,7 +36,6 @@ internal class DefaultSpaceComponent(
         repository = repository,
         favorites = favorites,
         settings = settings,
-        cache = cache,
         states = state,
         getState = { currentState },
         updateState = ::updateState,

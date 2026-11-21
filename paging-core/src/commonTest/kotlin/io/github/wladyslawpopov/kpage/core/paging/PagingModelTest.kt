@@ -8,6 +8,7 @@ import io.github.wladyslawpopov.kpage.core.paging.data.OtherItem
 import io.github.wladyslawpopov.kpage.core.paging.data.TestPaginatorFactory
 import io.github.wladyslawpopov.kpage.core.paging.data.TestPaginatorFactory.ITEM_TYPE
 import io.github.wladyslawpopov.kpage.core.paging.data.TestPaginatorFactory.QUERY_KEY
+import io.github.wladyslawpopov.kpage.core.paging.data.cache.PagingStore
 import io.github.wladyslawpopov.kpage.core.paging.data.cache.cacheStats
 import io.github.wladyslawpopov.kpage.core.paging.data.cache.maxLists
 import io.github.wladyslawpopov.kpage.core.paging.data.cache.setMaxLists
@@ -155,8 +156,9 @@ class PagingModelTest {
         awaitState(first) { it.items.getOrNull(0)?.title == "fake" }
         awaitState(second) { it.items.getOrNull(0)?.title == "other" }
 
-        assertEquals("fake", first.getItemById("x")?.title)
-        assertEquals("other", second.getItemById("x")?.title)
+        val store = PagingStore(database, StandardTestDispatcher(testScheduler))
+        assertEquals("fake", store.items(FakeItem.serializer()).get("x")?.title)
+        assertEquals("other", store.items(OtherItem.serializer()).get("x")?.title)
     }
 
     @Test
@@ -172,7 +174,8 @@ class PagingModelTest {
         awaitState(first) { it.isRestored }
         awaitState(second) { it.isRestored }
 
-        first.updateItem("A") { it.copy(title = "New") }
+        PagingStore(database, StandardTestDispatcher(testScheduler)).items(FakeItem.serializer())
+            .update("A") { it.copy(title = "New") }
 
         val inFirst = awaitState(first) { it.items.getOrNull(0)?.title == "New" }
         val inSecond = awaitState(second) { it.items.getOrNull(0)?.title == "New" }

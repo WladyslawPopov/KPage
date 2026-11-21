@@ -3,10 +3,8 @@ package io.github.wladyslawpopov.kpage.core.paging.data.cache
 import io.github.wladyslawpopov.kpage.cache.PagingDatabase
 import io.github.wladyslawpopov.kpage.core.paging.common.dbDispatcher
 import io.github.wladyslawpopov.kpage.core.paging.data.DEFAULT_MAX_LISTS
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
@@ -21,11 +19,10 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
  */
 data class PagingCacheStats(val lists: Int, val items: Int, val dataBytes: Long)
 
-// Every function below takes the database dispatcher of the paginators: pass the same one if the
-// paginators were given their own `databaseDispatcher`.
+// The work of PagingStore; every function takes the database dispatcher of the paginators.
 
-/** Clears persisted pages after their owning paginators have been closed. */
-suspend fun PagingDatabase.clearCache(dispatcher: CoroutineDispatcher = dbDispatcher()) {
+/** Clears every list and item; the live paginators show empty lists until they refresh. */
+internal suspend fun PagingDatabase.clearCache(dispatcher: CoroutineDispatcher = dbDispatcher()) {
     withContext(dispatcher) {
         transaction {
             listingEntryQueries.clearAll()
@@ -37,7 +34,7 @@ suspend fun PagingDatabase.clearCache(dispatcher: CoroutineDispatcher = dbDispat
 }
 
 /** Clears one persisted list after its paginator has been closed; other lists are kept. */
-suspend fun PagingDatabase.clearCache(queryKey: String, dispatcher: CoroutineDispatcher = dbDispatcher()) {
+internal suspend fun PagingDatabase.clearCache(queryKey: String, dispatcher: CoroutineDispatcher = dbDispatcher()) {
     withContext(dispatcher) {
         transaction {
             deleteQueryData(queryKey)
@@ -46,11 +43,7 @@ suspend fun PagingDatabase.clearCache(queryKey: String, dispatcher: CoroutineDis
     }
 }
 
-/**
- * Sets how many lists the cache keeps; the setting is stored in the database. Opening a list beyond
- * it evicts the least recently used ones. Lists already beyond a lowered limit are evicted at once.
- */
-suspend fun PagingDatabase.setMaxLists(count: Int, dispatcher: CoroutineDispatcher = dbDispatcher()) {
+internal suspend fun PagingDatabase.setMaxLists(count: Int, dispatcher: CoroutineDispatcher = dbDispatcher()) {
     require(count >= 1) { "count must be at least 1" }
     withContext(dispatcher) {
         transaction {
@@ -60,42 +53,10 @@ suspend fun PagingDatabase.setMaxLists(count: Int, dispatcher: CoroutineDispatch
     }
 }
 
-/** The current limit of lists, see [setMaxLists]. */
-suspend fun PagingDatabase.maxLists(dispatcher: CoroutineDispatcher = dbDispatcher()): Int =
+internal suspend fun PagingDatabase.maxLists(dispatcher: CoroutineDispatcher = dbDispatcher()): Int =
     withContext(dispatcher) { readMaxLists() }
 
-/**
- * Changes the cached item with [transform] in one step, without a paginator: for example, a details
- * screen changed it on the server. The change reaches every list of this item type, the open ones
- * too. Unlike [Paginator.updateItem][io.github.wladyslawpopov.kpage.core.paging.data.paginator.Paginator.updateItem],
- * a load that started before the edit may bring the old version back until its list is refreshed.
- * Returns the new item, or null if the item is not cached or cannot be read. An exception of
- * [transform] is thrown to the caller.
- */
-suspend fun <T : Any> PagingDatabase.updateItem(
-    serializer: KSerializer<T>,
-    id: String,
-    dispatcher: CoroutineDispatcher = dbDispatcher(),
-    transform: (T) -> T,
-): T? = withContext(dispatcher) {
-    val itemType = serializer.descriptor.serialName
-    transactionWithResult {
-        val raw = itemRawQueries.selectById(itemType, id).executeAsOneOrNull()
-        val current = raw?.let {
-            try {
-                CacheJson.decodeFromString(serializer, it.json)
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                null
-            }
-        }
-        current?.let(transform)?.also { next ->
-            itemRawQueries.updateJson(CacheJson.encodeToString(serializer, next), itemType, id)
-        }
-    }
-}
-
-suspend fun PagingDatabase.cacheStats(dispatcher: CoroutineDispatcher = dbDispatcher()): PagingCacheStats =
+internal suspend fun PagingDatabase.cacheStats(dispatcher: CoroutineDispatcher = dbDispatcher()): PagingCacheStats =
     withContext(dispatcher) {
     transactionWithResult {
         PagingCacheStats(
@@ -106,7 +67,7 @@ suspend fun PagingDatabase.cacheStats(dispatcher: CoroutineDispatcher = dbDispat
     }
 }
 
-/** How items are stored in the cache; the paginators and the functions above share it. */
+/** How items are stored in the cache; the paginators and [PagingStore] share it. */
 internal val CacheJson = Json {
     ignoreUnknownKeys = true
     isLenient = true

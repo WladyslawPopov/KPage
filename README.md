@@ -9,7 +9,7 @@
 - The list is always read from the local database: after a restart it shows at once, and when the network fails the cache stays on screen.
 - The user can scroll anywhere: the list is `totalCount` long, unloaded positions are `null` placeholders.
 - The window around the user's position is refreshed in one transaction: no mix of old and new rows, no jump to the top.
-- One call, `updateItem`, changes an item in every list that shows it.
+- The data layer keeps the cache up to date without a paginator: one call changes an item in every list that shows it, another renews the stale lists that are open.
 
 Runs in production Android and iOS apps and is proven by thousands of users.
 
@@ -55,7 +55,8 @@ The images come from NASA live, so the pictures differ from run to run. The long
 | A long list should not be loaded or kept whole | Keeps a window of pages around the visible position in memory and in the database; the rest is deleted |
 | The server shifts items while the user scrolls | Items are addressed by server position (`page * pageSize + index`), so a shifted page leaves no holes |
 | A refresh must not break the screen | Reloads the whole window, replaces it in one transaction, keeps the old data on screen until then; on failure nothing changes |
-| One item is shown in several lists (a tab, a search, a favorites list) | Items are stored once per type; `updateItem` reaches every list, open ones too |
+| One item is shown in several lists (a tab, a search, a favorites list) | Items are stored once per type; `PagingStore.items(...).update` reaches every list, open ones too |
+| A change on the server makes other lists stale | `PagingStore.invalidate(group)` renews the open lists of the group by themselves |
 | Offline start | Cached list and `totalCount` are shown before the first request |
 | Different UI toolkits | The library draws nothing; any UI reports its visible rows through a small tracker |
 
@@ -67,7 +68,7 @@ KPage is built for APIs where any page can be requested by its number, and every
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation("io.github.wladyslawpopov:paging-core:2.1.0")
+            implementation("io.github.wladyslawpopov:paging-core:2.2.0")
         }
     }
 }
@@ -79,7 +80,7 @@ If your iOS app links the Kotlin framework statically, add `-lsqlite3` to the li
 
 ### The database
 
-One `PagingDatabase` for the whole app, shared by all paginators. Create it in platform code:
+One `PagingDatabase` for the whole app, shared by all paginators and the `PagingStore`: through this one object an item edit or `invalidate` reaches every open list. Create it in platform code:
 
 ```kotlin
 // Android
@@ -93,6 +94,14 @@ val db = PagingDatabase(createPagingDriver(File(System.getProperty("user.home"),
 ```
 
 For tests and previews use `createInMemoryPagingDriver()` (on Android it takes a `Context`). The cache is disposable: when a new version changes the schema, the library opens a new file and deletes the old ones. Nothing is migrated.
+
+Next to it create one `PagingStore` for the data layer. It works with the cache without a paginator: single items, stale lists and the cache as a whole (see [Changing items](#changing-items)).
+
+```kotlin
+val store = PagingStore(db)
+```
+
+That is all the setup: the paginators and the store of one database find each other by themselves.
 
 ## Quick start
 
@@ -145,7 +154,7 @@ class UsersHolder(api: UsersApi, db: PagingDatabase, scope: CoroutineScope) {
 - `loadState`: see [Loading state](#loading-state);
 - `isRestored`: `false` until the cache has been read, so an empty list before that means "not read yet".
 
-The paginator loads its first window by itself and refreshes it once when it is created. After that the refresh is yours: you call `refresh()` at the moments your business logic needs it (see [Refresh](#refresh)).
+The paginator loads its first window by itself and refreshes it once when it is created. After that the refresh is yours: you call `refresh()` at the moments your business logic needs it, or the data layer marks the list stale with `PagingStore.invalidate` (see [Refresh](#refresh)).
 
 ### 3. The list
 
@@ -200,12 +209,12 @@ SwiftUI and UIKit use the same tracker: the demo's [`PagedGrid.swift`](demo/iosA
 | Refresh | `refresh()` | where the user is: pull-to-refresh, retry, after removing items on the server; returns when it is over |
 | Refresh from the top | scroll to the top, then `refresh()` | the window follows the scroll |
 | Jump to a position | scroll the list | the window follows by itself |
-| Read the full item | `getItemById(id)` | when rows hold a display model |
-| Change one item | `updateItem(id) { it.copy(...) }` | after the server confirmed; every list sees it |
-| Change an item without a paginator | `db.updateItem(serializer, id) { ... }` | for example from a details screen |
-| Remove items | server call, then `refresh()` | no local shifting |
+| Read the full item | `store.items(serializer).get(id)` | when rows hold a display model |
+| Change one item | `store.items(serializer).update(id) { it.copy(...) }` | after the server confirmed; every list sees it |
+| Renew stale lists | `store.invalidate("group")` | the open paginators with this `group` refresh by themselves |
+| Remove items | server call, then `refresh()` or `invalidate` | no local shifting |
 | Headers, separators, local rows | `state.items.decorate { ... }` | returns `PagingRows` |
-| Manage the cache | `db.clearCache()`, `db.setMaxLists(n)`, `db.cacheStats()` | |
+| Manage the cache | `store.clear()`, `store.setMaxLists(n)`, `store.stats()` | `clear()` renews the open lists |
 | Stop | cancel the owner's scope | `close()` only to replace a paginator earlier |
 
 ## Guide
@@ -226,7 +235,7 @@ scope.launch {
 
 One refresh, and it works **where the user is**: it requests the pages of the current window again, ignoring the cache, and replaces them in one transaction. The old data stays on screen meanwhile (`loadState = REFRESH`).
 
-One rule for the whole API: `state` tells what is going on with the list, and the calls of the app (`refresh()`, `updateItem()`, `getItemById()`) suspend until they are done. A pull-to-refresh indicator simply stays until `refresh()` returns.
+One rule for the whole API: `state` tells what is going on with the list, and `refresh()` suspends until it is done. A pull-to-refresh indicator simply stays until `refresh()` returns.
 
 <details>
 <summary>Details</summary>
@@ -237,8 +246,8 @@ One rule for the whole API: `state` tells what is going on with the list, and th
 - `refresh()` returns when the new data is written, when it failed (the error is in `state`, not thrown), or when a scroll out of the window or `close()` ended it. It never waits forever.
 - Scrolling out of the window during a refresh cancels it; calling `refresh()` again restarts it. A refresh asked while another runs replaces it, and both calls return when the new one is over.
 - The library never touches the scroll position.
-- **You decide when the list is renewed.** The paginator refreshes once when it is created (over a cache it refreshes the window at the start and drops deep cached pages). After that `refresh()` is yours: call it on a pull, on a retry, on a signal of your business logic (a cleared cache, a changed favorite) or when the screen comes back, one line wherever your app needs it. Nothing renews behind your back, so counters and positions stay exactly as the user sees them until you decide. A changed query is a new paginator with a new `queryKey`.
-- An empty list ("nothing found") is renewed only by `refresh()` as well.
+- **You decide when the list is renewed.** The paginator refreshes once when it is created (over a cache it refreshes the window at the start and drops deep cached pages). After that it renews when the app asks: `refresh()` on a pull, on a retry or when the screen comes back; [`invalidate`](#stale-lists) or `clear()` of the store when the data layer changed something. Nothing renews behind your back, so counters and positions stay exactly as the user sees them until you decide. A changed query is a new paginator with a new `queryKey`.
+- An empty list ("nothing found") is renewed in the same ways.
 - `getPage` must only read: pages of one refresh are loaded in parallel and the length is taken from the last page, so a side effect inside `getPage` makes the total disagree with the list.
 
 </details>
@@ -268,23 +277,57 @@ Pass `totalCount = null`. The list is then as long as its loaded part, with no p
 
 ### Changing items
 
+Items are changed through the `PagingStore`. The code that made the change on the server, usually a repository, updates the cache right there, and the screens only show the lists:
+
 ```kotlin
-fun onLikeClick(id: String) = scope.launch {
-    api.addToFavourites(id)                               // the server first
-    paginator.updateItem(id) { it.copy(isLiked = true) }  // then the cache
+class UsersRepository(private val api: UsersApi, store: PagingStore) {
+    private val users = store.items(User.serializer())
+
+    suspend fun like(id: String) {
+        api.addToFavourites(id)                       // the server first
+        users.update(id) { it.copy(isLiked = true) }  // then the cache
+    }
 }
 ```
 
-Items are stored once per type and shared by all lists, so the change appears at every position in every list. `updateItem` returns the new item, or `null` if it is not cached.
+Items are stored once per type and shared by all lists, so the change appears at every position in every list. `update` returns the new item, or `null` if it is not cached.
 
-**Removing** is a server operation, often over a selection that is not even in the cache, so there is no `removeItem`: delete on the server, then `refresh()`.
+**Removing** is a server operation, often over a selection that is not even in the cache, so there is no `removeItem`: delete on the server, then `refresh()` or [`invalidate`](#stale-lists).
 
 <details>
 <summary>Details</summary>
 
-- `transform` gets the current cached version; reading and writing happen in one step. `updateItem(id) { newItem }` replaces the whole item. An exception thrown by `transform` goes to the caller. JSON in the cache that cannot be read gives `null` and is kept.
-- A load of this paginator that started before the edit does not overwrite it. A load of another list that was already in flight when you edited may deliver the older version: call that list's `refresh()` if the screen needs the new one at once. The same holds for `PagingDatabase.updateItem`, which has no paginator of its own.
-- `getItemById(id)` reads the full item from the cache, for example when rows hold only a display model and a server call or a details screen needs the whole item. Keep no copies of items of your own.
+- `transform` gets the current cached version; reading and writing happen in one step. `update(id) { newItem }` replaces the whole item. An exception thrown by `transform` goes to the caller. JSON in the cache that cannot be read gives `null` and is kept.
+- A page load that started before the edit does not bring the old version back, in any list of the database.
+- `get(id)` reads the full item from the cache, for example when rows hold only a display model and a server call or a details screen needs the whole item. Keep no copies of items of your own.
+
+</details>
+
+### Stale lists
+
+When a change adds, removes or moves items, the list itself has to be renewed: a new favorite belongs in the favorites list. Give such lists a `group`, and after the server confirmed the change, mark the group stale:
+
+```kotlin
+val favorites = StablePaginator(
+    serializer = User.serializer(),
+    queryKey = "favorites",
+    group = "favorites",
+    // ...
+)
+
+suspend fun addToFavourites(id: String) {
+    api.addToFavourites(id)
+    store.invalidate("favorites")   // the open favorites lists refresh where the user is
+}
+```
+
+<details>
+<summary>Details</summary>
+
+- `invalidate` refreshes every open list of the groups, as `refresh()` does: the window around the user, with the old data on screen until the new one arrives. A refresh already running is replaced by the new one.
+- A list that is not open refreshes when it is created, as always.
+- One group may cover many `queryKey`s, for example every search of one kind of item.
+- `invalidate` returns at once; follow the refresh in `state`.
 
 </details>
 
@@ -357,7 +400,7 @@ tracker.onLayout(rows: list.rows, visibleRows: visible.map { KotlinInt(int: Int3
 - A cancelled scope fails at creation.
 - The same list on several screens (the same `queryKey` alive twice) is fine: every extra live paginator keeps its pages separately, so the screens do not delete each other's data.
 - `dispatcher` (`Dispatchers.Default`) runs events, JSON decoding and `getPage` calls; do not pass `Main`. Only the job of `scope` is used, so a `Main` scope is fine.
-- `databaseDispatcher` (platform default) runs database work. Paginators of one database should share it; the cache functions below take the same one.
+- `databaseDispatcher` (platform default) runs database work. Paginators of one database should share it; give `PagingStore` the same one.
 - In tests pass a `StandardTestDispatcher` for both dispatchers and `backgroundScope` as the scope: `advanceUntilIdle()` then runs everything deterministically.
 
 </details>
@@ -365,11 +408,11 @@ tracker.onLayout(rows: list.rows, visibleRows: visible.map { KotlinInt(int: Int3
 ### The cache
 
 ```kotlin
-db.clearCache()              // everything, for example on logout
-db.clearCache("users")       // one list
-db.setMaxLists(50)           // stored in the database; the oldest lists beyond it are evicted
-db.maxLists()                // 100 by default
-db.cacheStats()              // PagingCacheStats(lists, items, dataBytes), for a settings screen
+store.clear()                     // everything; the open lists load again by themselves
+store.clear(refreshLive = false)  // on logout, after the lists are closed
+store.setMaxLists(50)             // stored in the database; the oldest lists beyond it are evicted
+store.maxLists()                  // 100 by default
+store.stats()                     // PagingCacheStats(lists, items, dataBytes), for a settings screen
 ```
 
 <details>
@@ -377,7 +420,8 @@ db.cacheStats()              // PagingCacheStats(lists, items, dataBytes), for a
 
 - The cache cleans itself: pages outside the window and its spare pages are deleted, a refresh drops stale pages, and opening a list beyond the limit evicts the least recently used ones (a list in use stays the most recent).
 - `dataBytes` is the size of the stored items; it drops right after a cleanup, unlike the database file, which SQLite does not shrink.
-- **Call `clearCache()` after the lists are closed**, for example on logout, so nothing of the previous user stays. Under a live list it empties the list and leaves it empty until the app calls `refresh()`: the library does not refresh by itself, or the data of the previous user would come back into the cache. The demo shows a way: the repository announces the clear as a flow, and the screens with lists subscribe and call `refresh()`.
+- `clear()` refreshes every open list, so a "Clear cache" button needs nothing else: the lists on other tabs load again by themselves.
+- **On logout** close the lists first, then call `clear(refreshLive = false)`. The cache is emptied, and no list goes to the server with the old session. The lists of the next user load when they are opened.
 
 </details>
 
@@ -415,7 +459,7 @@ val state = PagingState(items, totalCount = 100, loadState = LoadState.IDLE, isR
 
 [`demo/`](demo/) is the answer to "what does it look like in a real app": **Android (Compose) and iOS (SwiftUI) with one shared Kotlin logic layer** (domain, data, presentation) and a fully native UI on each side. It brings together the practices I use in production apps.
 
-What it shows with this library: a 10 000-row NASA search with filters, an offline cache, `updateItem` in every list at once, a reversed chat list with date separators and local messages, cache management in settings.
+What it shows with this library: a 10 000-row NASA search with filters, an offline cache, one item change in every list at once and a stale favorites list renewed by its repository, a reversed chat list with date separators and local messages, cache management in settings.
 
 - [Demo README](demo/README.md): the screens, their structure and what is done or still to do
 - [Testing](demo/TESTING.md): what the tests cover

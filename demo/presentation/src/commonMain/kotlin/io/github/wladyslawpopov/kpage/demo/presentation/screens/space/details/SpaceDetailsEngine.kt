@@ -31,9 +31,8 @@ internal class SpaceDetailsEngine(
     fun setFavorite(isFavorite: Boolean) {
         tasks.launchMain {
             favoriteLock.withLock {
+                // The repository brings the mark to the lists as well.
                 favorites.setFavorite(id, isFavorite)
-                // The lists keep their own copy of the image: they show the new mark without a refresh.
-                repository.updateImage(id) { it.copy(isFavorite = isFavorite) }
                 updateState { state -> state.copy(display = state.display?.copy(isFavorite = isFavorite)) }
             }
         }

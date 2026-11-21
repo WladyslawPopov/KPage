@@ -1,19 +1,13 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.favorites
 
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.Paginator
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheStats
 import io.github.wladyslawpopov.kpage.demo.domain.favorites.FavoritesRepository
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
-import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImageDetails
-import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceQuery
-import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceRepository
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.testing.FakePaginator
 import io.github.wladyslawpopov.kpage.demo.presentation.testing.TestTasks
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
@@ -31,7 +25,6 @@ class FavoritesEngineTest {
     private class FakeFavorites : FavoritesRepository {
         val paginators = mutableListOf<FakePaginator<SpaceImage>>()
         val removed = mutableListOf<Collection<String>>()
-        override val changes = MutableSharedFlow<Unit>()
 
         override fun favorites(scope: CoroutineScope): Paginator<SpaceImage> =
             FakePaginator<SpaceImage>().also { paginators += it }
@@ -43,27 +36,8 @@ class FavoritesEngineTest {
         }
     }
 
-    private class FakeSpace : SpaceRepository {
-        val updated = mutableMapOf<String, (SpaceImage) -> SpaceImage>()
-
-        override fun images(query: SpaceQuery, scope: CoroutineScope): Paginator<SpaceImage> = error("not used")
-        override suspend fun details(id: String): SpaceImageDetails? = error("not used")
-
-        override suspend fun updateImage(id: String, transform: (SpaceImage) -> SpaceImage) {
-            updated[id] = transform
-        }
-    }
-
-    private class FakeCache : CacheRepository {
-        override val cleared = MutableSharedFlow<Unit>()
-        override suspend fun stats() = CacheStats(0, 0)
-        override suspend fun clear() = Unit
-    }
-
     private class Harness(scope: TestScope) {
         val favorites = FakeFavorites()
-        val space = FakeSpace()
-        val cache = FakeCache()
         val intents = mutableListOf<PageIntent>()
         var state = FavoritesState()
         val engine = FavoritesEngine(
@@ -73,8 +47,6 @@ class FavoritesEngineTest {
                 StandardTestDispatcher(scope.testScheduler),
             ),
             favorites = favorites,
-            space = space,
-            cache = cache,
             getState = { state },
             updateState = { state = it(state) },
             onPageIntent = { intents += it },
@@ -85,26 +57,6 @@ class FavoritesEngineTest {
     private fun TestScope.started() = Harness(this).also {
         it.engine.start()
         runCurrent()
-    }
-
-    @Test
-    fun a_change_of_the_favorites_refreshes_the_list() = runTest {
-        val harness = started()
-
-        harness.favorites.changes.emit(Unit)
-        runCurrent()
-
-        assertEquals(1, harness.paginator.refreshCount)
-    }
-
-    @Test
-    fun a_cleared_cache_refreshes_the_list() = runTest {
-        val harness = started()
-
-        harness.cache.cleared.emit(Unit)
-        runCurrent()
-
-        assertEquals(1, harness.paginator.refreshCount)
     }
 
     @Test
@@ -154,7 +106,7 @@ class FavoritesEngineTest {
     }
 
     @Test
-    fun a_confirmed_delete_removes_the_ids_and_clears_the_heart_in_the_space_lists() = runTest {
+    fun a_confirmed_delete_removes_only_the_confirmed_ids() = runTest {
         val harness = started()
         harness.engine.onIntent(FavoritesIntent.LongClick("a"))
         harness.engine.onIntent(FavoritesIntent.LongClick("b"))
@@ -164,9 +116,6 @@ class FavoritesEngineTest {
         runCurrent()
 
         assertEquals(listOf<Collection<String>>(setOf("a")), harness.favorites.removed)
-        assertEquals(setOf("a"), harness.space.updated.keys)
-        val image = SpaceImage(id = "a", title = "A", previewUrl = null, date = null, center = null, isFavorite = true)
-        assertFalse(harness.space.updated.getValue("a")(image).isFavorite)
         assertTrue(harness.state.pendingDelete.isEmpty())
         assertEquals(setOf("b"), harness.state.selected)
     }

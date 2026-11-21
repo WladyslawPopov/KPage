@@ -10,7 +10,6 @@ import io.github.wladyslawpopov.kpage.demo.presentation.screens.settings.display
 import io.github.wladyslawpopov.kpage.demo.presentation.testing.TestTasks
 import io.github.wladyslawpopov.kpage.demo.uicore.text.UiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -39,7 +38,6 @@ class SettingsEngineTest {
     }
 
     private class FakeCache : CacheRepository {
-        override val cleared = MutableSharedFlow<Unit>()
         var stats = CacheStats(lists = 3, bytes = 2048)
         var clearCount = 0
 

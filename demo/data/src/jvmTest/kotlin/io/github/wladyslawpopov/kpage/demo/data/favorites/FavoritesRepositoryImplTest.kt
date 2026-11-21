@@ -3,6 +3,7 @@ package io.github.wladyslawpopov.kpage.demo.data.favorites
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import io.github.wladyslawpopov.kpage.cache.PagingDatabase
 import io.github.wladyslawpopov.kpage.core.paging.createPagingDriver
+import io.github.wladyslawpopov.kpage.core.paging.data.cache.PagingStore
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.Paginator
 import io.github.wladyslawpopov.kpage.core.paging.data.state.LoadState
 import io.github.wladyslawpopov.kpage.core.paging.data.state.PagingState
@@ -54,10 +55,12 @@ class FavoritesRepositoryImplTest {
 
     private val demoDb = DemoDatabase(JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY, Properties(), DemoDatabase.Schema))
     private val store = FavoritesStore(demoDb)
+    private val pagingDb = PagingDatabase(createPagingDriver(cacheDirectory))
     private val repository = FavoritesRepositoryImpl(
         remote = NasaImagesRemote(createHttpClient(engine, Json { ignoreUnknownKeys = true; explicitNulls = false })),
         store = store,
-        db = PagingDatabase(createPagingDriver(cacheDirectory)),
+        db = pagingDb,
+        cache = PagingStore(pagingDb),
     )
 
     @AfterTest
@@ -88,13 +91,13 @@ class FavoritesRepositoryImplTest {
     }
 
     @Test
-    fun a_refresh_asks_nasa_only_for_the_new_ids() = blocking {
+    fun a_new_favorite_renews_the_list_and_asks_nasa_only_for_the_new_id() = blocking {
         store.add("a")
         val paginator = repository.favorites(scope)
         paginator.settled()
 
+        // The repository marks the list stale: it refreshes without a call of its own.
         repository.setFavorite("b", isFavorite = true)
-        paginator.refresh()
         paginator.state.first { it.ids() == setOf("a", "b") && it.loadState is LoadState.END }
 
         assertEquals(listOf("a", "b"), requested.toList())

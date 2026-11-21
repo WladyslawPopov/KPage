@@ -4,7 +4,6 @@ import io.github.wladyslawpopov.kpage.cache.PagingDatabase
 import io.github.wladyslawpopov.kpage.core.paging.StablePaginator
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.PagerPayload
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.Paginator
-import io.github.wladyslawpopov.kpage.core.paging.data.cache.updateItem
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.PaginatorConfig
 import io.github.wladyslawpopov.kpage.demo.data.favorites.FavoritesStore
 import io.github.wladyslawpopov.kpage.demo.domain.space.SpaceImage
@@ -36,10 +35,6 @@ internal class SpaceRepositoryImpl(
         val item = remote.item(id) ?: return null
         val isFavorite = item.nasaId?.let { it in favorites.favoriteIds(listOf(it)) } ?: false
         return item.toSpaceImageDetails(isFavorite)
-    }
-
-    override suspend fun updateImage(id: String, transform: (SpaceImage) -> SpaceImage) {
-        db.updateItem(SpaceImage.serializer(), id, transform = transform)
     }
 
     private suspend fun loadPage(query: SpaceQuery, page: Int): PagerPayload<SpaceImage> {

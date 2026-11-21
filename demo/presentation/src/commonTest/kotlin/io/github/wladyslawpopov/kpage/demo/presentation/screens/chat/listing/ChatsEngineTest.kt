@@ -1,14 +1,11 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.listing
 
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheStats
 import io.github.wladyslawpopov.kpage.demo.domain.chat.Chat
 import io.github.wladyslawpopov.kpage.demo.presentation.page.PageIntent
 import io.github.wladyslawpopov.kpage.demo.presentation.testing.FakeChatRepository
 import io.github.wladyslawpopov.kpage.demo.presentation.testing.TestTasks
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
@@ -23,15 +20,8 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChatsEngineTest {
 
-    private class FakeCache : CacheRepository {
-        override val cleared = MutableSharedFlow<Unit>()
-        override suspend fun stats() = CacheStats(0, 0)
-        override suspend fun clear() = Unit
-    }
-
     private class Harness(scope: TestScope) {
         val chats = FakeChatRepository()
-        val cache = FakeCache()
         val intents = mutableListOf<PageIntent>()
         val opened = mutableListOf<Chat>()
         var state = ChatsState()
@@ -42,7 +32,6 @@ class ChatsEngineTest {
                 StandardTestDispatcher(scope.testScheduler),
             ),
             repository = chats,
-            cache = cache,
             getState = { state },
             updateState = { state = it(state) },
             onPageIntent = { intents += it },
@@ -56,16 +45,13 @@ class ChatsEngineTest {
     }
 
     @Test
-    fun a_change_of_any_chat_and_a_cleared_cache_refresh_the_list() = runTest {
+    fun a_change_of_any_chat_refreshes_the_list() = runTest {
         val harness = started()
 
         harness.chats.changes.emit(7)
         runCurrent()
-        assertEquals(1, harness.chats.chatsPaginator.refreshCount)
 
-        harness.cache.cleared.emit(Unit)
-        runCurrent()
-        assertEquals(2, harness.chats.chatsPaginator.refreshCount)
+        assertEquals(1, harness.chats.chatsPaginator.refreshCount)
     }
 
     @Test

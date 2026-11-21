@@ -1,7 +1,6 @@
 package io.github.wladyslawpopov.kpage.demo.presentation.screens.chat.listing
 
 import io.github.wladyslawpopov.kpage.core.paging.data.state.LoadState
-import io.github.wladyslawpopov.kpage.demo.domain.cache.CacheRepository
 import io.github.wladyslawpopov.kpage.demo.domain.chat.Chat
 import io.github.wladyslawpopov.kpage.demo.domain.chat.ChatRepository
 import io.github.wladyslawpopov.kpage.demo.presentation.component.ComponentTasks
@@ -19,7 +18,6 @@ import kotlinx.coroutines.sync.withLock
 internal class ChatsEngine(
     private val tasks: ComponentTasks,
     private val repository: ChatRepository,
-    cache: CacheRepository,
     private val getState: () -> ChatsState,
     private val updateState: ((ChatsState) -> ChatsState) -> Unit,
     private val onPageIntent: (PageIntent) -> Unit,
@@ -29,7 +27,6 @@ internal class ChatsEngine(
         getState = { getState().list },
         updateState = ::setList,
         onError = { onPageIntent(PageIntent.OnError(it)) },
-        refreshOn = cache.cleared,
     )
 
     // Removals and creations are applied one after another, in the order they were asked for.

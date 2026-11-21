@@ -5,7 +5,9 @@ import app.cash.sqldelight.coroutines.mapToList
 import io.github.wladyslawpopov.kpage.cache.PagingDatabase
 import io.github.wladyslawpopov.kpage.core.paging.common.dbDispatcher
 import io.github.wladyslawpopov.kpage.core.paging.data.cache.CacheJson
+import io.github.wladyslawpopov.kpage.core.paging.data.cache.ItemEdits
 import io.github.wladyslawpopov.kpage.core.paging.data.cache.LiveCacheKeys
+import io.github.wladyslawpopov.kpage.core.paging.data.cache.LivePaginators
 import io.github.wladyslawpopov.kpage.core.paging.data.cache.evictOldLists
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.PagerPayload
 import io.github.wladyslawpopov.kpage.core.paging.data.paginator.Paginator
@@ -51,14 +53,16 @@ import kotlin.coroutines.cancellation.CancellationException
  * The paginator keeps a window of `2 * prefetchDistance + 1` pages around the anchor (the page of
  * the first visible item) loaded, plus `extraPagesInDb` spare pages in the database.
  *
- * All state belongs to one handler coroutine that processes events one by one: UI calls, item
- * edits and page responses. Page loads only call [getPage] and report the result.
+ * All state belongs to one handler coroutine that processes events one by one: UI calls, refresh
+ * requests of the store and page responses. Page loads only call [getPage] and report the result.
  *
  * @param T The type of items being paginated.
  * @param serializer The Serialization serializer for type [T].
  * @param queryKey The name of the list in the local cache (it is never sent to the server), for
  * example built from the query and its filters. The same list may be open on several screens at once:
  * each extra live paginator for the same key keeps its pages separately.
+ * @param group The lists this one belongs to, for example every search of one item type:
+ * `PagingStore.invalidate(group)` refreshes the live paginators of the group.
  * @param config Configuration parameters like page size and prefetch distance.
  * @param getPage A suspend function to fetch a page of data from the network. It receives
  * `page + config.initialPageKey`. For a page past the end of the list it should return an empty
@@ -77,6 +81,7 @@ import kotlin.coroutines.cancellation.CancellationException
 class StablePaginator<T : Any>(
     private val serializer: KSerializer<T>,
     queryKey: String,
+    group: String? = null,
     private val config: PaginatorConfig = PaginatorConfig(),
     private val getPage: suspend (Int) -> PagerPayload<T>,
     private val idExtractor: (T) -> String,
@@ -97,6 +102,9 @@ class StablePaginator<T : Any>(
 
     private class LoadedPage<T>(val payload: PagerPayload<T>, val startTick: Long)
 
+    // A page load in flight; startTick is its tick in ItemEdits.
+    private class Load(val job: Job, val startTick: Long)
+
     // A refresh in progress: the requested pages are collected in memory and committed together.
     private class Refresh<T>(val pages: Set<Int>, val overCache: Boolean) {
         val collected = mutableMapOf<Int, LoadedPage<T>>()
@@ -109,8 +117,8 @@ class StablePaginator<T : Any>(
 
     private sealed interface Event {
         class Visible(val pages: IntRange) : Event
-        class Refresh(val done: CompletableDeferred<Unit>) : Event
-        class Run(val block: suspend () -> Unit) : Event
+        // done is null for a refresh asked by the store: nobody waits for it.
+        class Refresh(val done: CompletableDeferred<Unit>?) : Event
         class Loaded<T>(
             val page: Int,
             val generation: Long,
@@ -127,10 +135,8 @@ class StablePaginator<T : Any>(
     private var activeRefresh: Refresh<T>? = null
     // Callers of refresh() waiting for the refresh in progress; a new refresh takes over the waiters.
     private val refreshWaiters = mutableListOf<CompletableDeferred<Unit>>()
-    private val jobs = mutableMapOf<Int, Job>()
+    private val jobs = mutableMapOf<Int, Load>()
     private var error: Throwable? = null
-    private var tick = 0L
-    private val localEdits = mutableMapOf<String, Long>()
 
     init {
         require(scope.isActive) { "The scope of the paginator is already cancelled" }
@@ -141,11 +147,21 @@ class StablePaginator<T : Any>(
     // so the queryKey parameter cannot shadow it in property initializers.
     private val cacheKey: String = LiveCacheKeys.acquire(db, queryKey)
 
+    private val events = Channel<Event>(Channel.UNLIMITED)
+
+    // Lets PagingStore.invalidate and PagingStore.clear ask this paginator to refresh.
+    private val liveEntry = LivePaginators.Entry(group) { events.trySend(Event.Refresh(null)) }
+
+    // Registered while the paginator lives; on completion it also drops its loads from ItemEdits.
     private val job = SupervisorJob(scope.coroutineContext[Job]).also { job ->
-        job.invokeOnCompletion { LiveCacheKeys.release(db, cacheKey) }
+        LivePaginators.register(db, liveEntry)
+        job.invokeOnCompletion {
+            LiveCacheKeys.release(db, cacheKey)
+            LivePaginators.unregister(db, liveEntry)
+            ItemEdits.settle(db, this, oldest = null)
+        }
     }
     private val paginatorScope = CoroutineScope(job + dispatcher)
-    private val events = Channel<Event>(Channel.UNLIMITED)
 
     // Completed once this list is registered in the cache and old lists are evicted.
     private val initialized = CompletableDeferred<Unit>()
@@ -162,26 +178,6 @@ class StablePaginator<T : Any>(
 
     private fun send(event: Event): Boolean {
         return job.isActive && events.trySend(event).isSuccess
-    }
-
-    // Runs a block in the handler and waits until it has finished; returns at once after close().
-    private suspend fun runAndAwait(block: suspend () -> Unit) {
-        val done = CompletableDeferred<Unit>()
-        val onClose = job.invokeOnCompletion { done.complete(Unit) }
-        try {
-            val accepted = send(
-                Event.Run {
-                    try {
-                        block()
-                    } finally {
-                        done.complete(Unit)
-                    }
-                }
-            )
-            if (accepted) done.await()
-        } finally {
-            onClose.dispose()
-        }
     }
 
     // Called inside a transaction: marks the list as the most recently used and evicts the oldest ones.
@@ -262,7 +258,7 @@ class StablePaginator<T : Any>(
             for (event in events) {
                 currentCoroutineContext().ensureActive()
                 guarded { handle(event) }
-                if (jobs.isEmpty() && activeRefresh == null) localEdits.clear()
+                ItemEdits.settle(db, this@StablePaginator, oldestLoad())
                 publishLoadState()
                 // After the state, so a returning refresh() already sees how it ended.
                 if (activeRefresh == null) completeRefreshWaiters()
@@ -326,11 +322,9 @@ class StablePaginator<T : Any>(
 
             is Event.Refresh -> {
                 // Added first: a refresh that fails to start still ends, and its waiter with it.
-                refreshWaiters += event.done
+                event.done?.let { refreshWaiters += it }
                 startRefresh()
             }
-
-            is Event.Run -> event.block()
 
             is Event.Loaded<*> -> {
                 @Suppress("UNCHECKED_CAST")
@@ -411,7 +405,7 @@ class StablePaginator<T : Any>(
     // Loads the pages of the window that are missing; loads outside of it are cancelled.
     private suspend fun ensureWindow() {
         val window = window()
-        jobs.keys.filter { it !in window }.forEach { jobs.remove(it)?.cancel() }
+        jobs.keys.filter { it !in window }.forEach { jobs.remove(it)?.job?.cancel() }
 
         val cache = readCache()
         pagesToRequest(window, cache).forEach { page ->
@@ -422,7 +416,7 @@ class StablePaginator<T : Any>(
     private fun startLoad(page: Int) {
         error = null
         val requestGeneration = generation
-        val startTick = tick
+        val startTick = ItemEdits.startLoad(db, this)
         val load = paginatorScope.launch {
             val self = currentCoroutineContext()[Job]!!
             val result = try {
@@ -433,7 +427,7 @@ class StablePaginator<T : Any>(
             }
             send(Event.Loaded(page, requestGeneration, self, result))
         }
-        jobs[page] = load
+        jobs[page] = Load(load, startTick)
     }
 
     // Refreshes the window around the anchor; the old data stays until every requested page arrived.
@@ -462,9 +456,13 @@ class StablePaginator<T : Any>(
     }
 
     private fun cancelJobs() {
-        jobs.values.forEach { it.cancel() }
+        jobs.values.forEach { it.job.cancel() }
         jobs.clear()
     }
+
+    // The tick of the oldest load whose page is not written yet: ItemEdits keeps the edits after it.
+    private fun oldestLoad(): Long? =
+        (jobs.values.map { it.startTick } + activeRefresh?.collected?.values?.map { it.startTick }.orEmpty()).minOrNull()
 
     private fun lastPageOf(totalCount: Int): Int = maxOf(0, (totalCount - 1) / pageSize)
 
@@ -473,7 +471,7 @@ class StablePaginator<T : Any>(
     private suspend fun onLoaded(event: Event.Loaded<T>) {
         val page = event.page
         // A response of a cancelled, replaced or reset load is obsolete.
-        if (event.generation != generation || jobs[page] !== event.load) return
+        if (event.generation != generation || jobs[page]?.job !== event.load) return
         jobs.remove(page)
 
         val current = activeRefresh
@@ -556,7 +554,8 @@ class StablePaginator<T : Any>(
     }
 
     // Replaces the page's positions and writes its items. An item edited after the request started
-    // keeps its local JSON, so an older response cannot undo the edit.
+    // keeps its local JSON, so an older response cannot undo the edit. The edits are read after the
+    // first write of the transaction, so an edit committed before this transaction is seen.
     private fun writePage(page: Int, loaded: LoadedPage<T>) {
         val payload = loaded.payload
         val start = page.toLong() * pageSize
@@ -564,7 +563,7 @@ class StablePaginator<T : Any>(
         payload.objects.forEachIndexed { index, item ->
             val id = idExtractor(item)
             val json = jsonSerializer.encodeToString(serializer, item)
-            val edited = (localEdits[id] ?: Long.MIN_VALUE) > loaded.startTick
+            val edited = ItemEdits.isEditedAfter(db, itemType, id, loaded.startTick)
             if (edited) itemQueries.insertItemIfAbsent(itemType, id, json) else itemQueries.upsertItem(itemType, id, json)
             entryQueries.upsertEntry(cacheKey, start + index, itemType, id)
         }
@@ -644,54 +643,5 @@ class StablePaginator<T : Any>(
             entryQueries.deleteEntriesInRange(cacheKey, start, start + pageSize)
             metaQueries.deletePageMetadataByNumber(cacheKey, page.toLong())
         }
-    }
-
-    // ---- Item access and edits ----
-
-    /**
-     * Retrieves a single item directly from the local database by its ID.
-     */
-    override suspend fun getItemById(id: String): T? = withContext(databaseDispatcher) {
-        itemQueries.selectById(itemType, id).executeAsOneOrNull()?.let { decode(it.json) }
-    }
-
-    /**
-     * Applies [transform] to the cached item and stores the result in one step, so it always gets the
-     * current version. The change reflects at every position where the item occurs, in every list of
-     * this item type. Responses of this paginator's loads that started before the edit do not
-     * overwrite it; a load of another list started before the edit may bring the old version back
-     * until its next refresh.
-     * Returns the new item, or null if the item is not cached. An exception of [transform] is thrown
-     * to the caller and does not affect the paginator.
-     */
-    override suspend fun updateItem(id: String, transform: (T) -> T): T? {
-        var updated: T? = null
-        var failure: Throwable? = null
-        runAndAwait {
-            try {
-                updated = withContext(databaseDispatcher) {
-                    db.transactionWithResult {
-                        val raw = itemQueries.selectById(itemType, id).executeAsOneOrNull()
-                        val current = raw?.let { decode(it.json) }
-                        current?.let(transform)?.also { next ->
-                            itemQueries.updateJson(jsonSerializer.encodeToString(serializer, next), itemType, id)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                if (e is CancellationException) throw e
-                failure = e
-            }
-            if (updated != null) localEdits[id] = ++tick
-        }
-        failure?.let { throw it }
-        return updated
-    }
-
-    private fun decode(json: String): T? = try {
-        jsonSerializer.decodeFromString(serializer, json)
-    } catch (e: Exception) {
-        if (e is CancellationException) throw e
-        null
     }
 }
